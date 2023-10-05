@@ -1,0 +1,32 @@
+[
+    {
+      "title": "Pong",
+      "pathName": "pong",
+      "image": "pong.jpg"
+    },
+    {
+      "title": "Asteroids",
+      "pathName": "asteroids",
+      "image": "asteroids.jpg"
+    },
+    {
+      "title": "Shooter",
+      "pathName": "shooter",
+      "image": "shooter.jpg"
+    },
+    {
+      "title": "Level Quest",
+      "pathName": "level-quest",
+      "image": "https://via.placeholder.com/250x250?text=Level-Quest"
+    },
+    {
+      "title": "Pac-Man",
+      "pathName": "pac-man",
+      "image": "https://via.placeholder.com/250x250?text=Pac-Man"
+    },
+    {
+      "title": "Mario",
+      "pathName": "mario",
+      "image": "https://via.placeholder.com/250x250?text=Mario"
+    }
+  ]
