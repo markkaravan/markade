@@ -17,7 +17,9 @@
     {
       "title": "Level Quest",
       "pathName": "level-quest",
-      "image": "https://via.placeholder.com/250x250?text=Level-Quest"
+      "image": "https://via.placeholder.com/250x250?text=Level-Quest",
+      "instructions": "Here are the instructions for Level Quest",
+      "description": "Here is whay Level Quest is about"
     },
     {
       "title": "Pac-Man",

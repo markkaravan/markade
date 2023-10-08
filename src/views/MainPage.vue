@@ -1,7 +1,9 @@
 <template>
   <div class="home">
     <h1>Welcome to the MARKcade</h1>
+    <div class="thumbnails">
       <GameTile v-for="(game, index) in gameShim" :image="game.image" :key="index" :title="game.title" :pathName="game.pathName"></GameTile>
+    </div>
   </div>
 </template>
 
@@ -55,11 +57,13 @@ export default {
   background-position: center;
   background-repeat: no-repeat;
   background-color: black;
+  height: 100%;
+  width: 100%;
 }
 
 h1 {
   font-size: 48px;
-  margin-top: 50px;
+  margin-top: 0px;
   font-family: 'Bebas Neue', cursive;
   color: white;
 }
