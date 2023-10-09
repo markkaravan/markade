@@ -31,7 +31,7 @@ const routes = [
         {
             path: '/games/level-quest',
             name: 'level-quest',
-            component: () => import('../views/GameLevelQuest.vue')
+            component: () => import('../views/GameTemplate.vue')
         }
     ]
 

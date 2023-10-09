@@ -7,7 +7,8 @@
     <div class="body">
       <div class="game-window">
         <div class="game-window-border">
-          <slot name="game"></slot>
+          <!-- <slot name="game"></slot> -->
+          <GameLevelQuest/>
         </div>
       </div>
       <div class="instructions-description-container">
@@ -30,10 +31,12 @@
 
 <script>
 import games from '@/assets/games.json'
+import GameLevelQuest from '@/components/GameLevelQuest.vue'
 
 export default {
   name: 'GamePageTemplate',
-  props: {
+  components: {
+    GameLevelQuest
   },
   data() {
     return {
