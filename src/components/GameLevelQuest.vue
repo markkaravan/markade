@@ -1,20 +1,20 @@
 <template>
     <div class="game-level-quest">
-      <div class="opening-screen" v-if="currentScreen.name === 'Opening'">
+      <div class="opening-screen" v-if="gs.currentScreen.name === 'Opening'">
         <h1 class="video-game-title">Level Quest</h1>
-        <h2 class="video-game-subtitle" v-if="currentScreen.name === 'Opening'">{{ openingSubtitle }}</h2>
+        <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
       </div>
-      <div class="level-screen" v-if="currentScreen.name === 'Level'">
+      <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
         <div class="game-window">
-          <div class="player" :style="{ top: playerPosition.y + 'px', left: playerPosition.x + 'px' }"></div>
-          <div class="goal" :style="{ top: goalPosition.y + 'px', left: goalPosition.x + 'px' }"></div>
-          <div class="enemy" :style="{ top: enemyPosition.y + 'px', left: enemyPosition.x + 'px' }"></div>
+          <div class="player" :style="{ top: gs.playerPosition.y + 'px', left: gs.playerPosition.x + 'px' }"></div>
+          <div class="goal" :style="{ top: gs.goalPosition.y + 'px', left: gs.goalPosition.x + 'px' }"></div>
+          <div class="enemy" :style="{ top: gs.enemyPosition.y + 'px', left: gs.enemyPosition.x + 'px' }"></div>
         </div>
       </div>
-      <div class="win-screen" v-if="currentScreen.name === 'Win'">
+      <div class="win-screen" v-if="gs.currentScreen.name === 'Win'">
         <h1 class="win-title">YOU WIN</h1>
       </div>
-      <div class="lose-screen" v-if="currentScreen.name === 'Lose'">
+      <div class="lose-screen" v-if="gs.currentScreen.name === 'Lose'">
         <h1 class="lose-title">YOU LOSE</h1>
       </div>
     </div>
@@ -35,12 +35,14 @@
     name: 'GameLevelQuest',
     data() {
       return {
-        currentScreen: screens[0],
-        openingSubtitle: 'Push Spacebar to start.',
-        playerPosition: { x: 50, y: 250 },
-        goalPosition: { x: 750, y: 250 },
-        enemyPosition: { x: 550, y: 250 },
-        enemyDirection: { x: 1, y: 0 }
+        gs: {
+          currentScreen: screens[0],
+          openingSubtitle: 'Push Spacebar to start.',
+          playerPosition: { x: 50, y: 250 },
+          goalPosition: { x: 750, y: 250 },
+          enemyPosition: { x: 550, y: 250 },        
+          enemyDirection: { x: 1, y: 0 },
+        }
       }
     },
     mounted() {
@@ -52,58 +54,58 @@
     },
     methods: {
       handleKeyDown(event) {
-        if (this.currentScreen.name === 'Opening' && event.code === 'Space') {
-          this.currentScreen = screens[1]
-        } else if (this.currentScreen.name === 'Level') {
-          if (event.code === 'KeyW' && this.playerPosition.y > 0) {
-            this.playerPosition.y -= 10
-          } else if (event.code === 'KeyS' && this.playerPosition.y < 490) {
-            this.playerPosition.y += 10
-          } else if (event.code === 'KeyA' && this.playerPosition.x > 0) {
-            this.playerPosition.x -= 10
-          } else if (event.code === 'KeyD' && this.playerPosition.x < 740) {
-            this.playerPosition.x += 10
+        if (this.gs.currentScreen.name === 'Opening' && event.code === 'Space') {
+          this.gs.currentScreen = screens[1]
+        } else if (this.gs.currentScreen.name === 'Level') {
+          if (event.code === 'KeyW' && this.gs.playerPosition.y > 0) {
+            this.gs.playerPosition.y -= 10
+          } else if (event.code === 'KeyS' && this.gs.playerPosition.y < 490) {
+            this.gs.playerPosition.y += 10
+          } else if (event.code === 'KeyA' && this.gs.playerPosition.x > 0) {
+            this.gs.playerPosition.x -= 10
+          } else if (event.code === 'KeyD' && this.gs.playerPosition.x < 740) {
+            this.gs.playerPosition.x += 10
           }
-          if (this.checkCollision(this.playerPosition, this.goalPosition)) {
-            if (this.currentScreen.n === 1) {
-              this.currentScreen = screens[2]
-              this.goalPosition = { x: 750, y: 50 }
-              this.enemyPosition = { x: 250, y: 250 }
-            } else if (this.currentScreen.n === 2) {
-              this.currentScreen = screens[3]
-              this.goalPosition = { x: 750, y: 450 }
-              this.enemyPosition = { x: 550, y: 50 }
-            } else if (this.currentScreen.n === 3) {
-              this.currentScreen = screens[4]
+          if (this.checkCollision(this.gs.playerPosition, this.gs.goalPosition)) {
+            if (this.gs.currentScreen.n === 1) {
+              this.gs.currentScreen = screens[2]
+              this.gs.goalPosition = { x: 750, y: 50 }
+              this.gs.enemyPosition = { x: 250, y: 250 }
+            } else if (this.gs.currentScreen.n === 2) {
+              this.gs.currentScreen = screens[3]
+              this.gs.goalPosition = { x: 750, y: 450 }
+              this.gs.enemyPosition = { x: 550, y: 50 }
+            } else if (this.gs.currentScreen.n === 3) {
+              this.gs.currentScreen = screens[4]
               setTimeout(() => {
-                this.currentScreen = screens[0]
+                this.gs.currentScreen = screens[0]
               }, 5000)
             }
-          } else if (this.checkCollision(this.playerPosition, this.enemyPosition)) {
-            this.currentScreen = screens[5]
+          } else if (this.checkCollision(this.gs.playerPosition, this.gs.enemyPosition)) {
+            this.gs.currentScreen = screens[5]
             setTimeout(() => {
-              this.currentScreen = screens[0]
+              this.gs.currentScreen = screens[0]
             }, 5000)
           }
         }
       },
       moveEnemy() {
-        if (this.currentScreen.name === 'Level') {
+        if (this.gs.currentScreen.name === 'Level') {
           const enemyHeight = 50
           const maxX = 800 - enemyHeight
           const maxY = 500 - enemyHeight
           const minX = 400
           const minY = 0
-          const newX = this.enemyPosition.x + this.enemyDirection.x * enemyHeight
-          const newY = this.enemyPosition.y + this.enemyDirection.y * enemyHeight
+          const newX = this.gs.enemyPosition.x + this.gs.enemyDirection.x * enemyHeight
+          const newY = this.gs.enemyPosition.y + this.gs.enemyDirection.y * enemyHeight
           if (newX > maxX || newX < minX) {
-            this.enemyDirection.x *= -1
+            this.gs.enemyDirection.x *= -1
           }
           if (newY > maxY || newY < minY) {
-            this.enemyDirection.y *= -1
+            this.gs.enemyDirection.y *= -1
           }
-          this.enemyPosition.x += this.enemyDirection.x * enemyHeight
-          this.enemyPosition.y += this.enemyDirection.y * enemyHeight
+          this.gs.enemyPosition.x += this.gs.enemyDirection.x * enemyHeight
+          this.gs.enemyPosition.y += this.gs.enemyDirection.y * enemyHeight
         }
       },
       checkCollision(position1, position2) {
