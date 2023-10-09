@@ -115,68 +115,82 @@
   </script>
   
   <style scoped>
+  .body {
+    height: 900px;
+    background-color: aqua;
+  }
   .game-level-quest {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 600;
-    background-color: black;
-  }
-  
-  .video-game-title {
-    font-size: 5rem;
-    color: white;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  
-  .video-game-subtitle {
-    font-size: 2rem;
-    color: white;
-    text-align: center;
-  }
-  
-  .game-window {
-    position: relative;
-    width: 800px;
-    height: 200px;
-    background-color: gray;
-  }
-  
-  .player {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: white;
-  }
-  
-  .goal {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: green;
-  }
-  
-  .enemy {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: red;
-  }
-  
-  .win-screen,
-  .lose-screen {
-    position: relative;
-    top: 0;
-    left: 0;
-    width: 100%;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 5rem;
-    color: white;
-    text-align: center;
     background-color: black;
+    .opening-screen {
+        .video-game-title {
+            font-size: 5rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+    
+        .video-game-subtitle {
+            font-size: 2rem;
+            color: white;
+            text-align: center;
+        }
+    };
+    .level-screen {
+        height: 100%;
+        .game-window {
+            position: relative;
+            width: 800px;
+            height: 100%;
+            background-color: blue;
+            .player {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                background-color: white;
+            };
+            
+            .goal {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                background-color: green;
+            };
+            
+            .enemy {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                background-color: red;
+            };
+        };
+    }
+    .win-screen, .lose-screen {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 5rem;
+        color: white;
+        text-align: center;
+        background-color: black;
+    }
   }
+  
+
+
+  
+
+
+  
+
+  
+
   </style>
