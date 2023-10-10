@@ -30,6 +30,8 @@
     { name: 'Win', n: null },
     { name: 'Lose', n: null }
   ]
+  const gameWidth = 800;
+  const gameHeight = 333;
   
   export default {
     name: 'GameLevelQuest',
@@ -39,7 +41,7 @@
           currentScreen: screens[0],
           openingSubtitle: 'Push Spacebar to start.',
           playerPosition: { x: 50, y: 250 },
-          goalPosition: { x: 750, y: 250 },
+          goalPosition: { x: (gameWidth - 50), y: 250 },
           enemyPosition: { x: 550, y: 250 },        
           enemyDirection: { x: 1, y: 0 },
         }
@@ -59,21 +61,22 @@
         } else if (this.gs.currentScreen.name === 'Level') {
           if (event.code === 'KeyW' && this.gs.playerPosition.y > 0) {
             this.gs.playerPosition.y -= 10
-          } else if (event.code === 'KeyS' && this.gs.playerPosition.y < 490) {
+          } else if (event.code === 'KeyS' && this.gs.playerPosition.y < gameHeight-50) {
             this.gs.playerPosition.y += 10
           } else if (event.code === 'KeyA' && this.gs.playerPosition.x > 0) {
             this.gs.playerPosition.x -= 10
-          } else if (event.code === 'KeyD' && this.gs.playerPosition.x < 740) {
+          } else if (event.code === 'KeyD' && this.gs.playerPosition.x < gameWidth-50) {
             this.gs.playerPosition.x += 10
           }
+          console.log("GOAL POS:", this.gs.playerPosition, this.gs.goalPosition);
           if (this.checkCollision(this.gs.playerPosition, this.gs.goalPosition)) {
             if (this.gs.currentScreen.n === 1) {
               this.gs.currentScreen = screens[2]
-              this.gs.goalPosition = { x: 750, y: 50 }
+              this.gs.goalPosition = { x: gameWidth-50, y: 50 }
               this.gs.enemyPosition = { x: 250, y: 250 }
             } else if (this.gs.currentScreen.n === 2) {
               this.gs.currentScreen = screens[3]
-              this.gs.goalPosition = { x: 750, y: 450 }
+              this.gs.goalPosition = { x: gameWidth-50, y: gameHeight-50 }
               this.gs.enemyPosition = { x: 550, y: 50 }
             } else if (this.gs.currentScreen.n === 3) {
               this.gs.currentScreen = screens[4]
@@ -92,8 +95,8 @@
       moveEnemy() {
         if (this.gs.currentScreen.name === 'Level') {
           const enemyHeight = 50
-          const maxX = 800 - enemyHeight
-          const maxY = 500 - enemyHeight
+          const maxX = gameWidth - enemyHeight
+          const maxY = gameHeight - enemyHeight
           const minX = 400
           const minY = 0
           const newX = this.gs.enemyPosition.x + this.gs.enemyDirection.x * enemyHeight
