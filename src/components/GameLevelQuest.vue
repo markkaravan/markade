@@ -29,6 +29,7 @@ const gameWidth = 800;
 const gameHeight = 333;
 const bulletSpeed = 300;
 const initialPlayerPosition = { x: 50, y: 250 };
+const transitionScreenDelay = 2000;
 // Define the screens
 const screens = [
   { name: 'Opening', n: null },
@@ -77,7 +78,7 @@ const defaultGameState = {
   openingSubtitle: 'Push Spacebar to start.',
   player: { position:  initialPlayerPosition },
   goalPosition: { x: gameWidth - 50, y: 250 },
-  enemyIntervalId: null,
+  // enemyIntervalId: null,
   backgroundColor: null,
   enemies: [],
   bullets: [],
@@ -87,7 +88,7 @@ export default {
   name: 'GameLevelQuest',
   data() {
     return {
-      gs: this.copyObject(defaultGameState), // gs stands for game state
+      gs: {...defaultGameState }, // gs stands for game state
       lastTimestamp: null,
     };
   },
@@ -109,8 +110,8 @@ export default {
         this.gs = this.copyObject(defaultGameState);
       // Level
       } else if (name === 'Level') {
-        clearInterval(this.gs.enemyIntervalId);
-        this.gs.enemyIntervalId = null;
+        // clearInterval(this.gs.enemyIntervalId);
+        // this.gs.enemyIntervalId = null;
         this.gs.currentScreen = { name: 'Transition', n: n };
         const nextLevel = screens.find((screen) => screen.name === 'Level' && screen.n === n);
         setTimeout(() => {
@@ -135,21 +136,17 @@ export default {
             });
           }
 
-        }, 2000);
+        }, transitionScreenDelay);
       } else if (name === 'Win') {
         this.gs.currentScreen = screens.find((screen) => screen.name === 'Win');
-        clearInterval(this.gs.enemyIntervalId);
-        this.gs.enemyIntervalId = null;
         setTimeout(() => {
           this.loadScreen('Opening');
-        }, 5000);
+        }, transitionScreenDelay);
       } else if (name === 'Lose') {
         this.gs.currentScreen = screens.find((screen) => screen.name === 'Lose');
-        clearInterval(this.gs.enemyIntervalId);
-        this.gs.enemyIntervalId = null;
         setTimeout(() => {
           this.loadScreen('Opening');
-        }, 5000);
+        }, transitionScreenDelay);
       }
     },
     handleKeyDown(event) {
@@ -196,15 +193,13 @@ export default {
           const enemyHeight = 50;
           const maxX = gameWidth - enemyHeight;
           const maxY = gameHeight - enemyHeight;
-          const minX = 0;
-          const minY = 0;
           let enemy = this.gs.enemies[i];
           const newX = enemy.position.x + enemy.direction.x * (enemyHeight * (elapsed / 1000));
           const newY = enemy.position.y + enemy.direction.y * (enemyHeight * (elapsed / 1000));
-          if (newX > maxX || newX < minX) {
+          if (newX > maxX || newX < 0) {
             enemy.direction.x *= -1;
           }
-          if (newY > maxY || newY < minY) {
+          if (newY > maxY || newY < 0) {
             enemy.direction.y *= -1;
           }
           enemy.position.x = newX;
@@ -254,10 +249,6 @@ export default {
 </script>
 
 <style scoped>
-.body {
-  height: 900px;
-  background-color: aqua;
-}
 .game-level-quest {
   display: flex;
   justify-content: center;
