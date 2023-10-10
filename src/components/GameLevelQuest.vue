@@ -32,21 +32,21 @@
   ]
   const gameWidth = 800;
   const gameHeight = 333;
+  const defaultGameState = {
+    currentScreen: screens.find(screen => screen.name === 'Opening'),
+    openingSubtitle: 'Push Spacebar to start.',
+    playerPosition: { x: 50, y: 250 },
+    goalPosition: { x: (gameWidth - 50), y: 250 },
+    enemyPosition: { x: 550, y: 250 },        
+    enemyDirection: { x: 1, y: 0 },
+    enemyIntervalId: null,
+  };
   
   export default {
     name: 'GameLevelQuest',
     data() {
       return {
-        gs: {
-          currentScreen: screens.find(screen => screen.name === 'Opening'),
-          openingSubtitle: 'Push Spacebar to start.',
-          playerPosition: { x: 50, y: 250 },
-          goalPosition: { x: (gameWidth - 50), y: 250 },
-          enemyPosition: { x: 550, y: 250 },        
-          enemyDirection: { x: 1, y: 0 },
-          enemyIntervalId: null,
-
-        }
+        gs: this.copyObject(defaultGameState) // gs stands for game state
       }
     },
     mounted() {
@@ -56,23 +56,29 @@
       window.removeEventListener('keydown', this.handleKeyDown)
     },
     methods: {
+      copyObject(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      },
+
       loadScreen(name, n = null) {
         if (name === 'Opening') {
-          this.gs.currentScreen = screens.find(screen => screen.name === 'Opening');
-          this.gs.enemyIntervalId = null;
+          this.gs = this.copyObject(defaultGameState);
         }
         else if (name === 'Level') {
           this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === n);
+          clearInterval(this.gs.enemyIntervalId);
           this.gs.enemyIntervalId = null;
           this.gs.enemyIntervalId = setInterval(this.moveEnemy, 1000);
         }
         else if (name === 'Win') {
           this.gs.currentScreen = screens.find(screen => screen.name === 'Win');
+          clearInterval(this.gs.enemyIntervalId);
           this.gs.enemyIntervalId = null;
           setTimeout(() => { this.loadScreen('Opening') }, 5000);
         }
         else if (name === 'Lose') {
           this.gs.currentScreen = screens.find(screen => screen.name === 'Lose');
+          clearInterval(this.gs.enemyIntervalId);
           this.gs.enemyIntervalId = null;
           setTimeout(() => { this.loadScreen('Opening') }, 5000);
         }
