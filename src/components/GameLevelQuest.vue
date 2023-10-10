@@ -38,7 +38,7 @@
     data() {
       return {
         gs: {
-          currentScreen: screens[0],
+          currentScreen: screens.find(screen => screen.name === 'Opening'),
           openingSubtitle: 'Push Spacebar to start.',
           playerPosition: { x: 50, y: 250 },
           goalPosition: { x: (gameWidth - 50), y: 250 },
@@ -57,7 +57,7 @@
     methods: {
       handleKeyDown(event) {
         if (this.gs.currentScreen.name === 'Opening' && event.code === 'Space') {
-          this.gs.currentScreen = screens[1]
+          this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 1)
         } else if (this.gs.currentScreen.name === 'Level') {
           if (event.code === 'KeyW' && this.gs.playerPosition.y > 0) {
             this.gs.playerPosition.y -= 10
@@ -71,23 +71,23 @@
           console.log("GOAL POS:", this.gs.playerPosition, this.gs.goalPosition);
           if (this.checkCollision(this.gs.playerPosition, this.gs.goalPosition)) {
             if (this.gs.currentScreen.n === 1) {
-              this.gs.currentScreen = screens[2]
+              this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 2)
               this.gs.goalPosition = { x: gameWidth-50, y: 50 }
               this.gs.enemyPosition = { x: 250, y: 250 }
             } else if (this.gs.currentScreen.n === 2) {
-              this.gs.currentScreen = screens[3]
+              this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 3)
               this.gs.goalPosition = { x: gameWidth-50, y: gameHeight-50 }
               this.gs.enemyPosition = { x: 550, y: 50 }
             } else if (this.gs.currentScreen.n === 3) {
-              this.gs.currentScreen = screens[4]
+              this.gs.currentScreen = screens.find(screen => screen.name === 'Win')
               setTimeout(() => {
-                this.gs.currentScreen = screens[0]
+                this.gs.currentScreen = screens.find(screen => screen.name === 'Opening')
               }, 5000)
             }
           } else if (this.checkCollision(this.gs.playerPosition, this.gs.enemyPosition)) {
-            this.gs.currentScreen = screens[5]
+            this.gs.currentScreen = screens.find(screen => screen.name === 'Lose')
             setTimeout(() => {
-              this.gs.currentScreen = screens[0]
+              this.gs.currentScreen = screens.find(screen => screen.name === 'Opening')
             }, 5000)
           }
         }
