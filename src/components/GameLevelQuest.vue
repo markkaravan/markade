@@ -21,17 +21,27 @@
   </template>
   
   <script>
+  const gameWidth = 800;
+  const gameHeight = 333;
   // Define the screens
   const screens = [
     { name: 'Opening', n: null },
-    { name: 'Level', n: 1 },
-    { name: 'Level', n: 2 },
-    { name: 'Level', n: 3 },
+    { name: 'Level', n: 1, 
+      levelData: {
+        goalPosition: { x: gameWidth-50, y: 250 },
+        enemyPosition: { x: 550, y: 250 },
+    } },
+    { name: 'Level', n: 2, levelData: {
+        goalPosition: { x: gameWidth-50, y: 50 },
+        enemyPosition: { x: 250, y: 250 },
+    } },
+    { name: 'Level', n: 3, levelData: {
+        goalPosition: { x: gameWidth-50, y: gameHeight-50 },
+        enemyPosition: { x: 550, y: 50 },
+    } },
     { name: 'Win', n: null },
     { name: 'Lose', n: null }
   ]
-  const gameWidth = 800;
-  const gameHeight = 333;
   const defaultGameState = {
     currentScreen: screens.find(screen => screen.name === 'Opening'),
     openingSubtitle: 'Push Spacebar to start.',
@@ -68,6 +78,9 @@
           this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === n);
           clearInterval(this.gs.enemyIntervalId);
           this.gs.enemyIntervalId = null;
+          for (const [key, value] of Object.entries(this.gs.currentScreen.levelData)) {
+            this.gs[key] = value;
+          }
           this.gs.enemyIntervalId = setInterval(this.moveEnemy, 1000);
         }
         else if (name === 'Win') {
@@ -100,13 +113,9 @@
           }
           if (this.checkCollision(this.gs.playerPosition, this.gs.goalPosition)) {
             if (this.gs.currentScreen.n === 1) {
-              this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 2)
-              this.gs.goalPosition = { x: gameWidth-50, y: 50 }
-              this.gs.enemyPosition = { x: 250, y: 250 }
+              this.loadScreen('Level', 2);
             } else if (this.gs.currentScreen.n === 2) {
-              this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 3)
-              this.gs.goalPosition = { x: gameWidth-50, y: gameHeight-50 }
-              this.gs.enemyPosition = { x: 550, y: 50 }
+              this.loadScreen('Level', 3);
             } else if (this.gs.currentScreen.n === 3) {
               this.loadScreen('Win');
             }
@@ -211,14 +220,4 @@
         background-color: black;
     }
   }
-  
-
-
-  
-
-
-  
-
-  
-
   </style>
