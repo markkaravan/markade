@@ -8,7 +8,8 @@
         <div class="game-window" :style="{ backgroundColor: gs.backgroundColor }">
           <div class="player" :style="{ top: gs.playerPosition.y + 'px', left: gs.playerPosition.x + 'px' }"></div>
           <div class="goal" :style="{ top: gs.goalPosition.y + 'px', left: gs.goalPosition.x + 'px' }"></div>
-          <div class="enemy" :style="{ top: gs.enemyPosition.y + 'px', left: gs.enemyPosition.x + 'px' }"></div>
+          <!-- <div class="enemy" :style="{ top: gs.enemyPosition.y + 'px', left: gs.enemyPosition.x + 'px' }"></div> -->
+          <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px' }"></div>
         </div>
       </div>
       <div class="transition-screen" v-if="gs.currentScreen.name === 'Transition'">
@@ -32,23 +33,24 @@
     { name: 'Level', n: 1, 
       levelData: {
         goalPosition: { x: gameWidth-50, y: 250 },
-        enemyPosition: { x: 550, y: 250 },
         backgroundColor: 'rgb(173, 216, 230)', // light blue
+        enemies: 3 // number of enemies to generate
     } },
     { name: 'Level', n: 2, levelData: {
         goalPosition: { x: gameWidth-50, y: 50 },
-        enemyPosition: { x: 250, y: 250 },
         backgroundColor: 'rgb(0, 0, 255)', // blue
+        enemies: 2 // number of enemies to generate
     } },
     { name: 'Level', n: 3, levelData: {
         goalPosition: { x: gameWidth-50, y: gameHeight-50 },
-        enemyPosition: { x: 550, y: 50 },
         backgroundColor: 'rgb(0, 0, 139)', // dark blue
+        enemies: 3 // number of enemies to generate
     } },
     { name: 'Level', n: 4, levelData: {
         goalPosition: { x: gameWidth-50, y: gameHeight-50 },
         enemyPosition: { x: 550, y: 50 },
         backgroundColor: 'rgb(255, 165, 0)', // orange
+        enemies: 4 // number of enemies to generate
     } },
     { name: 'Win', n: null },
     { name: 'Lose', n: null }
@@ -58,10 +60,11 @@
     openingSubtitle: 'Push Spacebar to start.',
     playerPosition: { x: 50, y: 250 },
     goalPosition: { x: (gameWidth - 50), y: 250 },
-    enemyPosition: { x: 550, y: 250 },        
-    enemyDirection: { x: 1, y: 0 },
+    // enemyPosition: { x: 550, y: 250 },        
+    // enemyDirection: { x: 1, y: 0 },
     enemyIntervalId: null,
     backgroundColor: null,
+    enemies: [] // array to store enemy positions
   };
   
   export default {
@@ -93,9 +96,23 @@
           const nextLevel = screens.find(screen => screen.name === 'Level' && screen.n === n);
           setTimeout(() => { 
             this.gs.currentScreen = nextLevel;
+            // Add game state properties from levelData to game state
             for (const [key, value] of Object.entries(this.gs.currentScreen.levelData)) {
               this.gs[key] = value;
             }
+            // Add enemies to game state
+            this.gs.enemies = [];
+            console.log("Enemies: ", this.gs.currentScreen);
+            for (let i = 0; i <= this.gs.currentScreen.levelData.enemies; i++) {
+              const enemyX = Math.floor(Math.random() * (gameWidth - 50));
+              const enemyY = Math.floor(Math.random() * (gameHeight - 50));
+              this.gs.enemies.push({
+                id: i,
+                position: { x: enemyX, y: enemyY },
+                direction: { x: 1, y: 0 }
+              });
+            }
+            console.log("GameState: ", this.gs);
             this.gs.enemyIntervalId = setInterval(this.moveEnemy, 1000);
           }, 2000);
         }
@@ -139,23 +156,44 @@
         }
       },
 
+      // moveEnemy() {
+      //   if (this.gs.currentScreen.name === 'Level') {
+      //     const enemyHeight = 50
+      //     const maxX = gameWidth - enemyHeight
+      //     const maxY = gameHeight - enemyHeight
+      //     const minX = 400
+      //     const minY = 0
+      //     const newX = this.gs.enemyPosition.x + this.gs.enemyDirection.x * enemyHeight
+      //     const newY = this.gs.enemyPosition.y + this.gs.enemyDirection.y * enemyHeight
+      //     if (newX > maxX || newX < minX) {
+      //       this.gs.enemyDirection.x *= -1
+      //     }
+      //     if (newY > maxY || newY < minY) {
+      //       this.gs.enemyDirection.y *= -1
+      //     }
+      //     this.gs.enemyPosition.x += this.gs.enemyDirection.x * enemyHeight
+      //     this.gs.enemyPosition.y += this.gs.enemyDirection.y * enemyHeight
+      //   }
+      // },
+
       moveEnemy() {
-        if (this.gs.currentScreen.name === 'Level') {
+        for (let i = 0; i < this.gs.currentScreen.levelData.enemies; i++) {
+          console.log("Moving enemy: ", i, this.gs.enemies[i].position.x);
           const enemyHeight = 50
           const maxX = gameWidth - enemyHeight
           const maxY = gameHeight - enemyHeight
           const minX = 400
           const minY = 0
-          const newX = this.gs.enemyPosition.x + this.gs.enemyDirection.x * enemyHeight
-          const newY = this.gs.enemyPosition.y + this.gs.enemyDirection.y * enemyHeight
+          const newX = this.gs.enemies[i].position.x + (this.gs.enemies[i].direction.x * enemyHeight)
+          const newY = this.gs.enemies[i].position.y + (this.gs.enemies[i].direction.y * enemyHeight)
           if (newX > maxX || newX < minX) {
-            this.gs.enemyDirection.x *= -1
+            this.gs.enemies[i].direction.x *= -1
           }
           if (newY > maxY || newY < minY) {
-            this.gs.enemyDirection.y *= -1
+            this.gs.enemies[i].direction.y *= -1
           }
-          this.gs.enemyPosition.x += this.gs.enemyDirection.x * enemyHeight
-          this.gs.enemyPosition.y += this.gs.enemyDirection.y * enemyHeight
+          this.gs.enemies[i].position.x = newX;
+          this.gs.enemies[i].position.y = newY;
         }
       },
 
