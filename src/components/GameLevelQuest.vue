@@ -5,11 +5,14 @@
         <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
       </div>
       <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
-        <div class="game-window">
+        <div class="game-window" :style="{ backgroundColor: gs.backgroundColor }">
           <div class="player" :style="{ top: gs.playerPosition.y + 'px', left: gs.playerPosition.x + 'px' }"></div>
           <div class="goal" :style="{ top: gs.goalPosition.y + 'px', left: gs.goalPosition.x + 'px' }"></div>
           <div class="enemy" :style="{ top: gs.enemyPosition.y + 'px', left: gs.enemyPosition.x + 'px' }"></div>
         </div>
+      </div>
+      <div class="transition-screen" v-if="gs.currentScreen.name === 'Transition'">
+        <h1 class="transition-title">LEVEL {{ gs.currentScreen.n }}</h1>
       </div>
       <div class="win-screen" v-if="gs.currentScreen.name === 'Win'">
         <h1 class="win-title">YOU WIN</h1>
@@ -30,14 +33,22 @@
       levelData: {
         goalPosition: { x: gameWidth-50, y: 250 },
         enemyPosition: { x: 550, y: 250 },
+        backgroundColor: 'rgb(173, 216, 230)', // light blue
     } },
     { name: 'Level', n: 2, levelData: {
         goalPosition: { x: gameWidth-50, y: 50 },
         enemyPosition: { x: 250, y: 250 },
+        backgroundColor: 'rgb(0, 0, 255)', // blue
     } },
     { name: 'Level', n: 3, levelData: {
         goalPosition: { x: gameWidth-50, y: gameHeight-50 },
         enemyPosition: { x: 550, y: 50 },
+        backgroundColor: 'rgb(0, 0, 139)', // dark blue
+    } },
+    { name: 'Level', n: 4, levelData: {
+        goalPosition: { x: gameWidth-50, y: gameHeight-50 },
+        enemyPosition: { x: 550, y: 50 },
+        backgroundColor: 'rgb(255, 165, 0)', // orange
     } },
     { name: 'Win', n: null },
     { name: 'Lose', n: null }
@@ -50,6 +61,7 @@
     enemyPosition: { x: 550, y: 250 },        
     enemyDirection: { x: 1, y: 0 },
     enemyIntervalId: null,
+    backgroundColor: null,
   };
   
   export default {
@@ -75,13 +87,17 @@
           this.gs = this.copyObject(defaultGameState);
         }
         else if (name === 'Level') {
-          this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === n);
           clearInterval(this.gs.enemyIntervalId);
           this.gs.enemyIntervalId = null;
-          for (const [key, value] of Object.entries(this.gs.currentScreen.levelData)) {
-            this.gs[key] = value;
-          }
-          this.gs.enemyIntervalId = setInterval(this.moveEnemy, 1000);
+          this.gs.currentScreen = {name: 'Transition', n: n};
+          const nextLevel = screens.find(screen => screen.name === 'Level' && screen.n === n);
+          setTimeout(() => { 
+            this.gs.currentScreen = nextLevel;
+            for (const [key, value] of Object.entries(this.gs.currentScreen.levelData)) {
+              this.gs[key] = value;
+            }
+            this.gs.enemyIntervalId = setInterval(this.moveEnemy, 1000);
+          }, 2000);
         }
         else if (name === 'Win') {
           this.gs.currentScreen = screens.find(screen => screen.name === 'Win');
@@ -112,11 +128,9 @@
             this.gs.playerPosition.x += 10
           }
           if (this.checkCollision(this.gs.playerPosition, this.gs.goalPosition)) {
-            if (this.gs.currentScreen.n === 1) {
-              this.loadScreen('Level', 2);
-            } else if (this.gs.currentScreen.n === 2) {
-              this.loadScreen('Level', 3);
-            } else if (this.gs.currentScreen.n === 3) {
+            if (this.gs.currentScreen.n < this.getMaxLevel()) {
+              this.loadScreen('Level', this.gs.currentScreen.n+1);
+            } else {
               this.loadScreen('Win');
             }
           } else if (this.checkCollision(this.gs.playerPosition, this.gs.enemyPosition)) {
@@ -124,6 +138,7 @@
           }
         }
       },
+
       moveEnemy() {
         if (this.gs.currentScreen.name === 'Level') {
           const enemyHeight = 50
@@ -143,6 +158,11 @@
           this.gs.enemyPosition.y += this.gs.enemyDirection.y * enemyHeight
         }
       },
+
+      getMaxLevel() {
+        return Math.max(...screens.filter(screen => screen.name === 'Level').map(screen => screen.n))
+      },
+
       checkCollision(position1, position2) {
         const distance = Math.sqrt(Math.pow(position1.x - position2.x, 2) + Math.pow(position1.y - position2.y, 2))
         return distance < 50
@@ -182,7 +202,7 @@
             position: relative;
             width: 800px;
             height: 100%;
-            background-color: blue;
+            /* background-color: blue; */
             .player {
                 position: absolute;
                 width: 50px;
@@ -205,7 +225,7 @@
             };
         };
     }
-    .win-screen, .lose-screen {
+    .win-screen, .lose-screen, .transition-screen {
         position: relative;
         top: 0;
         left: 0;
