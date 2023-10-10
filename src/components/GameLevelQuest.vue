@@ -44,20 +44,44 @@
           goalPosition: { x: (gameWidth - 50), y: 250 },
           enemyPosition: { x: 550, y: 250 },        
           enemyDirection: { x: 1, y: 0 },
+          enemyIntervalId: null,
+
         }
       }
     },
     mounted() {
       window.addEventListener('keydown', this.handleKeyDown)
-      setInterval(this.moveEnemy, 1000)
     },
     beforeDestroy() {
       window.removeEventListener('keydown', this.handleKeyDown)
     },
     methods: {
+      loadScreen(name, n = null) {
+        if (name === 'Opening') {
+          this.gs.currentScreen = screens.find(screen => screen.name === 'Opening');
+          this.gs.enemyIntervalId = null;
+        }
+        else if (name === 'Level') {
+          this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === n);
+          this.gs.enemyIntervalId = null;
+          this.gs.enemyIntervalId = setInterval(this.moveEnemy, 1000);
+        }
+        else if (name === 'Win') {
+          this.gs.currentScreen = screens.find(screen => screen.name === 'Win');
+          this.gs.enemyIntervalId = null;
+          setTimeout(() => { this.loadScreen('Opening') }, 5000);
+        }
+        else if (name === 'Lose') {
+          this.gs.currentScreen = screens.find(screen => screen.name === 'Lose');
+          this.gs.enemyIntervalId = null;
+          setTimeout(() => { this.loadScreen('Opening') }, 5000);
+        }
+      },
       handleKeyDown(event) {
+        // Opening
         if (this.gs.currentScreen.name === 'Opening' && event.code === 'Space') {
-          this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 1)
+          this.loadScreen('Level', 1);
+        // Level
         } else if (this.gs.currentScreen.name === 'Level') {
           if (event.code === 'KeyW' && this.gs.playerPosition.y > 0) {
             this.gs.playerPosition.y -= 10
@@ -68,7 +92,6 @@
           } else if (event.code === 'KeyD' && this.gs.playerPosition.x < gameWidth-50) {
             this.gs.playerPosition.x += 10
           }
-          console.log("GOAL POS:", this.gs.playerPosition, this.gs.goalPosition);
           if (this.checkCollision(this.gs.playerPosition, this.gs.goalPosition)) {
             if (this.gs.currentScreen.n === 1) {
               this.gs.currentScreen = screens.find(screen => screen.name === 'Level' && screen.n === 2)
@@ -79,16 +102,10 @@
               this.gs.goalPosition = { x: gameWidth-50, y: gameHeight-50 }
               this.gs.enemyPosition = { x: 550, y: 50 }
             } else if (this.gs.currentScreen.n === 3) {
-              this.gs.currentScreen = screens.find(screen => screen.name === 'Win')
-              setTimeout(() => {
-                this.gs.currentScreen = screens.find(screen => screen.name === 'Opening')
-              }, 5000)
+              this.loadScreen('Win');
             }
           } else if (this.checkCollision(this.gs.playerPosition, this.gs.enemyPosition)) {
-            this.gs.currentScreen = screens.find(screen => screen.name === 'Lose')
-            setTimeout(() => {
-              this.gs.currentScreen = screens.find(screen => screen.name === 'Opening')
-            }, 5000)
+            this.loadScreen('Lose');
           }
         }
       },
