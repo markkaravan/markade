@@ -1,5 +1,5 @@
 <template>
-  <div class="game-level-quest">
+  <div class="game-level-quest" :class="{ 'game-window-paused': gs.isPaused }">
     <div class="opening-screen" v-if="gs.currentScreen.name === 'Opening'">
       <h1 class="video-game-title">Galaga</h1>
       <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
@@ -88,6 +88,7 @@ const defaultGameState = {
   backgroundColor: null,
   enemies: [],
   bullets: [],
+  isPaused: false,
 };
 
 export default {
@@ -230,6 +231,10 @@ export default {
       if (event.code === 'KeyS' || event.code === 'ArrowDown') {
         this.gs.player.moveDown = false;
       }
+      // Pause the game
+      if (event.key === 'p') {
+        this.gs.isPaused = !this.gs.isPaused;
+      }
     },
 
     updateGameState(timestamp) {
@@ -239,7 +244,7 @@ export default {
       const timeDelta = (timestamp - this.lastTimestamp) / 1000;
       this.lastTimestamp = timestamp;
 
-      if (this.gs.currentScreen.name === 'Level') {
+      if (this.gs.currentScreen.name === 'Level' && !this.gs.isPaused) {
 
         /*****  Move the player *****/
         const playerSpeed = 200;
@@ -403,6 +408,21 @@ export default {
     width: 20px;
     height: 10px;
     background-color: purple;
+  }
+
+  .game-window-paused {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 48px;
+    color: #fff;
+    z-index: 1000;
   }
 }
 </style>
