@@ -6,10 +6,10 @@
     </div>
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
       <div class="game-window" :style="{ backgroundColor: gs.backgroundColor }">
-        <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px' }"></div>
-        <div class="goal" :style="{ top: gs.goalPosition.y + 'px', left: gs.goalPosition.x + 'px' }"></div>
-        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px' }"></div>
-        <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px' }"></div>
+        <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
+        <div class="goal" :style="{ top: gs.goal.position.y + 'px', left: gs.goal.position.x + 'px', width: gs.goal.width + 'px', height: gs.goal.height + 'px' }"></div>
+        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
+        <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
       </div>
     </div>
     <div class="transition-screen" v-if="gs.currentScreen.name === 'Transition'">
@@ -27,10 +27,16 @@
 <script>
 const gameWidth = 800;
 const gameHeight = 333;
+const playerSize = 50;
 const bulletSpeed = 300;
+const bulletWidth = 20;
+const bulletHeight = 10;
+const enemyWidth = 50;
+const enemyHeight = 50;
 const initialPlayerPosition = { x: 50, y: 250 };
 const transitionScreenDelay = 2000;
 const playerWidth = 50;
+const goalSize = 50;
 // Define the screens
 const screens = [
   { name: 'Opening', n: null },
@@ -38,7 +44,7 @@ const screens = [
     name: 'Level',
     n: 1,
     levelData: {
-      goalPosition: { x: gameWidth - 50, y: 250 },
+      goal: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       backgroundColor: 'rgb(173, 216, 230)', // light blue
       enemies: 3,
     },
@@ -47,7 +53,7 @@ const screens = [
     name: 'Level',
     n: 2,
     levelData: {
-      goalPosition: { x: gameWidth - 50, y: 50 },
+      goalPosition: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       backgroundColor: 'rgb(0, 0, 255)', // blue
       enemies: 2,
     },
@@ -56,7 +62,7 @@ const screens = [
     name: 'Level',
     n: 3,
     levelData: {
-      goalPosition: { x: gameWidth - 50, y: gameHeight - 50 },
+      goalPosition: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       backgroundColor: 'rgb(0, 0, 139)', // dark blue
       enemies: 3,
     },
@@ -65,7 +71,7 @@ const screens = [
     name: 'Level',
     n: 4,
     levelData: {
-      goalPosition: { x: gameWidth - 50, y: gameHeight - 50 },
+      goalPosition: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       enemyPosition: { x: 550, y: 50 },
       backgroundColor: 'rgb(255, 165, 0)', // orange
       enemies: 4,
@@ -77,7 +83,7 @@ const screens = [
 const defaultGameState = {
   currentScreen: screens.find((screen) => screen.name === 'Opening'),
   openingSubtitle: 'Push Spacebar to start.',
-  player: { position:  initialPlayerPosition },
+  player: { position: initialPlayerPosition, width: playerSize, height: playerSize },
   goalPosition: { x: gameWidth - 50, y: 250 },
   backgroundColor: null,
   enemies: [],
@@ -141,7 +147,7 @@ export default {
           }
 
           // Initialize the player
-          this.gs.player = { position: this.copyObject(initialPlayerPosition) };
+          this.gs.player = { position: this.copyObject(initialPlayerPosition), width: playerWidth, height: playerWidth };
 
           // Spawn Enemies
           this.gs.enemies = [];
@@ -152,6 +158,8 @@ export default {
               id: i,
               position: { x: enemyX, y: enemyY },
               direction: { x: 1, y: 0 },
+              width: enemyWidth,
+              height: enemyHeight,
             });
           }
 
@@ -202,7 +210,8 @@ export default {
         if (event.code === 'Space') {
           this.gs.bullets.push({
             position: { x: this.gs.player.position.x + playerWidth, y: this.gs.player.position.y + playerWidth / 2 },
-            direction: 'up',
+            width: bulletWidth,
+            height: bulletHeight
           });
         }
       }
@@ -227,7 +236,7 @@ export default {
       if (!this.lastTimestamp) {
         this.lastTimestamp = timestamp;
       }
-      const timeDelta = timestamp - this.lastTimestamp;
+      const timeDelta = (timestamp - this.lastTimestamp) / 1000;
       this.lastTimestamp = timestamp;
 
       if (this.gs.currentScreen.name === 'Level') {
@@ -235,19 +244,19 @@ export default {
         /*****  Move the player *****/
         const playerSpeed = 200;
         if (this.gs.player.moveLeft) {
-          this.gs.player.position.x -= playerSpeed * (timeDelta/1000);
+          this.gs.player.position.x -= playerSpeed * timeDelta;
         }
         if (this.gs.player.moveRight) {
-          this.gs.player.position.x += playerSpeed * (timeDelta/1000);
+          this.gs.player.position.x += playerSpeed * timeDelta;
         }
         if (this.gs.player.moveUp) {
-          this.gs.player.position.y -= playerSpeed * (timeDelta/1000);
+          this.gs.player.position.y -= playerSpeed * timeDelta;
         }
         if (this.gs.player.moveDown) {
-          this.gs.player.position.y += playerSpeed * (timeDelta/1000);
+          this.gs.player.position.y += playerSpeed * timeDelta;
         }
         // Check for collision with the goal
-        if (this.checkCollision(this.gs.player.position, this.gs.goalPosition)) {
+        if (this.checkCollision(this.gs.player, this.gs.goal)) {
           if (this.gs.currentScreen.n < this.getMaxLevel()) {
             this.loadScreen('Level', this.gs.currentScreen.n + 1);
           } else {
@@ -258,7 +267,7 @@ export default {
 
 
         /*****  Move the enemies *****/
-        const enemySpeed = 0.1;
+        const enemySpeed = 100;
         this.gs.enemies.forEach((enemy) => {
           if (enemy.direction === 1) {
             enemy.position.x += enemySpeed * timeDelta;
@@ -277,7 +286,7 @@ export default {
 
         // Update bullet position
         this.gs.bullets.forEach((bullet) => {
-          bullet.position.x += bulletSpeed * (timeDelta/1000);
+          bullet.position.x += bulletSpeed * timeDelta;
         });
 
         // Remove bullets that are offscreen  
@@ -288,7 +297,7 @@ export default {
         // Check for collisions between bullets and enemies
         this.gs.bullets.forEach((bullet) => {
           this.gs.enemies.forEach((enemy, index) => {
-            if (this.checkCollision(bullet.position, enemy.position)) {
+            if (this.checkCollision(bullet, enemy)) {
               // Remove the enemy from the enemies array
               this.gs.enemies.splice(index, 1);
               // Remove the bullet from the bullets array
@@ -299,7 +308,7 @@ export default {
 
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
-          if (this.checkCollision(this.gs.player.position, enemy.position)) {
+          if (this.checkCollision(this.gs.player, enemy)) {
             this.loadScreen('Lose');
           }
         });
@@ -311,9 +320,18 @@ export default {
       return Math.max(...screens.filter((screen) => screen.name === 'Level').map((screen) => screen.n));
     },
 
-    checkCollision(position1, position2) {
-      const distance = Math.sqrt(Math.pow(position1.x - position2.x, 2) + Math.pow(position1.y - position2.y, 2));
-      return distance < 50;
+    checkCollision(obj1, obj2) {
+      const obj1Left = obj1.position.x;
+      const obj1Right = obj1.position.x + obj1.width;
+      const obj1Top = obj1.position.y;
+      const obj1Bottom = obj1.position.y + obj1.height;
+
+      const obj2Left = obj2.position.x;
+      const obj2Right = obj2.position.x + obj2.width;
+      const obj2Top = obj2.position.y;
+      const obj2Bottom = obj2.position.y + obj2.height;
+
+      return obj1Left < obj2Right && obj1Right > obj2Left && obj1Top < obj2Bottom && obj1Bottom > obj2Top;
     },
   },
 };
@@ -348,8 +366,6 @@ export default {
       height: 100%;
       .player, .goal, .enemy {
         position: absolute;
-        width: 50px;
-        height: 50px;
         background-size: contain;
         background-repeat: no-repeat;
       }
