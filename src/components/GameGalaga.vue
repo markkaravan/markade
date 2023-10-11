@@ -27,14 +27,16 @@
 <script>
 const gameWidth = 800;
 const gameHeight = 333;
-const bulletSpeed = 300;
-const bulletWidth = 20;
-const bulletHeight = 10;
-const enemyWidth = 50;
-const enemyHeight = 50;
 
 const playerWidth = 50;
 const playerHeight = 50;
+
+const enemyWidth = 50;
+const enemyHeight = 50;
+
+const bulletSpeed = 300;
+const bulletWidth = 5;
+const bulletHeight = 10;
 
 const transitionScreenDelay = 2000;
 const goalSize = 50;
@@ -131,13 +133,11 @@ export default {
 
     initializePlayer() {
       this.gs.player = {
-        position: { x: playerWidth, y: (gameHeight / 2) - 50 },
+        position: { x: gameWidth / 2 - playerWidth / 2, y: gameHeight - playerHeight },
         width: playerWidth,
         height: playerHeight,
         moveLeft: false,
         moveRight: false,
-        moveUp: false,
-        moveDown: false
       }
     },
 
@@ -224,15 +224,12 @@ export default {
         if (event.code === 'KeyD' || event.code === 'ArrowRight') {
           this.gs.player.moveRight = true;
         }
-        if (event.code === 'KeyW' || event.code === 'ArrowUp') {
-          this.gs.player.moveUp = true;
-        }
-        if (event.code === 'KeyS' || event.code === 'ArrowDown') {
-          this.gs.player.moveDown = true;
-        }
+
         if (event.code === 'Space') {
+          const bulletX = this.gs.player.position.x + this.gs.player.width / 2 - bulletWidth / 2;
+          const bulletY = this.gs.player.position.y - bulletHeight;
           this.gs.bullets.push({
-            position: { x: this.gs.player.position.x + playerWidth, y: this.gs.player.position.y + playerWidth / 2 },
+            position: { x: bulletX, y: bulletY },
             width: bulletWidth,
             height: bulletHeight
           });
@@ -247,12 +244,7 @@ export default {
       if (event.code === 'KeyD' || event.code === 'ArrowRight') {
         this.gs.player.moveRight = false;
       }
-      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
-        this.gs.player.moveUp = false;
-      }
-      if (event.code === 'KeyS' || event.code === 'ArrowDown') {
-        this.gs.player.moveDown = false;
-      }
+
       // Pause the game
       if (event.key === 'p') {
         this.gs.isPaused = !this.gs.isPaused;
@@ -276,12 +268,7 @@ export default {
         if (this.gs.player.moveRight && this.gs.player.position.x < (gameWidth - this.gs.player.width)) {
           this.gs.player.position.x += playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveUp && this.gs.player.position.y > 0) {
-          this.gs.player.position.y -= playerSpeed * timeDelta;
-        }
-        if (this.gs.player.moveDown && this.gs.player.position.y < (gameHeight - this.gs.player.height)) {
-          this.gs.player.position.y += playerSpeed * timeDelta;
-        }
+
         // Check for collision with the goal
         if (this.checkCollision(this.gs.player, this.gs.goal)) {
           if (this.gs.currentScreen.n < this.getMaxLevel()) {
@@ -312,12 +299,12 @@ export default {
 
         // Update bullet position
         this.gs.bullets.forEach((bullet) => {
-          bullet.position.x += bulletSpeed * timeDelta;
+          bullet.position.y -= bulletSpeed * timeDelta;
         });
 
         // Remove bullets that are offscreen  
         this.gs.bullets = this.gs.bullets.filter((bullet) => {
-          return bullet.position.x < gameWidth;
+          return bullet.position.y > 0;
         });
 
         // Check for collisions between bullets and enemies
