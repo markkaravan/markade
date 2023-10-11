@@ -1,5 +1,5 @@
 <template>
-  <div class="game-level-quest" :class="{ 'game-window-paused': gs.isPaused }">
+  <div class="game-wrapper" :class="{ 'game-window-paused': gs.isPaused }">
     <div class="opening-screen" v-if="gs.currentScreen.name === 'Opening'">
       <h1 class="video-game-title">Galaga</h1>
       <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
@@ -27,15 +27,16 @@
 <script>
 const gameWidth = 800;
 const gameHeight = 333;
-const playerSize = 50;
 const bulletSpeed = 300;
 const bulletWidth = 20;
 const bulletHeight = 10;
 const enemyWidth = 50;
 const enemyHeight = 50;
-const initialPlayerPosition = { x: 50, y: 250 };
-const transitionScreenDelay = 2000;
+
 const playerWidth = 50;
+const playerHeight = 50;
+
+const transitionScreenDelay = 2000;
 const goalSize = 50;
 // Define the screens
 const screens = [
@@ -53,7 +54,7 @@ const screens = [
     name: 'Level',
     n: 2,
     levelData: {
-      goalPosition: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
+      goal: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       backgroundColor: 'rgb(0, 0, 255)', // blue
       enemies: 2,
     },
@@ -62,7 +63,7 @@ const screens = [
     name: 'Level',
     n: 3,
     levelData: {
-      goalPosition: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
+      goal: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       backgroundColor: 'rgb(0, 0, 139)', // dark blue
       enemies: 3,
     },
@@ -71,7 +72,7 @@ const screens = [
     name: 'Level',
     n: 4,
     levelData: {
-      goalPosition: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
+      goal: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
       enemyPosition: { x: 550, y: 50 },
       backgroundColor: 'rgb(255, 165, 0)', // orange
       enemies: 4,
@@ -83,8 +84,8 @@ const screens = [
 const defaultGameState = {
   currentScreen: screens.find((screen) => screen.name === 'Opening'),
   openingSubtitle: 'Push Spacebar to start.',
-  player: { position: initialPlayerPosition, width: playerSize, height: playerSize },
-  goalPosition: { x: gameWidth - 50, y: 250 },
+  player: null,
+  goal: { position: {x: gameWidth - 50, y: 250}, width: goalSize, height: goalSize },
   backgroundColor: null,
   enemies: [],
   bullets: [],
@@ -128,6 +129,41 @@ export default {
       return JSON.parse(JSON.stringify(obj));
     },
 
+    initializePlayer() {
+      this.gs.player = {
+        position: { x: playerWidth, y: (gameHeight / 2) - 50 },
+        width: playerWidth,
+        height: playerHeight,
+        moveLeft: false,
+        moveRight: false,
+        moveUp: false,
+        moveDown: false
+      }
+    },
+
+    initializeEnemies() {
+      this.gs.enemies = [];
+      for (let i = 1; i <= this.gs.currentScreen.levelData.enemies; i++) {
+        const enemyX = Math.floor(Math.random() * (gameWidth / 2 - 50) + gameWidth / 2);
+        const enemyY = Math.floor(Math.random() * (gameHeight - 50));
+        this.gs.enemies.push({
+          id: i,
+          position: { x: enemyX, y: enemyY },
+          direction: { x: 1, y: 0 },
+          width: enemyWidth,
+          height: enemyHeight
+        });
+      }
+    },
+
+    initializeGoal() {
+      this.gs.goal = {
+        position: this.gs.currentScreen.levelData.goal,
+        width: levelData.goalWidth,
+        height: levelData.goalHeight
+      };
+    },
+
     loadScreen(name, n = null) {
       /*****  Opening Screen *****/
       if (name === 'Opening') {
@@ -147,22 +183,8 @@ export default {
             this.gs[key] = value;
           }
 
-          // Initialize the player
-          this.gs.player = { position: this.copyObject(initialPlayerPosition), width: playerWidth, height: playerWidth };
-
-          // Spawn Enemies
-          this.gs.enemies = [];
-          for (let i = 1; i <= this.gs.currentScreen.levelData.enemies; i++) {
-            const enemyX = Math.floor(Math.random() * (gameWidth / 2 - 50) + gameWidth / 2);
-            const enemyY = Math.floor(Math.random() * (gameHeight - 50));
-            this.gs.enemies.push({
-              id: i,
-              position: { x: enemyX, y: enemyY },
-              direction: { x: 1, y: 0 },
-              width: enemyWidth,
-              height: enemyHeight,
-            });
-          }
+          this.initializePlayer();
+          this.initializeEnemies();
 
         }, transitionScreenDelay);
       }  /***** End Level Screen *****/
@@ -248,16 +270,16 @@ export default {
 
         /*****  Move the player *****/
         const playerSpeed = 200;
-        if (this.gs.player.moveLeft) {
+        if (this.gs.player.moveLeft && this.gs.player.position.x > 0) {
           this.gs.player.position.x -= playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveRight) {
+        if (this.gs.player.moveRight && this.gs.player.position.x < (gameWidth - this.gs.player.width)) {
           this.gs.player.position.x += playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveUp) {
+        if (this.gs.player.moveUp && this.gs.player.position.y > 0) {
           this.gs.player.position.y -= playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveDown) {
+        if (this.gs.player.moveDown && this.gs.player.position.y < (gameHeight - this.gs.player.height)) {
           this.gs.player.position.y += playerSpeed * timeDelta;
         }
         // Check for collision with the goal
@@ -274,18 +296,17 @@ export default {
         /*****  Move the enemies *****/
         const enemySpeed = 100;
         this.gs.enemies.forEach((enemy) => {
-          if (enemy.direction === 1) {
-            enemy.position.x += enemySpeed * timeDelta;
-            if (enemy.position.x > gameWidth - 50) {
-              enemy.direction = 0;
-              enemy.position.y += 50;
-            }
-          } else {
-            enemy.position.x -= enemySpeed * timeDelta;
-            if (enemy.position.x < 0) {
-              enemy.direction = 1;
-              enemy.position.y += 50;
-            }
+          enemy.position.x += enemy.direction.x * enemySpeed * timeDelta;
+          enemy.position.y += enemy.direction.y * enemySpeed * timeDelta;
+
+          // Check for collision with the game borders
+          if (enemy.position.x < 0 || enemy.position.x > gameWidth - enemy.width) {
+            enemy.direction.x *= -1;
+            enemy.position.x = Math.max(0, Math.min(enemy.position.x, gameWidth - enemy.width));
+          }
+          if (enemy.position.y < 0 || enemy.position.y > gameHeight - enemy.height) {
+            enemy.direction.y *= -1;
+            enemy.position.y = Math.max(0, Math.min(enemy.position.y, gameHeight - enemy.height));
           }
         });
 
@@ -343,7 +364,7 @@ export default {
 </script>
 
 <style scoped>
-.game-level-quest {
+.game-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
