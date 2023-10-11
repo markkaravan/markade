@@ -8,7 +8,7 @@
       <div class="game-window">
         <div class="game-window-border">
           <!-- <slot name="game"></slot> -->
-          <GameLevelQuest/>
+          <component :is="gameComponent"></component>
         </div>
       </div>
       <div class="instructions-description-container">
@@ -32,11 +32,26 @@
 <script>
 import games from '@/assets/games.json'
 import GameLevelQuest from '@/components/GameLevelQuest.vue'
+import GameGalaga from '@/components/GameGalaga.vue'
 
 export default {
   name: 'GamePageTemplate',
   components: {
-    GameLevelQuest
+    GameLevelQuest,
+    GameGalaga
+  },
+  computed: {
+    gameComponent() {
+      const route = this.$route.path
+      if (route === '/games/level-quest') {
+        return 'GameLevelQuest'
+      } else if (route === '/games/galaga') {
+        return 'GameGalaga'
+      } else {
+        // Default to GameLevelQuest if the route is not recognized
+        return 'GameLevelQuest'
+      }
+    }
   },
   data() {
     return {

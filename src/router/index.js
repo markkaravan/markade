@@ -32,7 +32,12 @@ const routes = [
             path: '/games/level-quest',
             name: 'level-quest',
             component: () => import('../views/GameTemplate.vue')
-        }
+        },
+        {
+            path: '/games/galaga',
+            name: 'galaga',
+            component: () => import('../views/GameTemplate.vue')
+        },
     ]
 
 const router = createRouter({
