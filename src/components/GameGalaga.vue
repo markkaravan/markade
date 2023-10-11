@@ -30,6 +30,7 @@ const gameHeight = 333;
 const bulletSpeed = 300;
 const initialPlayerPosition = { x: 50, y: 250 };
 const transitionScreenDelay = 2000;
+const playerWidth = 50;
 // Define the screens
 const screens = [
   { name: 'Opening', n: null },
@@ -78,40 +79,58 @@ const defaultGameState = {
   openingSubtitle: 'Push Spacebar to start.',
   player: { position:  initialPlayerPosition },
   goalPosition: { x: gameWidth - 50, y: 250 },
-  // enemyIntervalId: null,
   backgroundColor: null,
   enemies: [],
   bullets: [],
 };
 
 export default {
-  name: 'GameGalaga',
+  name: 'GameLevelQuest',
+
   data() {
     return {
       gs: {...defaultGameState }, // gs stands for game state
       lastTimestamp: null,
     };
   },
+
+  computed: {
+    keys() {
+      return {
+        left: 0,
+        up: 0,
+        right: 0,
+        down: 0
+      };
+    }
+  },
+
   mounted() {
     window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
     requestAnimationFrame(this.updateGameState);
   },
+
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
   },
+
   methods: {
     copyObject(obj) {
       return JSON.parse(JSON.stringify(obj));
     },
 
     loadScreen(name, n = null) {
-      // Opening
+      /*****  Opening Screen *****/
       if (name === 'Opening') {
         this.gs = this.copyObject(defaultGameState);
-      // Level
-      } else if (name === 'Level') {
-        // clearInterval(this.gs.enemyIntervalId);
-        // this.gs.enemyIntervalId = null;
+      } /*****  End Opening Screen *****/
+      
+
+
+      /*****  Level Screen *****/
+      else if (name === 'Level') {
         this.gs.currentScreen = { name: 'Transition', n: n };
         const nextLevel = screens.find((screen) => screen.name === 'Level' && screen.n === n);
         setTimeout(() => {
@@ -124,7 +143,7 @@ export default {
           // Initialize the player
           this.gs.player = { position: this.copyObject(initialPlayerPosition) };
 
-          // Add enemies to game state
+          // Spawn Enemies
           this.gs.enemies = [];
           for (let i = 1; i <= this.gs.currentScreen.levelData.enemies; i++) {
             const enemyX = Math.floor(Math.random() * (gameWidth / 2 - 50) + gameWidth / 2);
@@ -137,46 +156,70 @@ export default {
           }
 
         }, transitionScreenDelay);
-      } else if (name === 'Win') {
+      }  /***** End Level Screen *****/
+      
+
+
+      /*****  Win Screen *****/
+      else if (name === 'Win') {
         this.gs.currentScreen = screens.find((screen) => screen.name === 'Win');
         setTimeout(() => {
           this.loadScreen('Opening');
         }, transitionScreenDelay);
-      } else if (name === 'Lose') {
+      } /*****  End Win Screen *****/
+      
+
+
+      /*****  Lose Screen *****/
+      else if (name === 'Lose') {
         this.gs.currentScreen = screens.find((screen) => screen.name === 'Lose');
         setTimeout(() => {
           this.loadScreen('Opening');
         }, transitionScreenDelay);
+      } /*****  End Lose Screen *****/
+    },
+
+
+    handleKeyDown(event) {
+      // Opening screen keyboard actions
+      if (this.gs.currentScreen.name === 'Opening' && event.code === 'Space') {
+        this.loadScreen('Level', 1); 
+      } // End opening screen keyboard actions
+
+      else if (this.gs.currentScreen.name === 'Level') {
+        if (event.code === 'KeyA' || event.code === 'ArrowLeft') {
+          this.gs.player.moveLeft = true;
+        }
+        if (event.code === 'KeyD' || event.code === 'ArrowRight') {
+          this.gs.player.moveRight = true;
+        }
+        if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+          this.gs.player.moveUp = true;
+        }
+        if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+          this.gs.player.moveDown = true;
+        }
+        if (event.code === 'Space') {
+          this.gs.bullets.push({
+            position: { x: this.gs.player.position.x + playerWidth, y: this.gs.player.position.y + playerWidth / 2 },
+            direction: 'up',
+          });
+        }
       }
     },
-    handleKeyDown(event) {
-      // Opening
-      if (this.gs.currentScreen.name === 'Opening' && event.code === 'Space') {
-        this.loadScreen('Level', 1);
-        // Level
-      } else if (this.gs.currentScreen.name === 'Level') {
-        if (event.code === 'KeyW' && this.gs.player.position.y > 0) {
-          this.gs.player.position.y -= 10;
-        } else if (event.code === 'KeyS' && this.gs.player.position.y < gameHeight - 50) {
-          this.gs.player.position.y += 10;
-        } else if (event.code === 'KeyA' && this.gs.player.position.x > 0) {
-          this.gs.player.position.x -= 10;
-        } else if (event.code === 'KeyD' && this.gs.player.position.x < gameWidth - 50) {
-          this.gs.player.position.x += 10;
-        }
-        if (event.code === 'Space' && event.repeat === false) {
-          const bulletX = this.gs.player.position.x + 50;
-          const bulletY = this.gs.player.position.y + 25;
-          this.gs.bullets.push({ id: Date.now(), position: { x: bulletX, y: bulletY } });
-        }
-        console.log("this.gs.player.position", this.gs.player.position, "this.gs.goalPosition", this.gs.goalPosition );
-        if (this.checkCollision(this.gs.player.position, this.gs.goalPosition)) {
-          if (this.gs.currentScreen.n < this.getMaxLevel()) {
-            this.loadScreen('Level', this.gs.currentScreen.n + 1);
-          } else {
-            this.loadScreen('Win');
-          }
-        } 
+
+    handleKeyUp(event) {
+      if (event.code === 'KeyA' || event.code === 'ArrowLeft') {
+        this.gs.player.moveLeft = false;
+      }
+      if (event.code === 'KeyD' || event.code === 'ArrowRight') {
+        this.gs.player.moveRight = false;
+      }
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        this.gs.player.moveUp = false;
+      }
+      if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        this.gs.player.moveDown = false;
       }
     },
 
@@ -184,54 +227,82 @@ export default {
       if (!this.lastTimestamp) {
         this.lastTimestamp = timestamp;
       }
-      const elapsed = timestamp - this.lastTimestamp;
+      const timeDelta = timestamp - this.lastTimestamp;
       this.lastTimestamp = timestamp;
 
       if (this.gs.currentScreen.name === 'Level') {
-        // Move the enemies
-        for (let i = 0; i < this.gs.enemies.length; i++) {
-          const enemyHeight = 50;
-          const maxX = gameWidth - enemyHeight;
-          const maxY = gameHeight - enemyHeight;
-          let enemy = this.gs.enemies[i];
-          const newX = enemy.position.x + enemy.direction.x * (enemyHeight * (elapsed / 1000));
-          const newY = enemy.position.y + enemy.direction.y * (enemyHeight * (elapsed / 1000));
-          if (newX > maxX || newX < 0) {
-            enemy.direction.x *= -1;
+
+        /*****  Move the player *****/
+        const playerSpeed = 200;
+        if (this.gs.player.moveLeft) {
+          this.gs.player.position.x -= playerSpeed * (timeDelta/1000);
+        }
+        if (this.gs.player.moveRight) {
+          this.gs.player.position.x += playerSpeed * (timeDelta/1000);
+        }
+        if (this.gs.player.moveUp) {
+          this.gs.player.position.y -= playerSpeed * (timeDelta/1000);
+        }
+        if (this.gs.player.moveDown) {
+          this.gs.player.position.y += playerSpeed * (timeDelta/1000);
+        }
+        // Check for collision with the goal
+        if (this.checkCollision(this.gs.player.position, this.gs.goalPosition)) {
+          if (this.gs.currentScreen.n < this.getMaxLevel()) {
+            this.loadScreen('Level', this.gs.currentScreen.n + 1);
+          } else {
+            this.loadScreen('Win');
           }
-          if (newY > maxY || newY < 0) {
-            enemy.direction.y *= -1;
+        }   
+        /***** End Move the player *****/
+
+
+        /*****  Move the enemies *****/
+        const enemySpeed = 0.1;
+        this.gs.enemies.forEach((enemy) => {
+          if (enemy.direction === 1) {
+            enemy.position.x += enemySpeed * timeDelta;
+            if (enemy.position.x > gameWidth - 50) {
+              enemy.direction = 0;
+              enemy.position.y += 50;
+            }
+          } else {
+            enemy.position.x -= enemySpeed * timeDelta;
+            if (enemy.position.x < 0) {
+              enemy.direction = 1;
+              enemy.position.y += 50;
+            }
           }
-          enemy.position.x = newX;
-          enemy.position.y = newY;
-          // Check for collision with player
+        });
+
+        // Update bullet position
+        this.gs.bullets.forEach((bullet) => {
+          bullet.position.x += bulletSpeed * (timeDelta/1000);
+        });
+
+        // Remove bullets that are offscreen  
+        this.gs.bullets = this.gs.bullets.filter((bullet) => {
+          return bullet.position.x < gameWidth;
+        });
+
+        // Check for collisions between bullets and enemies
+        this.gs.bullets.forEach((bullet) => {
+          this.gs.enemies.forEach((enemy, index) => {
+            if (this.checkCollision(bullet.position, enemy.position)) {
+              // Remove the enemy from the enemies array
+              this.gs.enemies.splice(index, 1);
+              // Remove the bullet from the bullets array
+              this.gs.bullets.splice(this.gs.bullets.indexOf(bullet), 1);
+            }
+          });
+        });
+
+        // Check for collisions between player and enemies
+        this.gs.enemies.forEach((enemy) => {
           if (this.checkCollision(this.gs.player.position, enemy.position)) {
             this.loadScreen('Lose');
           }
-        }
-        // Move the bullets
-        for (let i = 0; i < this.gs.bullets.length; i++) {
-          const bullet = this.gs.bullets[i];
-          bullet.position.x += bulletSpeed * (elapsed / 1000);
-          // Check if the bullet has hit the right end of the screen
-          if (bullet.position.x > gameWidth) {
-            this.gs.bullets.splice(i, 1);
-            i--;
-          } else {
-            // Check for collisions between the bullet and enemies
-            for (let j = 0; j < this.gs.enemies.length; j++) {
-              const enemy = this.gs.enemies[j];
-              if (this.checkCollision(bullet.position, enemy.position)) {
-                // Remove the enemy from the enemies array
-                this.gs.enemies.splice(j, 1);
-                // Remove the bullet from the bullets array
-                this.gs.bullets.splice(i, 1);
-                i--;
-                break;
-              }
-            }
-          }
-        }
+        });
       }
       requestAnimationFrame(this.updateGameState);
     },
