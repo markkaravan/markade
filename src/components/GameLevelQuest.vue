@@ -78,7 +78,6 @@ const defaultGameState = {
   openingSubtitle: 'Push Spacebar to start.',
   player: { position:  initialPlayerPosition },
   goalPosition: { x: gameWidth - 50, y: 250 },
-  // enemyIntervalId: null,
   backgroundColor: null,
   enemies: [],
   bullets: [],
@@ -86,32 +85,38 @@ const defaultGameState = {
 
 export default {
   name: 'GameLevelQuest',
+
   data() {
     return {
       gs: {...defaultGameState }, // gs stands for game state
       lastTimestamp: null,
     };
   },
+
   mounted() {
     window.addEventListener('keydown', this.handleKeyDown);
     requestAnimationFrame(this.updateGameState);
   },
+
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleKeyDown);
   },
+
   methods: {
     copyObject(obj) {
       return JSON.parse(JSON.stringify(obj));
     },
 
     loadScreen(name, n = null) {
-      // Opening
+      /*****  Opening Screen *****/
       if (name === 'Opening') {
         this.gs = this.copyObject(defaultGameState);
-      // Level
-      } else if (name === 'Level') {
-        // clearInterval(this.gs.enemyIntervalId);
-        // this.gs.enemyIntervalId = null;
+      } /*****  End Opening Screen *****/
+      
+
+
+      /*****  Level Screen *****/
+      else if (name === 'Level') {
         this.gs.currentScreen = { name: 'Transition', n: n };
         const nextLevel = screens.find((screen) => screen.name === 'Level' && screen.n === n);
         setTimeout(() => {
@@ -124,7 +129,7 @@ export default {
           // Initialize the player
           this.gs.player = { position: this.copyObject(initialPlayerPosition) };
 
-          // Add enemies to game state
+          // Spawn Enemies
           this.gs.enemies = [];
           for (let i = 1; i <= this.gs.currentScreen.levelData.enemies; i++) {
             const enemyX = Math.floor(Math.random() * (gameWidth / 2 - 50) + gameWidth / 2);
@@ -137,24 +142,38 @@ export default {
           }
 
         }, transitionScreenDelay);
-      } else if (name === 'Win') {
+      }  /***** End Level Screen *****/
+      
+
+
+      /*****  Win Screen *****/
+      else if (name === 'Win') {
         this.gs.currentScreen = screens.find((screen) => screen.name === 'Win');
         setTimeout(() => {
           this.loadScreen('Opening');
         }, transitionScreenDelay);
-      } else if (name === 'Lose') {
+      } /*****  End Win Screen *****/
+      
+
+
+      /*****  Lose Screen *****/
+      else if (name === 'Lose') {
         this.gs.currentScreen = screens.find((screen) => screen.name === 'Lose');
         setTimeout(() => {
           this.loadScreen('Opening');
         }, transitionScreenDelay);
-      }
+      } /*****  End Lose Screen *****/
     },
+
+
     handleKeyDown(event) {
-      // Opening
+      // Opening screen keyboard actions
       if (this.gs.currentScreen.name === 'Opening' && event.code === 'Space') {
-        this.loadScreen('Level', 1);
-        // Level
-      } else if (this.gs.currentScreen.name === 'Level') {
+        this.loadScreen('Level', 1); 
+      } // End opening screen keyboard actions
+
+      // Level keyboard actions
+      else if (this.gs.currentScreen.name === 'Level') {
         if (event.code === 'KeyW' && this.gs.player.position.y > 0) {
           this.gs.player.position.y -= 10;
         } else if (event.code === 'KeyS' && this.gs.player.position.y < gameHeight - 50) {
@@ -168,15 +187,16 @@ export default {
           const bulletX = this.gs.player.position.x + 50;
           const bulletY = this.gs.player.position.y + 25;
           this.gs.bullets.push({ id: Date.now(), position: { x: bulletX, y: bulletY } });
-        }
-        console.log("this.gs.player.position", this.gs.player.position, "this.gs.goalPosition", this.gs.goalPosition );
+        } // End level keyboard actions
+
+        // See if the player reaches the goal (after moving)
         if (this.checkCollision(this.gs.player.position, this.gs.goalPosition)) {
           if (this.gs.currentScreen.n < this.getMaxLevel()) {
             this.loadScreen('Level', this.gs.currentScreen.n + 1);
           } else {
             this.loadScreen('Win');
           }
-        } 
+        } // End check for reaching the goal
       }
     },
 
@@ -188,7 +208,7 @@ export default {
       this.lastTimestamp = timestamp;
 
       if (this.gs.currentScreen.name === 'Level') {
-        // Move the enemies
+        /*****  Move the enemies *****/
         for (let i = 0; i < this.gs.enemies.length; i++) {
           const enemyHeight = 50;
           const maxX = gameWidth - enemyHeight;
@@ -208,8 +228,10 @@ export default {
           if (this.checkCollision(this.gs.player.position, enemy.position)) {
             this.loadScreen('Lose');
           }
-        }
-        // Move the bullets
+        } /*****  End Move the enemies *****/
+
+
+        /*****  Move the bullets *****/
         for (let i = 0; i < this.gs.bullets.length; i++) {
           const bullet = this.gs.bullets[i];
           bullet.position.x += bulletSpeed * (elapsed / 1000);
@@ -231,7 +253,7 @@ export default {
               }
             }
           }
-        }
+        } /***** End Move the bullets *****/
       }
       requestAnimationFrame(this.updateGameState);
     },
