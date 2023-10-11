@@ -275,25 +275,23 @@ export default {
       position: relative;
       width: 800px;
       height: 100%;
-      .player {
+      .player, .goal, .enemy {
         position: absolute;
         width: 50px;
         height: 50px;
-        background-color: white;
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+      .player {
+        background-image: url('@/assets/images/spacedude.png');
       }
 
       .goal {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        background-color: green;
+        background-image: url('@/assets/images/heart.png');
       }
 
       .enemy {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        background-color: red;
+        background-image: url('@/assets/images/badguy.jpeg');
       }
     }
   }
