@@ -7,7 +7,7 @@
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
       <div class="game-window" :style="{ backgroundColor: gs.backgroundColor }">
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
-        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
+        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.type]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
         <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
       </div>
     </div>
@@ -366,6 +366,14 @@ export default {
 
       .enemy {
         background-image: url('@/assets/images/badguy.jpeg');
+      }
+
+      .enemy.enemy-enemy1 {
+        background-image: url('@/assets/images/badguy.jpeg');
+      }
+
+      .enemy.enemy-enemy2 {
+        background-image: url('@/assets/images/spacedude.png');
       }
     }
   }
