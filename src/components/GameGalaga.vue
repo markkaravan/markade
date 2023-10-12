@@ -9,6 +9,7 @@
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
         <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.type]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
         <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
+        <div class="enemy-bullet" v-for="bullet in gs.enemyBullets" :key="bullet.id" :class="['enemy-bullet', 'enemy-bullet-' + bullet.type]" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
       </div>
     </div>
     <div class="transition-screen" v-if="gs.currentScreen.name === 'Transition'">
@@ -30,12 +31,18 @@ const gameHeight = 333;
 const playerWidth = 50;
 const playerHeight = 50;
 
-const enemyWidth = 30;
-const enemyHeight = 30;
-
 const bulletSpeed = 300;
 const bulletWidth = 5;
 const bulletHeight = 10;
+
+const enemyWidth = 30;
+const enemyHeight = 30;
+
+const enemyBulletWidth = 5;
+const enemyBulletHeight = 10;
+const enemyBulletSpeed = 200;
+const enemy1BulletFrequency = 0.001; // 10 seconds on average
+const enemy2BulletFrequency = 0.002; // 5 seconds on average
 
 const transitionScreenDelay = 2000;
 const goalSize = 50;
@@ -65,6 +72,7 @@ const defaultGameState = {
   backgroundColor: null,
   enemies: [],
   bullets: [],
+  enemyBullets: [],
   isPaused: false,
 };
 
@@ -260,6 +268,30 @@ export default {
             enemy.direction.y *= -1;
             enemy.position.y = Math.max(0, Math.min(enemy.position.y, gameHeight - enemy.height));
           }
+          // Fire enemy bullets
+          if (Math.random() < (enemy.type === 'enemy1' ? enemy1BulletFrequency : enemy2BulletFrequency)) {
+            const bulletX = enemy.position.x + enemy.width / 2 - enemyBulletWidth / 2;
+            const bulletY = enemy.position.y + enemy.height;
+            this.gs.enemyBullets.push({
+              position: { x: bulletX, y: bulletY },
+              width: enemy.type === 'enemy1' ? enemyBulletWidth / 2 : enemyBulletWidth,
+              height: enemy.type === 'enemy1' ? enemyBulletHeight / 2 : enemyBulletHeight,
+              speed: enemy.type === 'enemy1' ? enemyBulletSpeed * 2 : enemyBulletSpeed,
+              direction: { x: 0, y: 1 },
+              type: enemy.type,
+            });
+          }
+        });
+
+        // Update enemy bullet position
+        this.gs.enemyBullets.forEach((enemyBullet) => {
+          enemyBullet.position.y += enemyBulletSpeed * timeDelta;
+        });
+
+
+        // Remove enemy bullets that are offscreen  
+        this.gs.enemyBullets = this.gs.enemyBullets.filter((enemyBullet) => {
+          return enemyBullet.position.y < gameHeight;
         });
 
         // Update bullet position
@@ -287,6 +319,13 @@ export default {
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
           if (this.checkCollision(this.gs.player, enemy)) {
+            this.loadScreen('Lose');
+          }
+        });
+
+        // Check for collisions between enemy bullets and player
+        this.gs.enemyBullets.forEach((bullet) => {
+          if (this.checkCollision(this.gs.player, bullet)) {
             this.loadScreen('Lose');
           }
         });
@@ -398,6 +437,23 @@ export default {
     width: 20px;
     height: 10px;
     background-color: purple;
+  }
+
+  .enemy-bullet {
+    position: absolute;
+    background-color: yellow;
+  }
+
+  .enemy-bullet-enemy1 {
+    width: 2.5px;
+    height: 5px;
+    background-color: yellow;
+  }
+
+  .enemy-bullet-enemy2 {
+    width: 5px;
+    height: 10px;
+    background-color: red;
   }
 
   .game-window-paused {
