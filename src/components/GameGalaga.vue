@@ -30,8 +30,8 @@ const gameHeight = 333;
 const playerWidth = 50;
 const playerHeight = 50;
 
-const enemyWidth = 50;
-const enemyHeight = 50;
+const enemyWidth = 30;
+const enemyHeight = 30;
 
 const bulletSpeed = 300;
 const bulletWidth = 5;
@@ -47,32 +47,12 @@ const screens = [
     n: 1,
     levelData: {
       backgroundColor: 'rgb(173, 216, 230)', // light blue
-      enemies: 3,
-    },
-  },
-  {
-    name: 'Level',
-    n: 2,
-    levelData: {
-      backgroundColor: 'rgb(0, 0, 255)', // blue
-      enemies: 2,
-    },
-  },
-  {
-    name: 'Level',
-    n: 3,
-    levelData: {
-      backgroundColor: 'rgb(0, 0, 139)', // dark blue
-      enemies: 3,
-    },
-  },
-  {
-    name: 'Level',
-    n: 4,
-    levelData: {
-      enemyPosition: { x: 550, y: 50 },
-      backgroundColor: 'rgb(255, 165, 0)', // orange
-      enemies: 4,
+      // enemies: 3,
+      enemies: [
+        ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1'], 
+        ['enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2'], 
+        ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1']
+      ]
     },
   },
   { name: 'Win', n: null },
@@ -124,7 +104,7 @@ export default {
     copyObject(obj) {
       return JSON.parse(JSON.stringify(obj));
     },
-
+    
     initializePlayer() {
       this.gs.player = {
         position: { x: gameWidth / 2 - playerWidth / 2, y: gameHeight - playerHeight },
@@ -137,16 +117,22 @@ export default {
 
     initializeEnemies() {
       this.gs.enemies = [];
-      for (let i = 1; i <= this.gs.currentScreen.levelData.enemies; i++) {
-        const enemyX = Math.floor(Math.random() * (gameWidth / 2 - 50) + gameWidth / 2);
-        const enemyY = Math.floor(Math.random() * (gameHeight - 50));
-        this.gs.enemies.push({
-          id: i,
-          position: { x: enemyX, y: enemyY },
-          direction: { x: 1, y: 0 },
-          width: enemyWidth,
-          height: enemyHeight
-        });
+      for (let i = 0; i < this.gs.currentScreen.levelData.enemies.length; i++) {
+        for (let j = 0; j < this.gs.currentScreen.levelData.enemies[i].length; j++) {
+          const offsetX = (gameWidth / 2) - ((this.gs.currentScreen.levelData.enemies[i].length * 100) / 2);
+          const enemyX = (j * 50) + offsetX;
+          const enemyY = i * 50;
+          this.gs.enemies.push({
+            id: i + "," + j,
+            row: i,
+            col: j,
+            type: this.gs.currentScreen.levelData.enemies[i][j],
+            position: { x: enemyX, y: enemyY },
+            direction: { x: -1, y: 0 },
+            width: enemyWidth,
+            height: enemyHeight,
+          });
+        }
       }
     },
 
@@ -264,7 +250,9 @@ export default {
           enemy.position.y += enemy.direction.y * enemySpeed * timeDelta;
 
           // Check for collision with the game borders
-          if (enemy.position.x < 0 || enemy.position.x > gameWidth - enemy.width) {
+          const offsetLeft = enemy.col * 50;
+          const offsetRight = (this.gs.currentScreen.levelData.enemies[enemy.row].length - enemy.col) * 50;
+          if (enemy.position.x < offsetLeft || enemy.position.x > gameWidth - enemy.width - offsetRight) {
             enemy.direction.x *= -1;
             enemy.position.x = Math.max(0, Math.min(enemy.position.x, gameWidth - enemy.width));
           }
