@@ -33,12 +33,14 @@
 import games from '@/assets/games.json'
 import GameLevelQuest from '@/components/GameLevelQuest.vue'
 import GameGalaga from '@/components/GameGalaga.vue'
+import GameHellfire from '@/components/GameHellfire.vue'
 
 export default {
   name: 'GamePageTemplate',
   components: {
     GameLevelQuest,
-    GameGalaga
+    GameGalaga,
+    GameHellfire
   },
   computed: {
     gameComponent() {
@@ -47,6 +49,8 @@ export default {
         return 'GameLevelQuest'
       } else if (route === '/games/galaga') {
         return 'GameGalaga'
+      } else if (route === '/games/hellfire') {
+        return 'GameHellfire'
       } else {
         // Default to GameLevelQuest if the route is not recognized
         return 'GameLevelQuest'

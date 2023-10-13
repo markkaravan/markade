@@ -38,6 +38,11 @@ const routes = [
             name: 'galaga',
             component: () => import('../views/GameTemplate.vue')
         },
+        {
+            path: '/games/hellfire',
+            name: 'hellfire',
+            component: () => import('../views/GameTemplate.vue')
+        },
     ]
 
 const router = createRouter({

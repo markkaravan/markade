@@ -27,5 +27,12 @@
       "image": "images/galaga.jpg",
       "instructions": "Here are the instructions for Galaga",
       "description": "The classic arcade game."
+    },
+    {
+      "title": "Hellfire",
+      "pathName": "hellfire",
+      "image": "images/hellfire.jpg",
+      "instructions": "q is up, a is down, space is fire",
+      "description": "Defeat demons as the archangel michael."
     }
   ]

@@ -1,7 +1,7 @@
 <template>
   <div class="game-wrapper" :class="{ 'game-window-paused': gs.isPaused }">
     <div class="opening-screen" v-if="gs.currentScreen.name === 'Opening'">
-      <h1 class="video-game-title">Galaga</h1>
+      <h1 class="video-game-title">Hellfire</h1>
       <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
     </div>
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
@@ -89,7 +89,7 @@ const defaultGameState = {
 };
 
 export default {
-  name: 'GameLevelQuest',
+  name: 'GameHellfire',
 
   data() {
     return {
