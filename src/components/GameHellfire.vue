@@ -13,7 +13,7 @@
           <div class="lives">Lives: {{ gs.lives }}</div>
         </div>
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
-        <!-- <div class="enemy" v-fosr="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.type]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div> -->
+        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.name]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
         <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
         <div class="enemy-bullet" v-for="bullet in gs.enemyBullets" :key="bullet.id" :class="['enemy-bullet', 'enemy-bullet-' + bullet.type]" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
       </div>
@@ -208,7 +208,8 @@ export default {
           this.gs.backgroundPositionX = 0;
 
           this.initializePlayer();
-          // this.initializeEnemies();
+          
+          this.gs.enemies = [];
 
         }, transitionScreenDelay);
       }  /***** End Level Screen *****/
@@ -304,24 +305,26 @@ export default {
         this.gs.displayTime = Math.floor((this.gs.currentScreen.levelTime - (new Date() - this.gs.startTime) / 1000));
 
         /*** Spawn enemies ***/
-        // const random = Math.random();
-        // this.gs.levelData.enemies.forEach((enemyType) => {
-        //   if (random < enemy.spawnProbability) {
-        //     let enemy = enemies.find((enemy) => enemy.name === enemyType.name);
-        //     const enemyX = gameWidth
-        //     const enemyY = Math.random() * (gameHeight - enemy.height);
-        //     this.gs.enemies.push({
-        //       id: this.generateRandomId(),
-        //       type: enemy.name,
-        //       position: { x: enemyX, y: enemyY },
-        //       direction: { x: -1, y: 0 },
-        //       width: enemy.width,
-        //       height: enemy.height,
-        //       speed: enemy.speed,
-        //       image: enemy.image,
-        //     });
-        //   }
-        // });
+        const random = Math.random();
+        this.gs.enemyData.forEach((enemyType) => {
+          let enemy = enemies.find((enemy) => enemy.name === enemyType.name);
+          if (random < (enemyType.spawnProbability / 10)) {
+            console.log("enemies", this.gs.enemies);
+
+            const enemyX = gameWidth
+            const enemyY = Math.random() * (gameHeight - enemy.height);
+            this.gs.enemies.push({
+              id: this.generateRandomId(),
+              name: enemy.name,
+              position: { x: enemyX, y: enemyY },
+              direction: { x: -1, y: 0 },
+              width: enemy.width,
+              height: enemy.height,
+              speed: enemy.speed,
+              image: enemy.image,
+            });
+           }
+        });
         /** Enemies spawned **/
 
 
@@ -362,7 +365,6 @@ export default {
 
         /*****  Move the enemies *****/
         const enemySpeed = 100;
-        console.log(this.gs.enemies);
         this.gs.enemies.forEach((enemy) => {
           enemy.position.x += enemy.direction.x * enemySpeed * timeDelta;
           enemy.position.y += enemy.direction.y * enemySpeed * timeDelta;
@@ -417,7 +419,6 @@ export default {
         });
 
         // Win condition
-        console.log("Win condition: ", this.gs.timeRemaining);
         if (this.gs.displayTime < 0) {
           if (this.gs.currentScreen.n < this.getMaxLevel()) {
             this.loadScreen('Level', this.gs.currentScreen.n + 1);
@@ -519,16 +520,16 @@ export default {
         background-image: url('@/assets/images/heart.png');
       }
 
-      .enemy {
-        background-image: url('@/assets/images/badguy.jpeg');
+      .enemy-blue {
+        background-image: url('@/assets/images/demon_blue_A.png');
       }
 
-      .enemy.enemy-enemy1 {
-        background-image: url('@/assets/images/badguy.jpeg');
+      .enemy-yellow {
+        background-image: url('@/assets/images/demon_purple_A.png');
       }
 
-      .enemy.enemy-enemy2 {
-        background-image: url('@/assets/images/spacedude.png');
+      .enemy-purple {
+        background-image: url('@/assets/images/demon_yellow_A.png');
       }
     }
   }
