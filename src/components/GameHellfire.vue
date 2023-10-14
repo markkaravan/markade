@@ -5,7 +5,8 @@
       <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
     </div>
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
-      <div class="game-window" :style="{ backgroundColor: gs.backgroundColor }">
+      <div class="game-background" :style="{ backgroundPositionX: gs.backgroundPositionX + 'px' }"></div>
+      <div class="game-window">
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
         <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.type]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
         <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
@@ -28,12 +29,12 @@
 const gameWidth = 800;
 const gameHeight = 333;
 
-const playerWidth = 50;
-const playerHeight = 50;
+const playerWidth = 65;
+const playerHeight = 90;
 
 const bulletSpeed = 300;
-const bulletWidth = 5;
-const bulletHeight = 10;
+const bulletWidth = 10;
+const bulletHeight = 5;
 
 const enemyWidth = 30;
 const enemyHeight = 30;
@@ -53,24 +54,11 @@ const screens = [
     name: 'Level',
     n: 1,
     levelData: {
-      backgroundColor: 'rgb(173, 216, 230)', // light blue
+      backgroundImage: 'hellfire_background_level_1.png',
       enemies: [
         ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1'], 
         ['enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2'], 
         ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1']
-      ]
-    },
-  },
-  {
-    name: 'Level',
-    n: 2,
-    levelData: {
-      backgroundColor: 'rgb(173, 216, 230)', // light blue
-      enemies: [
-        ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1'], 
-        ['enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2'], 
-        ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1'],
-        ['enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2']
       ]
     },
   },
@@ -127,11 +115,11 @@ export default {
     
     initializePlayer() {
       this.gs.player = {
-        position: { x: gameWidth / 2 - playerWidth / 2, y: gameHeight - playerHeight },
+        position: { x: 10, y: gameHeight / 2 - playerHeight },
         width: playerWidth,
         height: playerHeight,
-        moveLeft: false,
-        moveRight: false,
+        moveUp: false,
+        moveDown: false,
       }
     },
 
@@ -175,6 +163,9 @@ export default {
             this.gs[key] = value;
           }
 
+          // Begin the scrolling background
+          this.gs.backgroundPositionX = 0;
+
           this.initializePlayer();
           this.initializeEnemies();
 
@@ -210,16 +201,16 @@ export default {
       } // End opening screen keyboard actions
 
       else if (this.gs.currentScreen.name === 'Level') {
-        if (event.code === 'KeyA' || event.code === 'ArrowLeft') {
-          this.gs.player.moveLeft = true;
+        if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+          this.gs.player.moveUp = true;
         }
-        if (event.code === 'KeyD' || event.code === 'ArrowRight') {
-          this.gs.player.moveRight = true;
+        if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+          this.gs.player.moveDown = true;
         }
 
         if (event.code === 'Space') {
-          const bulletX = this.gs.player.position.x + this.gs.player.width / 2 - bulletWidth / 2;
-          const bulletY = this.gs.player.position.y - bulletHeight;
+          const bulletX = this.gs.player.position.x + this.gs.player.width / 2 - bulletWidth / 2 + 5;
+          const bulletY = this.gs.player.position.y - bulletHeight + 16;
           this.gs.bullets.push({
             position: { x: bulletX, y: bulletY },
             width: bulletWidth,
@@ -230,11 +221,11 @@ export default {
     },
 
     handleKeyUp(event) {
-      if (event.code === 'KeyA' || event.code === 'ArrowLeft') {
-        this.gs.player.moveLeft = false;
+      if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+        this.gs.player.moveUp = false;
       }
-      if (event.code === 'KeyD' || event.code === 'ArrowRight') {
-        this.gs.player.moveRight = false;
+      if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+        this.gs.player.moveDown = false;
       }
 
       // Pause the game
@@ -254,13 +245,38 @@ export default {
 
         /*****  Move the player *****/
         const playerSpeed = 200;
-        if (this.gs.player.moveLeft && this.gs.player.position.x > 0) {
-          this.gs.player.position.x -= playerSpeed * timeDelta;
+        if (this.gs.player.moveUp && this.gs.player.position.y > 0) {
+          this.gs.player.position.y -= playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveRight && this.gs.player.position.x < (gameWidth - this.gs.player.width)) {
-          this.gs.player.position.x += playerSpeed * timeDelta;
+        if (this.gs.player.moveDown && this.gs.player.position.y < (gameWidth - this.gs.player.height)) {
+          this.gs.player.position.y += playerSpeed * timeDelta;
         }
         /***** End Move the player *****/
+
+        // Update the background position
+        this.gs.backgroundPositionX -= 10 * timeDelta;
+
+        // Update bullet position
+        this.gs.bullets.forEach((bullet) => {
+          bullet.position.x += bulletSpeed * timeDelta;
+        });
+
+        // Remove bullets that are offscreen  
+        this.gs.bullets = this.gs.bullets.filter((bullet) => {
+          return bullet.position.x > 0;
+        });
+
+        // Check for collisions between bullets and enemies
+        this.gs.bullets.forEach((bullet) => {
+          this.gs.enemies.forEach((enemy, index) => {
+            if (this.checkCollision(bullet, enemy)) {
+              // Remove the enemy from the enemies array
+              this.gs.enemies.splice(index, 1);
+              // Remove the bullet from the bullets array
+              this.gs.bullets.splice(this.gs.bullets.indexOf(bullet), 1);
+            }
+          });
+        });
 
 
         /*****  Move the enemies *****/
@@ -306,27 +322,6 @@ export default {
           return enemyBullet.position.y < gameHeight;
         });
 
-        // Update bullet position
-        this.gs.bullets.forEach((bullet) => {
-          bullet.position.y -= bulletSpeed * timeDelta;
-        });
-
-        // Remove bullets that are offscreen  
-        this.gs.bullets = this.gs.bullets.filter((bullet) => {
-          return bullet.position.y > 0;
-        });
-
-        // Check for collisions between bullets and enemies
-        this.gs.bullets.forEach((bullet) => {
-          this.gs.enemies.forEach((enemy, index) => {
-            if (this.checkCollision(bullet, enemy)) {
-              // Remove the enemy from the enemies array
-              this.gs.enemies.splice(index, 1);
-              // Remove the bullet from the bullets array
-              this.gs.bullets.splice(this.gs.bullets.indexOf(bullet), 1);
-            }
-          });
-        });
 
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
@@ -398,17 +393,28 @@ export default {
   }
   .level-screen {
     height: 100%;
+
+
+    .game-background {
+      position: relative;
+      height: 100%;
+      background-image: url('@/assets/images/hellfire_background_level_1.png');
+      background-size: cover;
+      background-position-x: -50px;
+    }
     .game-window {
       position: relative;
       width: 800px;
       height: 100%;
+      top: -336px;
+      background-color: transparent;
       .player, .goal, .enemy {
         position: absolute;
         background-size: contain;
         background-repeat: no-repeat;
       }
       .player {
-        background-image: url('@/assets/images/spacedude.png');
+        background-image: url('@/assets/images/hellfire-player-default.png');
       }
 
       .goal {
@@ -467,6 +473,8 @@ export default {
     height: 10px;
     background-color: red;
   }
+
+
 
   .game-window-paused {
     background-color: rgba(0, 0, 0, 0.5);
