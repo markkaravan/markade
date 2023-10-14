@@ -5,7 +5,7 @@
       <h1>{{ title }}</h1>
     </div>
     <div class="body">
-      <div class="game-window" :style="{ width: gameWidth + 'px' }">
+      <div class="game-window" :style="{ width: gameWidth + 'px', height: gameHeight + 'px' }">
         <div class="game-window-border">
           <!-- <slot name="game"></slot> -->
           <component :is="gameComponent" :gameWidth="gameWidth" :gameHeight="gameHeight"></component>
@@ -78,6 +78,7 @@ export default {
     const gamePath = this.$route.name
     const game = games.find(g => g.pathName === gamePath)
     if (game) {
+      console.log("Gmae found: ", game);      
       this.title = game.title
       this.instructions = game.instructions
       this.description = game.description
@@ -113,7 +114,7 @@ export default {
 }
 
 .body {
-  height: 75%;
+  /* height: 75%; */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -121,8 +122,8 @@ export default {
 }
 
 .game-window {
-  width: 800px;
-  height: 1000px;
+  /* width: 800px;
+  height: 1000px; */
   background-color: black;
   display: flex;
   justify-content: center;
@@ -140,7 +141,7 @@ export default {
 
 .instructions-description-container {
   width: 800px;
-  height: 700px;
+  /* height: 700px; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -149,7 +150,8 @@ export default {
 
 .instructions-window, .description-window {
   width: 53%;
-  height: 100%;
+  /* height: 100%; */
+  min-height: 300px;
   background-color: #333333;
   background-image: linear-gradient(to bottom, #333333, #444444);
   background-color: white;

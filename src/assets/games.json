@@ -35,6 +35,6 @@
       "instructions": "q is up, a is down, space is fire",
       "description": "Defeat demons as the archangel michael.",
       "gameWidth": 1200,
-      "gameHeight": 333
+      "gameHeight": 400
     }
   ]

@@ -6,7 +6,7 @@
     </div>
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
       <div class="game-background" :style="{ backgroundPositionX: gs.backgroundPositionX + 'px' }"></div>
-      <div class="game-window">
+      <div class="game-window" :style="{ top: '-' + dataGameHeight + 'px', width: dataGameWidth + 'px' }">
         <div class="game-header">
           <div class="score">Score: {{ gs.score }}</div>
           <div class="time-remaining">Time Remaining: {{ gs.displayTime }}</div>
@@ -31,8 +31,8 @@
 </template>
 
 <script>
-const gameWidth = 800;
-const gameHeight = 333;
+const gameWidthDefault = 800;
+const gameHeightDefault = 333;
 
 const playerWidth = 65;
 const playerHeight = 90;
@@ -128,6 +128,8 @@ export default {
 
   data() {
     return {
+      dataGameWidth: gameWidthDefault,
+      dataGameHeight: gameHeightDefault,
       gs: {...defaultGameState }, // gs stands for game state
       lastTimestamp: null,
     };
@@ -148,11 +150,25 @@ export default {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     requestAnimationFrame(this.updateGameState);
+    this.dataGameWidth = 1200;
+    this.dataGameHeight = 400;
+    console.log("Mounted:", this.gameWidth, this.gameHeight);
   },
 
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
+  },
+
+  // Moving Props to Data
+  // This is dumb but I guess it's better than using ref()'s
+  watch: {
+    gameWidth: function(newWidth) {
+      this.dataGameWidth = newWidth;
+    },
+    gameHeight: function(newHeight) {
+      this.dataGameHeight = newHeight;
+    }
   },
 
   methods: {
@@ -162,7 +178,7 @@ export default {
     
     initializePlayer() {
       this.gs.player = {
-        position: { x: 10, y: gameHeight / 2 - playerHeight },
+        position: { x: 10, y: this.dataGameHeight / 2 - playerHeight },
         width: playerWidth,
         height: playerHeight,
         moveUp: false,
@@ -306,7 +322,7 @@ export default {
         if (this.gs.player.moveUp && this.gs.player.position.y > 0) {
           this.gs.player.position.y -= playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveDown && this.gs.player.position.y < (gameHeight - this.gs.player.height)) {
+        if (this.gs.player.moveDown && this.gs.player.position.y < (this.dataGameHeight - this.gs.player.height)) {
           this.gs.player.position.y += playerSpeed * timeDelta;
         }
         /***** End Move the player *****/
@@ -319,10 +335,8 @@ export default {
         this.gs.enemyData.forEach((enemyType) => {
           let enemy = enemies.find((enemy) => enemy.name === enemyType.name);
           if (random < (enemyType.spawnProbability / 10)) {
-            console.log("enemies", this.gs.enemies);
-
-            const enemyX = gameWidth
-            const enemyY = Math.random() * (gameHeight - enemy.height);
+            const enemyX = this.dataGameWidth
+            const enemyY = Math.random() * (this.dataGameHeight - enemy.height);
             this.gs.enemies.push({
               id: this.generateRandomId(),
               name: enemy.name,
@@ -357,7 +371,7 @@ export default {
 
         // Remove bullets that are offscreen  
         this.gs.bullets = this.gs.bullets.filter((bullet) => {
-          return bullet.position.x < gameWidth - bulletWidth + 1;
+          return bullet.position.x < this.dataGameWidth - bulletWidth + 1;
         });
 
         // Check for collisions between bullets and enemies
@@ -380,23 +394,10 @@ export default {
           enemy.position.y += enemy.direction.y * enemySpeed * timeDelta;
 
           // Check for collision with the game borders
-          if (enemy.position.y < 0 || enemy.position.y > gameHeight - enemy.height) {
+          if (enemy.position.y < 0 || enemy.position.y > this.dataGameHeight - enemy.height) {
             enemy.direction.y *= -1;
-            enemy.position.y = Math.max(0, Math.min(enemy.position.y, gameHeight - enemy.height));
+            enemy.position.y = Math.max(0, Math.min(enemy.position.y, this.dataGameHeight - enemy.height));
           }
-          // Fire enemy bullets
-          // if (Math.random() < (enemy.type === 'enemy1' ? enemy1BulletFrequency : enemy2BulletFrequency)) {
-          //   const bulletX = enemy.position.x + enemy.width / 2 - enemyBulletWidth / 2;
-          //   const bulletY = enemy.position.y + enemy.height;
-          //   this.gs.enemyBullets.push({
-          //     position: { x: bulletX, y: bulletY },
-          //     width: enemy.type === 'enemy1' ? enemyBulletWidth / 2 : enemyBulletWidth,
-          //     height: enemy.type === 'enemy1' ? enemyBulletHeight / 2 : enemyBulletHeight,
-          //     speed: enemy.type === 'enemy1' ? enemyBulletSpeed * 2 : enemyBulletSpeed,
-          //     direction: { x: 0, y: 1 },
-          //     type: enemy.type,
-          //   });
-          // }
         });
         // this.gs.enemies.forEach((enemy) => {
 
@@ -497,7 +498,7 @@ export default {
       position: relative;
       width: 800px;
       height: 100%;
-      top: -336px;
+      /* top: -336px; */
       background-color: transparent;
       .game-header {
         position: absolute;
