@@ -7,8 +7,13 @@
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
       <div class="game-background" :style="{ backgroundPositionX: gs.backgroundPositionX + 'px' }"></div>
       <div class="game-window">
+        <div class="game-header">
+          <div class="score">Score: {{ gs.score }}</div>
+          <div class="time-remaining">Time Remaining: {{ gs.displayTime }}</div>
+          <div class="lives">Lives: {{ gs.lives }}</div>
+        </div>
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
-        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.type]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
+        <!-- <div class="enemy" v-fosr="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.type]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div> -->
         <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
         <div class="enemy-bullet" v-for="bullet in gs.enemyBullets" :key="bullet.id" :class="['enemy-bullet', 'enemy-bullet-' + bullet.type]" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
       </div>
@@ -47,19 +52,45 @@ const enemy2BulletFrequency = 0.002; // 5 seconds on average
 
 const transitionScreenDelay = 2000;
 const goalSize = 50;
+// Define the enemies
+const enemies = [
+  {
+    name: 'blue', 
+    width: 30, 
+    height: 30, 
+    speed: 100,
+    image: 'demon_blue_A.png', 
+  },
+  {
+    name: 'yellow', 
+    width: 40, 
+    height: 40, 
+    speed: 50,
+    image: 'demon_yellow_A.png', 
+  },
+  {
+    name: 'purple', 
+    width: 50, 
+    height: 50, 
+    speed: 70,
+    image: 'demon_purple_A.png', 
+  },
+]
 // Define the screens
 const screens = [
   { name: 'Opening', n: null },
   {
     name: 'Level',
     n: 1,
+    levelTime: 30,
     levelData: {
       backgroundImage: 'hellfire_background_level_1.png',
-      enemies: [
-        ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1'], 
-        ['enemy2', 'enemy1', 'enemy2', 'enemy1', 'enemy2'], 
-        ['enemy1', 'enemy2', 'enemy1', 'enemy2', 'enemy1']
-      ]
+      enemyData: [
+        {name: 'blue', spawnProbability: 0.25}, 
+        {name: 'yellow', spawnProbability: 0.25},
+        {name: 'purple', spawnProbability: 0.5},
+      ],
+
     },
   },
   { name: 'Win', n: null },
@@ -74,6 +105,12 @@ const defaultGameState = {
   bullets: [],
   enemyBullets: [],
   isPaused: false,
+  timeRemaining: 30,
+  score: 0,
+  startTime: null,
+  displayTime: null,
+  lives: 3,
+  
 };
 
 export default {
@@ -123,26 +160,26 @@ export default {
       }
     },
 
-    initializeEnemies() {
-      this.gs.enemies = [];
-      for (let i = 0; i < this.gs.currentScreen.levelData.enemies.length; i++) {
-        for (let j = 0; j < this.gs.currentScreen.levelData.enemies[i].length; j++) {
-          const offsetX = (gameWidth / 2) - ((this.gs.currentScreen.levelData.enemies[i].length * 100) / 2);
-          const enemyX = (j * 50) + offsetX;
-          const enemyY = i * 50;
-          this.gs.enemies.push({
-            id: i + "," + j,
-            row: i,
-            col: j,
-            type: this.gs.currentScreen.levelData.enemies[i][j],
-            position: { x: enemyX, y: enemyY },
-            direction: { x: -1, y: 0 },
-            width: enemyWidth,
-            height: enemyHeight,
-          });
-        }
-      }
-    },
+    // initializeEnemies() {
+    //   this.gs.enemies = [];
+    //   for (let i = 0; i < this.gs.currentScreen.levelData.enemies.length; i++) {
+    //     for (let j = 0; j < this.gs.currentScreen.levelData.enemies[i].length; j++) {
+    //       const offsetX = (gameWidth / 2) - ((this.gs.currentScreen.levelData.enemies[i].length * 100) / 2);
+    //       const enemyX = (j * 50) + offsetX;
+    //       const enemyY = i * 50;
+    //       this.gs.enemies.push({
+    //         id: i + "," + j,
+    //         row: i,
+    //         col: j,
+    //         type: this.gs.currentScreen.levelData.enemies[i][j],
+    //         position: { x: enemyX, y: enemyY },
+    //         direction: { x: -1, y: 0 },
+    //         width: enemyWidth,
+    //         height: enemyHeight,
+    //       });
+    //     }
+    //   }
+    // },
 
     loadScreen(name, n = null) {
       /*****  Opening Screen *****/
@@ -163,11 +200,15 @@ export default {
             this.gs[key] = value;
           }
 
+          // Set the start time
+          this.gs.startTime = new Date();
+          //this.gs.timeRemaining = this.gs.currentScreen.levelData.levelTime;
+
           // Begin the scrolling background
           this.gs.backgroundPositionX = 0;
 
           this.initializePlayer();
-          this.initializeEnemies();
+          // this.initializeEnemies();
 
         }, transitionScreenDelay);
       }  /***** End Level Screen *****/
@@ -234,6 +275,12 @@ export default {
       }
     },
 
+    generateRandomId() {
+      const min = 10000000;
+      const max = 99999999;
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+
     updateGameState(timestamp) {
       if (!this.lastTimestamp) {
         this.lastTimestamp = timestamp;
@@ -248,10 +295,44 @@ export default {
         if (this.gs.player.moveUp && this.gs.player.position.y > 0) {
           this.gs.player.position.y -= playerSpeed * timeDelta;
         }
-        if (this.gs.player.moveDown && this.gs.player.position.y < (gameWidth - this.gs.player.height)) {
+        if (this.gs.player.moveDown && this.gs.player.position.y < (gameHeight - this.gs.player.height)) {
           this.gs.player.position.y += playerSpeed * timeDelta;
         }
         /***** End Move the player *****/
+
+        // Set time remaining display
+        this.gs.displayTime = Math.floor((this.gs.currentScreen.levelTime - (new Date() - this.gs.startTime) / 1000));
+
+        /*** Spawn enemies ***/
+        // const random = Math.random();
+        // this.gs.levelData.enemies.forEach((enemyType) => {
+        //   if (random < enemy.spawnProbability) {
+        //     let enemy = enemies.find((enemy) => enemy.name === enemyType.name);
+        //     const enemyX = gameWidth
+        //     const enemyY = Math.random() * (gameHeight - enemy.height);
+        //     this.gs.enemies.push({
+        //       id: this.generateRandomId(),
+        //       type: enemy.name,
+        //       position: { x: enemyX, y: enemyY },
+        //       direction: { x: -1, y: 0 },
+        //       width: enemy.width,
+        //       height: enemy.height,
+        //       speed: enemy.speed,
+        //       image: enemy.image,
+        //     });
+        //   }
+        // });
+        /** Enemies spawned **/
+
+
+        // // Update the time remaining
+        // if (this.gs.timeRemaining > 0) {
+        //   this.gs.timeRemaining -= 1;
+        //   console.log(`Time remaining: ${this.gs.timeRemaining} seconds`);
+        // } else {
+        //   console.log('Time is up!');
+        //   // Handle end of level here
+        // }
 
         // Update the background position
         this.gs.backgroundPositionX -= 10 * timeDelta;
@@ -263,7 +344,7 @@ export default {
 
         // Remove bullets that are offscreen  
         this.gs.bullets = this.gs.bullets.filter((bullet) => {
-          return bullet.position.x > 0;
+          return bullet.position.x < gameWidth - bulletWidth + 1;
         });
 
         // Check for collisions between bullets and enemies
@@ -281,35 +362,33 @@ export default {
 
         /*****  Move the enemies *****/
         const enemySpeed = 100;
+        console.log(this.gs.enemies);
         this.gs.enemies.forEach((enemy) => {
           enemy.position.x += enemy.direction.x * enemySpeed * timeDelta;
           enemy.position.y += enemy.direction.y * enemySpeed * timeDelta;
 
           // Check for collision with the game borders
-          const offsetLeft = enemy.col * 50;
-          const offsetRight = (this.gs.currentScreen.levelData.enemies[enemy.row].length - enemy.col) * 50;
-          if (enemy.position.x < offsetLeft || enemy.position.x > gameWidth - enemy.width - offsetRight) {
-            enemy.direction.x *= -1;
-            enemy.position.x = Math.max(0, Math.min(enemy.position.x, gameWidth - enemy.width));
-          }
           if (enemy.position.y < 0 || enemy.position.y > gameHeight - enemy.height) {
             enemy.direction.y *= -1;
             enemy.position.y = Math.max(0, Math.min(enemy.position.y, gameHeight - enemy.height));
           }
           // Fire enemy bullets
-          if (Math.random() < (enemy.type === 'enemy1' ? enemy1BulletFrequency : enemy2BulletFrequency)) {
-            const bulletX = enemy.position.x + enemy.width / 2 - enemyBulletWidth / 2;
-            const bulletY = enemy.position.y + enemy.height;
-            this.gs.enemyBullets.push({
-              position: { x: bulletX, y: bulletY },
-              width: enemy.type === 'enemy1' ? enemyBulletWidth / 2 : enemyBulletWidth,
-              height: enemy.type === 'enemy1' ? enemyBulletHeight / 2 : enemyBulletHeight,
-              speed: enemy.type === 'enemy1' ? enemyBulletSpeed * 2 : enemyBulletSpeed,
-              direction: { x: 0, y: 1 },
-              type: enemy.type,
-            });
-          }
+          // if (Math.random() < (enemy.type === 'enemy1' ? enemy1BulletFrequency : enemy2BulletFrequency)) {
+          //   const bulletX = enemy.position.x + enemy.width / 2 - enemyBulletWidth / 2;
+          //   const bulletY = enemy.position.y + enemy.height;
+          //   this.gs.enemyBullets.push({
+          //     position: { x: bulletX, y: bulletY },
+          //     width: enemy.type === 'enemy1' ? enemyBulletWidth / 2 : enemyBulletWidth,
+          //     height: enemy.type === 'enemy1' ? enemyBulletHeight / 2 : enemyBulletHeight,
+          //     speed: enemy.type === 'enemy1' ? enemyBulletSpeed * 2 : enemyBulletSpeed,
+          //     direction: { x: 0, y: 1 },
+          //     type: enemy.type,
+          //   });
+          // }
         });
+        // this.gs.enemies.forEach((enemy) => {
+
+        // });
 
         // Update enemy bullet position
         this.gs.enemyBullets.forEach((enemyBullet) => {
@@ -319,7 +398,7 @@ export default {
 
         // Remove enemy bullets that are offscreen  
         this.gs.enemyBullets = this.gs.enemyBullets.filter((enemyBullet) => {
-          return enemyBullet.position.y < gameHeight;
+          return enemyBullet.position.x < 0;
         });
 
 
@@ -338,13 +417,14 @@ export default {
         });
 
         // Win condition
-        if (this.gs.enemies.length === 0) {
+        console.log("Win condition: ", this.gs.timeRemaining);
+        if (this.gs.displayTime < 0) {
           if (this.gs.currentScreen.n < this.getMaxLevel()) {
             this.loadScreen('Level', this.gs.currentScreen.n + 1);
           } else {
             this.loadScreen('Win');
-          }
-        }   
+          }  
+        }
       }
       requestAnimationFrame(this.updateGameState);
     },
@@ -408,6 +488,24 @@ export default {
       height: 100%;
       top: -336px;
       background-color: transparent;
+      .game-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        z-index: 1;
+      }
+      .score, .time-remaining, .lives {
+        margin: 0 20px;
+      }
       .player, .goal, .enemy {
         position: absolute;
         background-size: contain;
@@ -454,7 +552,7 @@ export default {
     position: absolute;
     width: 20px;
     height: 10px;
-    background-color: purple;
+    background-color: white;
   }
 
   .enemy-bullet {
