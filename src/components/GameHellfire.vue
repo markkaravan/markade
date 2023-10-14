@@ -115,6 +115,16 @@ const defaultGameState = {
 
 export default {
   name: 'GameHellfire',
+  props: {
+    gameWidth: {
+      type: Number,
+      required: true
+    },
+    gameHeight: {
+      type: Number,
+      required: true
+    },
+  },
 
   data() {
     return {

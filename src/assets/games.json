@@ -33,6 +33,8 @@
       "pathName": "hellfire",
       "image": "images/hellfire.jpg",
       "instructions": "q is up, a is down, space is fire",
-      "description": "Defeat demons as the archangel michael."
+      "description": "Defeat demons as the archangel michael.",
+      "gameWidth": 1200,
+      "gameHeight": 333
     }
   ]

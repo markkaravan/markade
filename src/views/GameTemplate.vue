@@ -5,10 +5,10 @@
       <h1>{{ title }}</h1>
     </div>
     <div class="body">
-      <div class="game-window">
+      <div class="game-window" :style="{ width: gameWidth + 'px' }">
         <div class="game-window-border">
           <!-- <slot name="game"></slot> -->
-          <component :is="gameComponent"></component>
+          <component :is="gameComponent" :gameWidth="gameWidth" :gameHeight="gameHeight"></component>
         </div>
       </div>
       <div class="instructions-description-container">
@@ -34,6 +34,9 @@ import games from '@/assets/games.json'
 import GameLevelQuest from '@/components/GameLevelQuest.vue'
 import GameGalaga from '@/components/GameGalaga.vue'
 import GameHellfire from '@/components/GameHellfire.vue'
+
+const gameWidthDefault = 800;
+const gameHeightDefault = 333;
 
 export default {
   name: 'GamePageTemplate',
@@ -61,26 +64,26 @@ export default {
     return {
       title: '',
       instructions: '',
-      description: ''
+      description: '',
+      gameWidth: 0,
+      gameHeight: 0,
     }
   },
   methods: {
     goBack() {
       this.$router.push('/')
-    }
+    },
   },
   mounted() {
-    console.log("this.$route.name", this.$route.name);
-    console.log("Games", games);
     const gamePath = this.$route.name
     const game = games.find(g => g.pathName === gamePath)
-    console.log("The Game: ", game);
     if (game) {
       this.title = game.title
       this.instructions = game.instructions
       this.description = game.description
+      this.gameWidth = game.gameWidth? game.gameWidth : gameWidthDefault
+      this.gameHeight = game.gameHeight? game.gameHeight : gameHeightDefault
     }
-    console.log(gamePath)
   }
 }
 </script>
@@ -157,8 +160,6 @@ export default {
   align-items: center;
   border: 10px solid;
   border-radius: 20px;
-  /* box-shadow: 0 0 20px; */
-  /* box-shadow: 0 0 20px #ff00ff; */
 }
 
 .instructions-window {
