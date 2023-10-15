@@ -37,15 +37,15 @@ const gameHeightDefault = 333;
 const playerWidth = 65;
 const playerHeight = 90;
 
-const bulletSpeed = 300;
-const bulletWidth = 10;
-const bulletHeight = 5;
+const bulletSpeed = 400;
+const bulletWidth = 30;
+const bulletHeight = 7;
 
 const enemyWidth = 30;
 const enemyHeight = 30;
 
-const enemyBulletWidth = 15;
-const enemyBulletHeight = 10;
+const enemyBulletWidth = 30;
+const enemyBulletHeight = 7;
 const enemyBulletSpeed = -300;
 
 const transitionScreenDelay = 2000;
@@ -647,16 +647,18 @@ export default {
   }
   .bullet {
     position: absolute;
-    width: 20px;
-    height: 10px;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20%;
+    box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5);
+    filter: blur(1px);
   }
 
   .enemy-bullet {
     position: absolute;
-    width: 200px;
-    height: 100px;
-    background-color: yellow;
+    background-color: rgba(255, 255, 0, 0.9);
+    border-radius: 20%;
+    box-shadow: 0 0 10px 5px rgba(255, 255, 0, 0.5);
+    filter: blur(1px);
   }
 
   .game-window-paused {
