@@ -48,7 +48,7 @@ const enemyBulletWidth = 30;
 const enemyBulletHeight = 7;
 const enemyBulletSpeed = -300;
 
-const transitionScreenDelay = 2000;
+const transitionScreenDelay = 1000;
 const goalSize = 50;
 // Define the enemies
 const enemies = [
@@ -121,7 +121,7 @@ const screens = [
   { name: 'Win', n: null },
   { name: 'Lose', n: null },
 ];
-const defaultGameState = {
+let defaultGameState = {
   currentScreen: screens.find((screen) => screen.name === 'Opening'),
   openingSubtitle: 'Push Spacebar to start.',
   player: null,
@@ -210,7 +210,7 @@ export default {
       }
     },
 
-    loadScreen(name, n = null) {
+    loadScreen(name, n = null, lives = null) {
       /*****  Opening Screen *****/
       if (name === 'Opening') {
         this.gs = this.copyObject(defaultGameState);
@@ -222,11 +222,18 @@ export default {
       else if (name === 'Level') {
         this.gs.currentScreen = { name: 'Transition', n: n };
         const nextLevel = screens.find((screen) => screen.name === 'Level' && screen.n === n);
+        this.gs.enemies = [];
+        this.gs.enemyBullets = [];
         setTimeout(() => {
           this.gs.currentScreen = nextLevel;
           // Add game state properties from levelData to game state
           for (const [key, value] of Object.entries(this.gs.currentScreen.levelData)) {
             this.gs[key] = value;
+          }
+
+          // Set the lives
+          if (lives) {
+            this.gs.lives = lives;
           }
 
           // Set the start time
@@ -304,6 +311,14 @@ export default {
         this.gs.isPaused = !this.gs.isPaused;
       }
     },
+
+    loseALife() {
+      if (this.gs.lives > 1) {
+        this.loadScreen('Level', this.gs.currentScreen.n, this.gs.lives - 1);
+      } else {
+        this.loadScreen('Lose');
+      }
+    },  
 
     generateRandomId() {
       const min = 10000000;
@@ -434,7 +449,6 @@ export default {
             // Fire a bullet once every two seconds
             enemy.lastBulletTime = enemy.lastBulletTime || 0;
             if (Date.now() - enemy.lastBulletTime > 2000) {
-              console.log("FIRING ENEMY BULLET", this.gs.enemyBullets);
               this.gs.enemyBullets.push({
                 id: this.generateRandomId(),
                 width: enemyBulletWidth,
@@ -462,9 +476,6 @@ export default {
             enemy.position.y = Math.max(0, Math.min(enemy.position.y, this.dataGameHeight - enemy.height));
           }
         });
-        // this.gs.enemies.forEach((enemy) => {
-
-        // });
 
         // Update enemy bullet position
         this.gs.enemyBullets.forEach((enemyBullet) => {
@@ -481,24 +492,14 @@ export default {
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
           if (this.checkCollision(this.gs.player, enemy)) {
-            if (this.gs.lives >= 1) {
-              this.gs.lives--;
-              this.loadScreen('Level', this.gs.currentScreen.n);
-            } else {
-              this.loadScreen('Lose');
-            }
+            this.loseALife();
           }
         });
 
         // Check for collisions between enemy bullets and player
         this.gs.enemyBullets.forEach((bullet) => {
           if (this.checkCollision(this.gs.player, bullet)) {
-            if (this.gs.lives >= 1) {
-              this.gs.lives--;
-              this.loadScreen('Level', this.gs.currentScreen.n);
-            } else {
-              this.loadScreen('Lose');
-            }
+            this.loseALife();
           }
         });
 
