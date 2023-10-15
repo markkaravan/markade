@@ -59,7 +59,8 @@ const enemies = [
     width: 80, 
     height: 80, 
     speed: 400,
-    image: 'demon_blue_A.png',
+    // image: 'demon_blue_A.png',
+    hp: 10,
     points: 10,
   },
   {
@@ -67,7 +68,8 @@ const enemies = [
     width: 180, 
     height: 180, 
     speed: 50,
-    image: 'demon_yellow_A.png', 
+    // image: 'demon_yellow_A.png', 
+    hp: 10,
     points: 20,
   },
   {
@@ -75,8 +77,36 @@ const enemies = [
     width: 250, 
     height: 250, 
     speed: 270,
-    image: 'demon_purple_A.png', 
+    // image: 'demon_purple_A.png', 
+    hp: 10,
     points: 30,
+  },
+  {
+    name: 'red', 
+    width: 250, 
+    height: 250, 
+    speed: 170,
+    // image: 'demon_red_A.png', 
+    hp: 10,
+    points: 40,
+  },
+  {
+    name: 'red-small', 
+    width: 100, 
+    height: 100, 
+    speed: 270,
+    // image: 'demon_red_small_A.png', 
+    hp: 10,
+    points: 20,
+  },
+  {
+    name: 'green', 
+    width: 250, 
+    height: 250, 
+    speed: 270,
+    // image: 'demon_green_A.png', 
+    hp: 30,
+    points: 70,
   },
 ]
 // Define the screens
@@ -89,9 +119,8 @@ const screens = [
     levelData: {
       backgroundImage: 'hellfire_background_level_1.png',
       enemyData: [
-        {name: 'blue', spawnProbability: 0.25}, 
-        {name: 'yellow', spawnProbability: 0.25},
-        {name: 'purple', spawnProbability: 0.5},
+        {name: 'red', spawnProbability: 0.25}, 
+        {name: 'green', spawnProbability: 0.25},
       ],
 
     },
@@ -346,11 +375,38 @@ export default {
         this.gs.bullets.forEach((bullet) => {
           this.gs.enemies.forEach((enemy, index) => {
             if (this.checkCollision(bullet, enemy)) {
-              // Add points to the score
-              console.log("Gamestate:", this.gs, this.gs.score);
-              this.gs.score += enemy.points;
-              // Remove the enemy from the enemies array
-              this.gs.enemies.splice(index, 1);
+              // Remove 10 hp from the enemy
+              enemy.hp -= 10;
+
+              // If the enemy has no hp left, remove it from the enemies array
+              if (enemy.hp <= 0) {
+                if (enemy.name === 'red') {
+                  let smallRed = enemies.find((enemy) => enemy.name === 'red-small');
+                  this.gs.enemies.push({
+                    ...smallRed,
+                    id: this.generateRandomId(),
+                    position: { x: enemy.position.x, y: enemy.position.y },
+                    direction: { x: -1, y: -1 },
+                  });
+                  this.gs.enemies.push({
+                    ...smallRed,
+                    id: this.generateRandomId(),
+                    position: { x: enemy.position.x, y: enemy.position.y },
+                    direction: { x: -1, y: 0 },
+                  });
+                  this.gs.enemies.push({
+                    ...smallRed,
+                    id: this.generateRandomId(),
+                    position: { x: enemy.position.x, y: enemy.position.y },
+                    direction: { x: -1, y: 1 },
+                  });
+                }
+                // Add points to the score
+                this.gs.score += enemy.points;
+                // Remove the enemy from the enemies array
+                this.gs.enemies.splice(index, 1);
+              }
+
               // Remove the bullet from the bullets array
               this.gs.bullets.splice(this.gs.bullets.indexOf(bullet), 1);
             }
@@ -361,21 +417,24 @@ export default {
         /*****  Move the enemies *****/
         this.gs.enemies.forEach((enemy) => {
           if (enemy.name === 'blue') {
-            const playerPosition = this.gs.player.position;
-            const enemyPosition = enemy.position;
-            const angle = Math.atan2(playerPosition.y - enemyPosition.y, playerPosition.x - enemyPosition.x);
+            const angle = Math.atan2(this.gs.player.position.y - enemy.position.y, this.gs.player.position.x - enemy.position.x);
             const xVelocity = enemy.speed * Math.cos(angle);
             const yVelocity = enemy.speed * Math.sin(angle);
             enemyPosition.x += xVelocity * timeDelta;
             enemyPosition.y += yVelocity * timeDelta;
           } else if (enemy.name === 'yellow') {
-            const enemyPosition = enemy.position;
-            enemyPosition.x -= enemy.speed * timeDelta;
-            enemyPosition.y = Math.sin(enemyPosition.x / 50) * 50 + this.dataGameHeight / 2;
+            enemy.position.x -= enemy.speed * timeDelta;
+            enemy.position.y = Math.sin(enemy.position.x / 50) * 50 + this.dataGameHeight / 2;
           } else if (enemy.name === 'purple') {
-            const enemyPosition = enemy.position;
-            enemyPosition.x -= enemy.speed * timeDelta;
+            enemy.position.x -= enemy.speed * timeDelta;
+          } else if (enemy.name === 'red') {
+            enemy.position.x -= enemy.speed * timeDelta;
+          } else if (enemy.name === 'red-small') {
+            enemy.position.x -= enemy.speed * timeDelta;
+          } else if (enemy.name === 'green') {
+            enemy.position.x -= enemy.speed * timeDelta;
           }
+
 
 
           // Check for collision with the game borders
@@ -403,7 +462,7 @@ export default {
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
           if (this.checkCollision(this.gs.player, enemy)) {
-            if (this.gs.lives >= 0) {
+            if (this.gs.lives >= 1) {
               this.gs.lives--;
               this.loadScreen('Level', this.gs.currentScreen.n);
             } else {
@@ -415,7 +474,7 @@ export default {
         // Check for collisions between enemy bullets and player
         this.gs.enemyBullets.forEach((bullet) => {
           if (this.checkCollision(this.gs.player, bullet)) {
-            if (this.gs.lives >= 0) {
+            if (this.gs.lives >= 1) {
               this.gs.lives--;
               this.loadScreen('Level', this.gs.currentScreen.n);
             } else {
@@ -536,6 +595,18 @@ export default {
 
       .enemy-purple {
         background-image: url('@/assets/images/demon_purple_A.png');
+      }
+
+      .enemy-red {
+        background-image: url('@/assets/images/demon_red_A.png');
+      }
+
+      .enemy-red-small {
+        background-image: url('@/assets/images/demon_red_small_A.png');
+      }
+
+      .enemy-green {
+        background-image: url('@/assets/images/demon_green_A.png');
       }
     }
   }
