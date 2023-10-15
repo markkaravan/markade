@@ -114,7 +114,6 @@ export default {
 }
 
 .body {
-  /* height: 75%; */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -122,8 +121,6 @@ export default {
 }
 
 .game-window {
-  /* width: 800px;
-  height: 1000px; */
   background-color: black;
   display: flex;
   justify-content: center;
@@ -141,7 +138,6 @@ export default {
 
 .instructions-description-container {
   width: 800px;
-  /* height: 700px; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -150,7 +146,6 @@ export default {
 
 .instructions-window, .description-window {
   width: 53%;
-  /* height: 100%; */
   min-height: 300px;
   background-color: #333333;
   background-image: linear-gradient(to bottom, #333333, #444444);

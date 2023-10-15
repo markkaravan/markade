@@ -56,23 +56,23 @@ const goalSize = 50;
 const enemies = [
   {
     name: 'blue', 
-    width: 30, 
-    height: 30, 
-    speed: 100,
-    image: 'demon_blue_A.png', 
+    width: 80, 
+    height: 80, 
+    speed: 400,
+    image: 'demon_blue_A.png',
   },
   {
     name: 'yellow', 
-    width: 40, 
-    height: 40, 
+    width: 180, 
+    height: 180, 
     speed: 50,
     image: 'demon_yellow_A.png', 
   },
   {
     name: 'purple', 
-    width: 50, 
-    height: 50, 
-    speed: 70,
+    width: 250, 
+    height: 250, 
+    speed: 270,
     image: 'demon_purple_A.png', 
   },
 ]
@@ -185,27 +185,6 @@ export default {
         moveDown: false,
       }
     },
-
-    // initializeEnemies() {
-    //   this.gs.enemies = [];
-    //   for (let i = 0; i < this.gs.currentScreen.levelData.enemies.length; i++) {
-    //     for (let j = 0; j < this.gs.currentScreen.levelData.enemies[i].length; j++) {
-    //       const offsetX = (gameWidth / 2) - ((this.gs.currentScreen.levelData.enemies[i].length * 100) / 2);
-    //       const enemyX = (j * 50) + offsetX;
-    //       const enemyY = i * 50;
-    //       this.gs.enemies.push({
-    //         id: i + "," + j,
-    //         row: i,
-    //         col: j,
-    //         type: this.gs.currentScreen.levelData.enemies[i][j],
-    //         position: { x: enemyX, y: enemyY },
-    //         direction: { x: -1, y: 0 },
-    //         width: enemyWidth,
-    //         height: enemyHeight,
-    //       });
-    //     }
-    //   }
-    // },
 
     loadScreen(name, n = null) {
       /*****  Opening Screen *****/
@@ -334,10 +313,10 @@ export default {
         const random = Math.random();
         this.gs.enemyData.forEach((enemyType) => {
           let enemy = enemies.find((enemy) => enemy.name === enemyType.name);
-          if (random < (enemyType.spawnProbability / 10)) {
+          if (random < (enemyType.spawnProbability / 50)) {
             const enemyX = this.dataGameWidth
             const enemyY = Math.random() * (this.dataGameHeight - enemy.height);
-            this.gs.enemies.push({
+            let newEnemy = {
               id: this.generateRandomId(),
               name: enemy.name,
               position: { x: enemyX, y: enemyY },
@@ -346,20 +325,11 @@ export default {
               height: enemy.height,
               speed: enemy.speed,
               image: enemy.image,
-            });
+            }
+            this.gs.enemies.push(newEnemy);
            }
         });
         /** Enemies spawned **/
-
-
-        // // Update the time remaining
-        // if (this.gs.timeRemaining > 0) {
-        //   this.gs.timeRemaining -= 1;
-        //   console.log(`Time remaining: ${this.gs.timeRemaining} seconds`);
-        // } else {
-        //   console.log('Time is up!');
-        //   // Handle end of level here
-        // }
 
         // Update the background position
         this.gs.backgroundPositionX -= 10 * timeDelta;
@@ -388,10 +358,27 @@ export default {
 
 
         /*****  Move the enemies *****/
-        const enemySpeed = 100;
+        // const enemySpeed = 100;
         this.gs.enemies.forEach((enemy) => {
-          enemy.position.x += enemy.direction.x * enemySpeed * timeDelta;
-          enemy.position.y += enemy.direction.y * enemySpeed * timeDelta;
+          if (enemy.name === 'blue') {
+            const playerPosition = this.gs.player.position;
+            const enemyPosition = enemy.position;
+            const angle = Math.atan2(playerPosition.y - enemyPosition.y, playerPosition.x - enemyPosition.x);
+            const xVelocity = enemy.speed * Math.cos(angle);
+            const yVelocity = enemy.speed * Math.sin(angle);
+            enemyPosition.x += xVelocity * timeDelta;
+            enemyPosition.y += yVelocity * timeDelta;
+          } else if (enemy.name === 'yellow') {
+            // const enemySpeed = 100;
+            const enemyPosition = enemy.position;
+            enemyPosition.x -= enemy.speed * timeDelta;
+            enemyPosition.y = Math.sin(enemyPosition.x / 50) * 50 + this.dataGameHeight / 2;
+          } else if (enemy.name === 'purple') {
+            // const enemySpeed = 100;
+            const enemyPosition = enemy.position;
+            enemyPosition.x -= enemy.speed * timeDelta;
+          }
+
 
           // Check for collision with the game borders
           if (enemy.position.y < 0 || enemy.position.y > this.dataGameHeight - enemy.height) {
@@ -536,11 +523,11 @@ export default {
       }
 
       .enemy-yellow {
-        background-image: url('@/assets/images/demon_purple_A.png');
+        background-image: url('@/assets/images/demon_yellow_A.png');
       }
 
       .enemy-purple {
-        background-image: url('@/assets/images/demon_yellow_A.png');
+        background-image: url('@/assets/images/demon_purple_A.png');
       }
     }
   }
@@ -583,8 +570,6 @@ export default {
     height: 10px;
     background-color: red;
   }
-
-
 
   .game-window-paused {
     background-color: rgba(0, 0, 0, 0.5);
