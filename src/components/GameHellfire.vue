@@ -13,9 +13,9 @@
           <div class="lives">Lives: {{ gs.lives }}</div>
         </div>
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
-        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.name]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
         <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
-        <div class="enemy-bullet" v-for="bullet in gs.enemyBullets" :key="bullet.id" :class="['enemy-bullet', 'enemy-bullet-' + bullet.type]" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
+        <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.name]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
+        <div class="enemy-bullet" v-for="bullet in gs.enemyBullets" :key="bullet.id" :class="['enemy-bullet']" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px'}"></div>
       </div>
     </div>
     <div class="transition-screen" v-if="gs.currentScreen.name === 'Transition'">
@@ -44,11 +44,9 @@ const bulletHeight = 5;
 const enemyWidth = 30;
 const enemyHeight = 30;
 
-const enemyBulletWidth = 5;
+const enemyBulletWidth = 15;
 const enemyBulletHeight = 10;
-const enemyBulletSpeed = 200;
-const enemy1BulletFrequency = 0.001; // 10 seconds on average
-const enemy2BulletFrequency = 0.002; // 5 seconds on average
+const enemyBulletSpeed = -300;
 
 const transitionScreenDelay = 2000;
 const goalSize = 50;
@@ -59,7 +57,6 @@ const enemies = [
     width: 80, 
     height: 80, 
     speed: 400,
-    // image: 'demon_blue_A.png',
     hp: 10,
     points: 10,
   },
@@ -68,7 +65,6 @@ const enemies = [
     width: 180, 
     height: 180, 
     speed: 50,
-    // image: 'demon_yellow_A.png', 
     hp: 10,
     points: 20,
   },
@@ -77,16 +73,15 @@ const enemies = [
     width: 250, 
     height: 250, 
     speed: 270,
-    // image: 'demon_purple_A.png', 
     hp: 10,
     points: 30,
+    lastBulletTime: null,
   },
   {
     name: 'red', 
     width: 250, 
     height: 250, 
     speed: 170,
-    // image: 'demon_red_A.png', 
     hp: 10,
     points: 40,
   },
@@ -95,7 +90,6 @@ const enemies = [
     width: 100, 
     height: 100, 
     speed: 270,
-    // image: 'demon_red_small_A.png', 
     hp: 10,
     points: 20,
   },
@@ -104,7 +98,6 @@ const enemies = [
     width: 250, 
     height: 250, 
     speed: 270,
-    // image: 'demon_green_A.png', 
     hp: 30,
     points: 70,
   },
@@ -119,8 +112,8 @@ const screens = [
     levelData: {
       backgroundImage: 'hellfire_background_level_1.png',
       enemyData: [
-        {name: 'red', spawnProbability: 0.25}, 
-        {name: 'green', spawnProbability: 0.25},
+        // {name: 'red', spawnProbability: 0.25}, 
+        {name: 'purple', spawnProbability: 0.25},
       ],
 
     },
@@ -371,6 +364,17 @@ export default {
           return bullet.position.x < this.dataGameWidth - bulletWidth + 1;
         });
 
+
+        // Update enemy bullet position
+        this.gs.enemyBullets.forEach((bullet) => {
+          bullet.position.x += enemyBulletSpeed * timeDelta;
+        });
+
+        // Remove enemy bullets that are offscreen  
+        this.gs.enemyBullets = this.gs.enemyBullets.filter((bullet) => {
+          return bullet.position.x > 0; // + enemyBulletWidth - 1;
+        });
+
         // Check for collisions between bullets and enemies
         this.gs.bullets.forEach((bullet) => {
           this.gs.enemies.forEach((enemy, index) => {
@@ -382,6 +386,7 @@ export default {
               if (enemy.hp <= 0) {
                 if (enemy.name === 'red') {
                   let smallRed = enemies.find((enemy) => enemy.name === 'red-small');
+                  // Small red enemy has 3 different directions
                   this.gs.enemies.push({
                     ...smallRed,
                     id: this.generateRandomId(),
@@ -413,7 +418,6 @@ export default {
           });
         });
 
-
         /*****  Move the enemies *****/
         this.gs.enemies.forEach((enemy) => {
           if (enemy.name === 'blue') {
@@ -427,15 +431,30 @@ export default {
             enemy.position.y = Math.sin(enemy.position.x / 50) * 50 + this.dataGameHeight / 2;
           } else if (enemy.name === 'purple') {
             enemy.position.x -= enemy.speed * timeDelta;
+            // Fire a bullet once every two seconds
+            enemy.lastBulletTime = enemy.lastBulletTime || 0;
+            if (Date.now() - enemy.lastBulletTime > 2000) {
+              console.log("FIRING ENEMY BULLET", this.gs.enemyBullets);
+              this.gs.enemyBullets.push({
+                id: this.generateRandomId(),
+                width: enemyBulletWidth,
+                height: enemyBulletHeight,
+                position: {
+                  x: enemy.position.x - enemy.width / 2,
+                  y: enemy.position.y + enemy.height / 2
+                },
+                direction: { x: -1, y: 0}
+              });
+              enemy.lastBulletTime = Date.now();
+            }
           } else if (enemy.name === 'red') {
             enemy.position.x -= enemy.speed * timeDelta;
           } else if (enemy.name === 'red-small') {
-            enemy.position.x -= enemy.speed * timeDelta;
+            enemy.position.x += enemy.speed * enemy.direction.x * timeDelta;
+            enemy.position.y += enemy.speed * enemy.direction.y * timeDelta;
           } else if (enemy.name === 'green') {
             enemy.position.x -= enemy.speed * timeDelta;
           }
-
-
 
           // Check for collision with the game borders
           if (enemy.position.y < 0 || enemy.position.y > this.dataGameHeight - enemy.height) {
@@ -449,13 +468,13 @@ export default {
 
         // Update enemy bullet position
         this.gs.enemyBullets.forEach((enemyBullet) => {
-          enemyBullet.position.y += enemyBulletSpeed * timeDelta;
+          enemyBullet.position.x += enemyBulletSpeed * timeDelta;
         });
 
 
         // Remove enemy bullets that are offscreen  
         this.gs.enemyBullets = this.gs.enemyBullets.filter((enemyBullet) => {
-          return enemyBullet.position.x < 0;
+          return enemyBullet.position.x > 0;
         });
 
 
@@ -635,19 +654,9 @@ export default {
 
   .enemy-bullet {
     position: absolute;
+    width: 200px;
+    height: 100px;
     background-color: yellow;
-  }
-
-  .enemy-bullet-enemy1 {
-    width: 2.5px;
-    height: 5px;
-    background-color: green;
-  }
-
-  .enemy-bullet-enemy2 {
-    width: 5px;
-    height: 10px;
-    background-color: red;
   }
 
   .game-window-paused {
