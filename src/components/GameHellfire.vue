@@ -5,12 +5,18 @@
       <h2 class="video-game-subtitle" v-if="gs.currentScreen.name === 'Opening'">{{ gs.openingSubtitle }}</h2>
     </div>
     <div class="level-screen" v-if="gs.currentScreen.name === 'Level'">
-      <div class="game-background" :style="{ backgroundPositionX: gs.backgroundPositionX + 'px' }"></div>
+      <div class="game-background" :class="['game-background-' + gs.board]" :style="{ backgroundPositionX: gs.backgroundPositionX + 'px' }"></div>
       <div class="game-window" :style="{ top: '-' + dataGameHeight + 'px', width: dataGameWidth + 'px' }">
         <div class="game-header">
           <div class="score">Score: {{ gs.score }}</div>
           <div class="time-remaining">Time Remaining: {{ gs.displayTime }}</div>
-          <div class="weapon">Weapon: {{ gs.player.weapon }}</div>
+          <div class="weapon">
+            <div class="game-weapon-name">Weapon: {{ gs.player.weapon }}</div>
+            <div class="game-weapon-duration-bar" v-if="gs.player.weaponAcquired">
+              <div class="game-weapon-duration-bar-fill" :style="{ width: this.computeDurationPercent() + '%' }"></div>
+            </div>
+            <!-- Weapon: {{ gs.player.weapon }} -->
+          </div>
           <div class="lives">Lives: {{ gs.lives }}</div>
         </div>
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
@@ -109,8 +115,8 @@ const enemies = [
 
 const weapons = [
   { name: 'default', width: 30, height: 7, color: 'white' },
-  { name: 'dual-blast', width: 50, height: 10, color: 'pink' },
-  { name: 'missile', width: 50, height: 40, color: 'blue'  }
+  { name: 'dual-blast', width: 50, height: 10, color: 'pink', duration: 3 },
+  { name: 'missile', width: 50, height: 40, color: 'blue', duration: 3  },
 ]
 
 const items = [
@@ -124,15 +130,53 @@ const screens = [
   { name: 'Opening', n: null },
   {
     name: 'Level',
+    board: 'city',
     n: 1,
     levelTime: 30,
-    itemDropProbability: .75,
+    itemDropProbability: .2,
     items: ['heart', 'dual-blast', 'missile'],
     levelData: {
       backgroundImage: 'hellfire_background_level_1.png',
       enemyData: [
-        {name: 'red', spawnProbability: 0.5}, 
-        {name: 'purple', spawnProbability: 0.5},
+        {name: 'blue', spawnProbability: 0.2}, 
+        {name: 'yellow', spawnProbability: 0.2}, 
+        {name: 'purple', spawnProbability: 0.2},
+      ],
+
+    },
+  },
+  {
+    name: 'Level',
+    board: 'badlands',
+    n: 2,
+    levelTime: 30,
+    itemDropProbability: .2,
+    items: ['heart', 'dual-blast', 'missile'],
+    levelData: {
+      backgroundImage: 'hellfire_background_level_1.png',
+      enemyData: [
+        {name: 'blue', spawnProbability: 0.3},
+        {name: 'green', spawnProbability: 0.3},
+        {name: 'purple', spawnProbability: 0.3},
+        {name: 'red', spawnProbability: 0.3}, 
+      ],
+
+    },
+  },
+  {
+    name: 'Level',
+    board: 'hell',
+    n: 3,
+    levelTime: 30,
+    itemDropProbability: .2,
+    items: ['heart', 'dual-blast', 'missile'],
+    levelData: {
+      backgroundImage: 'hellfire_background_level_1.png',
+      enemyData: [
+        {name: 'blue', spawnProbability: 0.4},
+        {name: 'red', spawnProbability: 0.4}, 
+        {name: 'purple', spawnProbability: 0.4},
+        {name: 'green', spawnProbability: 0.4}, 
       ],
 
     },
@@ -227,7 +271,8 @@ export default {
         height: playerHeight,
         moveUp: false,
         moveDown: false,
-        weapon: 'missile',
+        weapon: 'default',
+        weaponAcquired: null,
       }
     },
 
@@ -256,6 +301,9 @@ export default {
           if (lives) {
             this.gs.lives = lives;
           }
+
+          // Set the board
+          this.gs.board = this.gs.currentScreen.board;
 
           // Set the start time
           this.gs.startTime = new Date();
@@ -372,6 +420,11 @@ export default {
       }
     },  
 
+    computeDurationPercent() {
+      const weapon = weapons.find((weapon) => weapon.name === this.gs.player.weapon);
+      return (100 - (new Date() - this.gs.player.weaponAcquired) / (weapon.duration * 1000) * 100);
+    },
+
     generateRandomId() {
       const min = 10000000;
       const max = 99999999;
@@ -449,6 +502,9 @@ export default {
               // Remove 10 hp from the enemy
               enemy.hp -= 10;
 
+              // Enemy is stunned, it moves backwards slightly
+              enemy.position.x += 30;
+
               // If the enemy has no hp left, remove it from the enemies array
               if (enemy.hp <= 0) {
                 if (enemy.name === 'red') {
@@ -473,6 +529,7 @@ export default {
                     direction: { x: -1, y: 1 },
                   });
                 }
+
                 // Drop items
                 if (Math.random() < this.gs.currentScreen.itemDropProbability) {
 
@@ -508,11 +565,16 @@ export default {
             const angle = Math.atan2(this.gs.player.position.y - enemy.position.y, this.gs.player.position.x - enemy.position.x);
             const xVelocity = enemy.speed * Math.cos(angle);
             const yVelocity = enemy.speed * Math.sin(angle);
-            enemyPosition.x += xVelocity * timeDelta;
-            enemyPosition.y += yVelocity * timeDelta;
+            enemy.position.x += xVelocity * timeDelta;
+            enemy.position.y += yVelocity * timeDelta;
           } else if (enemy.name === 'yellow') {
-            enemy.position.x -= enemy.speed * timeDelta;
-            enemy.position.y = Math.sin(enemy.position.x / 50) * 50 + this.dataGameHeight / 2;
+            // Yellow enemy moves toward the player, straight, slowly at first, then accelerates
+            const angle = Math.atan2(this.gs.player.position.y - enemy.position.y, this.gs.player.position.x - enemy.position.x);
+            const xVelocity = enemy.speed * Math.cos(angle);
+            const yVelocity = enemy.speed * Math.sin(angle);
+            enemy.position.x += xVelocity * timeDelta;
+            enemy.position.y += yVelocity * timeDelta;
+            enemy.speed += 100 * timeDelta;
           } else if (enemy.name === 'purple') {
             enemy.position.x -= enemy.speed * timeDelta;
             // Fire a bullet once every two seconds
@@ -557,9 +619,10 @@ export default {
           return enemyBullet.position.x > 0;
         });
 
-        // Update item position
+        // Update item position so items move in sinusoidal pattern
         this.gs.items.forEach((item) => {
           item.position.x += itemSpeed * timeDelta;
+          item.position.y = Math.sin(item.position.x / 50) * 50 + this.dataGameHeight / 2;
         });
 
         // Remove items that are offscreen
@@ -576,11 +639,22 @@ export default {
               this.gs.lives++;
             } else if (item.name === 'dual-blast') {
               this.gs.player.weapon = 'dual-blast';
+              this.gs.player.weaponAcquired = new Date();
             } else if (item.name === 'missile') {
               this.gs.player.weapon = 'missile';
+              this.gs.player.weaponAcquired = new Date();
             }
           }
         });
+
+        // Check for expiration of weapon
+        if (this.gs.player.weaponAcquired) {
+          const weapon = weapons.find((weapon) => weapon.name === this.gs.player.weapon);
+          if (new Date() - this.gs.player.weaponAcquired > weapon.duration * 1000) {
+            this.gs.player.weapon = 'default';
+            this.gs.player.weaponAcquired = null;
+          }
+        }
 
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
@@ -661,6 +735,19 @@ export default {
       background-size: cover;
       background-position-x: -50px;
     }
+
+    .game-background-city {
+      background-image: url('@/assets/images/hellfire_background_city.png');
+    }
+
+    .game-background-badlands {
+      background-image: url('@/assets/images/hellfire_background_badlands.png');
+    }
+
+    .game-background-hell {
+      background-image: url('@/assets/images/hellfire_background_hell.png');
+    }
+
     .game-window {
       position: relative;
       width: 800px;
@@ -784,18 +871,42 @@ export default {
     background-size: contain;
     background-repeat: no-repeat;
     border-radius: 10px;
-    height: 20px;
-    width: 20px;
+    height: 40px;
+    width: 40px;
   }
   .item-heart {
-      background-color: red;
+    background-image: url('@/assets/images/item_heart.png');
   }
   .item-dual-blast {
-    background-color: pink;
+    background-image: url('@/assets/images/item_dual_laser.png');
   }
   .item-missile {
-    background-color: blue;
+    background-image: url('@/assets/images/item_missile.png');
   }
 
+  .game-weapon-duration-bar {
+    position: relative;
+    width: 100px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+  }
+
+  .game-weapon-duration-bar-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    transition: width 0.1s linear;
+  }
+
+  .game-weapon-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
 }
 </style>
