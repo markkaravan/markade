@@ -10,12 +10,14 @@
         <div class="game-header">
           <div class="score">Score: {{ gs.score }}</div>
           <div class="time-remaining">Time Remaining: {{ gs.displayTime }}</div>
+          <div class="weapon">Weapon: {{ gs.player.weapon }}</div>
           <div class="lives">Lives: {{ gs.lives }}</div>
         </div>
         <div class="player" :style="{ top: gs.player.position.y + 'px', left: gs.player.position.x + 'px', width: gs.player.width + 'px', height: gs.player.height + 'px' }"></div>
-        <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
+        <div class="bullet" v-for="bullet in gs.bullets" :key="bullet.id" :class="['bullet', 'bullet-' + bullet.name]" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px' }"></div>
         <div class="enemy" v-for="enemy in gs.enemies" :key="enemy.id" :class="['enemy', 'enemy-' + enemy.name]" :style="{ top: enemy.position.y + 'px', left: enemy.position.x + 'px', width: enemy.width + 'px', height: enemy.height + 'px' }"></div>
         <div class="enemy-bullet" v-for="bullet in gs.enemyBullets" :key="bullet.id" :class="['enemy-bullet']" :style="{ top: bullet.position.y + 'px', left: bullet.position.x + 'px', width: bullet.width + 'px', height: bullet.height + 'px'}"></div>
+        <div class="item" v-for="item in gs.items" :key="item.id" :class="['item', 'item-' + item.name]" :style="{ top: item.position.y + 'px', left: item.position.x + 'px' }"></div>
       </div>
     </div>
     <div class="transition-screen" v-if="gs.currentScreen.name === 'Transition'">
@@ -47,6 +49,8 @@ const enemyHeight = 30;
 const enemyBulletWidth = 30;
 const enemyBulletHeight = 7;
 const enemyBulletSpeed = -300;
+
+const itemSpeed = -100;
 
 const transitionScreenDelay = 1000;
 const goalSize = 50;
@@ -102,6 +106,19 @@ const enemies = [
     points: 70,
   },
 ]
+
+const weapons = [
+  { name: 'default', width: 30, height: 7, color: 'white' },
+  { name: 'dual-blast', width: 50, height: 10, color: 'pink' },
+  { name: 'missile', width: 50, height: 40, color: 'blue'  }
+]
+
+const items = [
+  { name: 'heart' },
+  { name: 'dual-blast' },
+  { name: 'missile' }
+]
+
 // Define the screens
 const screens = [
   { name: 'Opening', n: null },
@@ -109,11 +126,13 @@ const screens = [
     name: 'Level',
     n: 1,
     levelTime: 30,
+    itemDropProbability: .75,
+    items: ['heart', 'dual-blast', 'missile'],
     levelData: {
       backgroundImage: 'hellfire_background_level_1.png',
       enemyData: [
-        // {name: 'red', spawnProbability: 0.25}, 
-        {name: 'purple', spawnProbability: 0.25},
+        {name: 'red', spawnProbability: 0.5}, 
+        {name: 'purple', spawnProbability: 0.5},
       ],
 
     },
@@ -129,6 +148,7 @@ let defaultGameState = {
   enemies: [],
   bullets: [],
   enemyBullets: [],
+  items: [],
   isPaused: false,
   timeRemaining: 30,
   score: 0,
@@ -207,6 +227,7 @@ export default {
         height: playerHeight,
         moveUp: false,
         moveDown: false,
+        weapon: 'missile',
       }
     },
 
@@ -289,11 +310,42 @@ export default {
         if (event.code === 'Space') {
           const bulletX = this.gs.player.position.x + this.gs.player.width / 2 - bulletWidth / 2 + 5;
           const bulletY = this.gs.player.position.y - bulletHeight + 16;
-          this.gs.bullets.push({
-            position: { x: bulletX, y: bulletY },
-            width: bulletWidth,
-            height: bulletHeight
-          });
+          
+          let weapon = weapons.find((weapon) => weapon.name === this.gs.player.weapon);
+          if (weapon.name === 'default') {
+            this.gs.bullets.push({
+              id: this.generateRandomId(),
+              position: { x: bulletX, y: bulletY },
+              width: weapon.width,
+              height: weapon.height,
+              name: weapon.name
+            });
+
+          } else if (weapon.name === 'dual-blast') {
+            this.gs.bullets.push({
+              id: this.generateRandomId(),
+              position: { x: bulletX, y: bulletY },
+              width: weapon.width,
+              height: weapon.height,
+              name: weapon.name
+            });
+            this.gs.bullets.push({
+              id: this.generateRandomId(),
+              position: { x: bulletX, y: bulletY + 32 },
+              width: weapon.width,
+              height: weapon.height,
+              name: weapon.name
+            });
+
+          } else if (weapon.name === 'missile') {
+            this.gs.bullets.push({
+              id: this.generateRandomId(),
+              position: { x: bulletX, y: bulletY },
+              width: weapon.width,
+              height: weapon.height,
+              name: weapon.name
+            });
+          } 
         }
       }
     },
@@ -421,6 +473,21 @@ export default {
                     direction: { x: -1, y: 1 },
                   });
                 }
+                // Drop items
+                if (Math.random() < this.gs.currentScreen.itemDropProbability) {
+
+                  this.gs.items.push({
+                    id: this.generateRandomId(),
+                    name: this.gs.currentScreen.items[Math.floor(Math.random() * this.gs.currentScreen.items.length)],
+                    position: {
+                      x: enemy.position.x + enemy.width / 2 - goalSize / 2,
+                      y: enemy.position.y + enemy.height / 2 - goalSize / 2
+                    },
+                    height: 50,
+                    width: 50,
+                  });
+                }  
+
                 // Add points to the score
                 this.gs.score += enemy.points;
                 // Remove the enemy from the enemies array
@@ -428,7 +495,9 @@ export default {
               }
 
               // Remove the bullet from the bullets array
-              this.gs.bullets.splice(this.gs.bullets.indexOf(bullet), 1);
+              if (bullet.name !== 'missile') {
+                this.gs.bullets.splice(this.gs.bullets.indexOf(bullet), 1);
+              }
             }
           });
         });
@@ -488,6 +557,30 @@ export default {
           return enemyBullet.position.x > 0;
         });
 
+        // Update item position
+        this.gs.items.forEach((item) => {
+          item.position.x += itemSpeed * timeDelta;
+        });
+
+        // Remove items that are offscreen
+        this.gs.items = this.gs.items.filter((item) => {
+          return item.position.x > 0;
+        });
+
+        // Check for collisions between player and items
+        this.gs.items.forEach((item, index) => {
+          // console.log(item.position.x, this.gs.player.position.x);
+          if (this.checkCollision(this.gs.player, item)) {
+            this.gs.items.splice(index, 1);
+            if (item.name === 'heart') {
+              this.gs.lives++;
+            } else if (item.name === 'dual-blast') {
+              this.gs.player.weapon = 'dual-blast';
+            } else if (item.name === 'missile') {
+              this.gs.player.weapon = 'missile';
+            }
+          }
+        });
 
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
@@ -589,8 +682,8 @@ export default {
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         z-index: 1;
       }
-      .score, .time-remaining, .lives {
-        margin: 0 20px;
+      .score, .time-remaining, .weapon, .lives {
+        margin: 0 10px;
       }
       .player, .goal, .enemy {
         position: absolute;
@@ -653,6 +746,15 @@ export default {
     box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.5);
     filter: blur(1px);
   }
+  .bullet-default {
+    background-color: white;
+  }
+  .bullet-dual-blast {
+    background-color: pink;
+  }
+  .bullet-missile {
+    background-color: blue;
+  } 
 
   .enemy-bullet {
     position: absolute;
@@ -676,5 +778,24 @@ export default {
     color: #fff;
     z-index: 1000;
   }
+
+  .item {
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    height: 20px;
+    width: 20px;
+  }
+  .item-heart {
+      background-color: red;
+  }
+  .item-dual-blast {
+    background-color: pink;
+  }
+  .item-missile {
+    background-color: blue;
+  }
+
 }
 </style>
