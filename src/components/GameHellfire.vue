@@ -60,6 +60,7 @@ const enemies = [
     height: 80, 
     speed: 400,
     image: 'demon_blue_A.png',
+    points: 10,
   },
   {
     name: 'yellow', 
@@ -67,6 +68,7 @@ const enemies = [
     height: 180, 
     speed: 50,
     image: 'demon_yellow_A.png', 
+    points: 20,
   },
   {
     name: 'purple', 
@@ -74,6 +76,7 @@ const enemies = [
     height: 250, 
     speed: 270,
     image: 'demon_purple_A.png', 
+    points: 30,
   },
 ]
 // Define the screens
@@ -109,8 +112,7 @@ const defaultGameState = {
   score: 0,
   startTime: null,
   displayTime: null,
-  lives: 3,
-  
+  lives: 3, 
 };
 
 export default {
@@ -317,14 +319,10 @@ export default {
             const enemyX = this.dataGameWidth
             const enemyY = Math.random() * (this.dataGameHeight - enemy.height);
             let newEnemy = {
+              ...enemy,
               id: this.generateRandomId(),
-              name: enemy.name,
               position: { x: enemyX, y: enemyY },
               direction: { x: -1, y: 0 },
-              width: enemy.width,
-              height: enemy.height,
-              speed: enemy.speed,
-              image: enemy.image,
             }
             this.gs.enemies.push(newEnemy);
            }
@@ -348,6 +346,9 @@ export default {
         this.gs.bullets.forEach((bullet) => {
           this.gs.enemies.forEach((enemy, index) => {
             if (this.checkCollision(bullet, enemy)) {
+              // Add points to the score
+              console.log("Gamestate:", this.gs, this.gs.score);
+              this.gs.score += enemy.points;
               // Remove the enemy from the enemies array
               this.gs.enemies.splice(index, 1);
               // Remove the bullet from the bullets array
@@ -358,7 +359,6 @@ export default {
 
 
         /*****  Move the enemies *****/
-        // const enemySpeed = 100;
         this.gs.enemies.forEach((enemy) => {
           if (enemy.name === 'blue') {
             const playerPosition = this.gs.player.position;
@@ -369,12 +369,10 @@ export default {
             enemyPosition.x += xVelocity * timeDelta;
             enemyPosition.y += yVelocity * timeDelta;
           } else if (enemy.name === 'yellow') {
-            // const enemySpeed = 100;
             const enemyPosition = enemy.position;
             enemyPosition.x -= enemy.speed * timeDelta;
             enemyPosition.y = Math.sin(enemyPosition.x / 50) * 50 + this.dataGameHeight / 2;
           } else if (enemy.name === 'purple') {
-            // const enemySpeed = 100;
             const enemyPosition = enemy.position;
             enemyPosition.x -= enemy.speed * timeDelta;
           }
@@ -405,14 +403,24 @@ export default {
         // Check for collisions between player and enemies
         this.gs.enemies.forEach((enemy) => {
           if (this.checkCollision(this.gs.player, enemy)) {
-            this.loadScreen('Lose');
+            if (this.gs.lives >= 0) {
+              this.gs.lives--;
+              this.loadScreen('Level', this.gs.currentScreen.n);
+            } else {
+              this.loadScreen('Lose');
+            }
           }
         });
 
         // Check for collisions between enemy bullets and player
         this.gs.enemyBullets.forEach((bullet) => {
           if (this.checkCollision(this.gs.player, bullet)) {
-            this.loadScreen('Lose');
+            if (this.gs.lives >= 0) {
+              this.gs.lives--;
+              this.loadScreen('Level', this.gs.currentScreen.n);
+            } else {
+              this.loadScreen('Lose');
+            }
           }
         });
 
