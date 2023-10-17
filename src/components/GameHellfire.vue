@@ -574,7 +574,7 @@ export default {
             const yVelocity = enemy.speed * Math.sin(angle);
             enemy.position.x += xVelocity * timeDelta;
             enemy.position.y += yVelocity * timeDelta;
-            enemy.speed += 100 * timeDelta;
+            enemy.speed += 10 * timeDelta;
           } else if (enemy.name === 'purple') {
             enemy.position.x -= enemy.speed * timeDelta;
             // Fire a bullet once every two seconds
@@ -628,6 +628,11 @@ export default {
         // Remove items that are offscreen
         this.gs.items = this.gs.items.filter((item) => {
           return item.position.x > 0;
+        });
+
+        // Remove enemies that are offscreen
+        this.gs.enemies = this.gs.enemies.filter((enemy) => {
+          return enemy.position.x > 0;
         });
 
         // Check for collisions between player and items

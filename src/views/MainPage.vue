@@ -30,17 +30,18 @@ export default {
 
   },
   created: function () {
-    console.log("Created: ", GameJson.map(game => game.image ));
-    console.log("Games: ", this.games);
-    this.gameShim = GameJson.map(game => { 
+    this.gameShim = GameJson
+    // sort by date created, descending order
+    .sort((a, b) => {
+      return new Date(b.dateCreated) - new Date(a.dateCreated);
+    })
+    .map(game => { 
       return {
         title: game.title,
         pathName: game.pathName,
         image: new URL('/src/assets/' + game.image, import.meta.url).href
       }
     });
-    console.log("Shim: ", this.gameShim)
-    console.log("Games: ", this.games)
   },
   mounted: function () {
 
