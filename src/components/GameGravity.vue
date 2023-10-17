@@ -28,15 +28,20 @@ export default {
                 // gs has a variable called gravity that is a vector, it has an x and y component
                 gravity: {
                     x: 0,
-                    y: 2
+                    y: .1
                 },
 
                 player: {
-                    x: 400,
-                    y: 400,
+                    pos: {
+                        x: 400,
+                        y: 400
+                    },
                     height: 30,
                     width: 15,
-                    speed: 5,
+                    vel: {
+                        x: 0,
+                        y: 0
+                    },
                     movingUp: false,
                     movingDown: false,
                     movingLeft: false,
@@ -126,37 +131,113 @@ export default {
     methods: {
         handleKeyDown(event) {
             switch (event.code) {
-                // case 'KeyW':
-                //     this.gs.player.movingUp = true;
-                //     break;
+
                 case 'KeyA':
                     this.gs.player.movingLeft = true;
                     break;
-                // case 'KeyS':
-                //     this.gs.player.movingDown = true;
-                //     break;
+
                 case 'KeyD':
                     this.gs.player.movingRight = true;
+                    break;
+
+                case 'KeyJ':
+                    // This allows the player to jump if he is touching the ground
+                    if (this.gs.player.touchingGround) {
+                        this.gs.player.jumping = true;
+                    }
                     break;
             }
         },
         handleKeyUp(event) {
             switch (event.code) {
-                // case 'KeyW':
-                //     this.gs.player.movingUp = false;
-                //     break;
+
                 case 'KeyA':
                     this.gs.player.movingLeft = false;
                     break;
-                // case 'KeyS':
-                //     this.gs.player.movingDown = false;
-                //     break;
+
                 case 'KeyD':
                     this.gs.player.movingRight = false;
+                    break;
+
+                case 'KeyJ':
+                    this.gs.player.jumping = false; 
                     break;
             }
         },
         updateGameState(timestamp) {
+
+            let player = this.gs.player;
+
+            /**************************************
+             * 
+             *       Collision Detection
+             * 
+             * *************************************/
+
+            // Initialize player's touching states to false
+            player.touchingGround = false;
+            player.touchingLeftWall = false;
+            player.touchingRightWall = false;
+
+            // Detect player collision with the top of an object
+            this.gs.obstacles.forEach(obstacle => {
+                if (
+                    player.pos.x + player.width / 2 > obstacle.x - obstacle.width / 2 &&
+                    player.pos.x - player.width / 2 < obstacle.x + obstacle.width / 2 &&
+                    player.pos.y + player.height / 2 > obstacle.y - obstacle.height / 2 &&
+                    player.pos.y - player.height / 2 < obstacle.y + obstacle.height / 2
+                ) {
+                    if (player.pos.y + player.height <= obstacle.y) {
+                       player.touchingGround = true;
+                    }
+                    else if (player.pos.x <= obstacle.x + obstacle.width) {
+                        player.touchingLeftWall = true;
+                    }
+                    else if (player.pos.x + player.width >= obstacle.x) {
+                        player.touchingRightWall = true;
+                    }
+                }
+            });
+
+            if (player.touchingLeftWall) {
+                player.movingLeft = false;
+            }
+
+            if (player.touchingRightWall) {
+                player.movingRight = false;
+            }
+
+
+
+
+            /**************************************
+             * 
+             *       Movement
+             * 
+             * *************************************/
+
+            // Player's vertical velocity  
+            if (!player.touchingGround) {
+                player.vel.y += this.gs.gravity.y;
+            } else if (player.jumping) {
+                player.vel.y = -5;
+            } else {
+                player.vel.y = 0;
+            }
+
+            // Player's horizontal velocity is determined by whether he is moving left or right
+            if (player.movingLeft) {
+                player.vel.x = -5;
+            } else if (player.movingRight) {
+                player.vel.x = 5;
+            } else {
+                player.vel.x = 0;
+            }
+
+            // Move the player's position according to his velocity
+            player.pos.x += player.vel.x;
+            player.pos.y += player.vel.y;
+
 
             /**************************************
              * 
@@ -170,11 +251,9 @@ export default {
 
             // Player
             this.hiddenCtx.fillStyle = 'black';
-            let player = this.gs.player;
-
             this.hiddenCtx.fillRect(
-                player.x - player.width / 2,
-                player.y - player.height / 2,
+                player.pos.x - player.width / 2,
+                player.pos.y - player.height / 2,
                 player.width,
                 player.height
             );
@@ -194,80 +273,13 @@ export default {
             this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
             this.ctx.drawImage(this.hiddenCanvas, 0, 0);
 
-            /**************************************
-             * 
-             *       Movement
-             * 
-             * *************************************/
-
-            // Player movement
-            // if the player is not touching an obstacle below him, his isGrounded variable is false
-            // if the player is not grounded, he is affected by gravity and falls until he hits the ground or the board's edge
-            // if (!player.isGrounded) {
-            //     player.y += this.gs.gravity.y;
-            // }
-            // If the player is grounded, he can move left and right
-
-            
-
-
-
 
 
             /**************************************
              * 
-             *       Collision Detection
+             *       Next Frame
              * 
              * *************************************/
-
-            // Initialize player's touching states to false
-            player.touchingGround = false;
-            player.touchingLeftWall = false;
-            player.touchingRightWall = false;
-
-            // Detect player collision with the top of an object
-            this.gs.obstacles.forEach(obstacle => {
-                if (
-                    player.x + player.width / 2 > obstacle.x - obstacle.width / 2 &&
-                    player.x - player.width / 2 < obstacle.x + obstacle.width / 2 &&
-                    player.y + player.height / 2 > obstacle.y - obstacle.height / 2 &&
-                    player.y - player.height / 2 < obstacle.y + obstacle.height / 2
-                ) {
-                    if (player.y + player.height <= obstacle.y) {
-                       player.touchingGround = true;
-                    }
-                    else if (player.x <= obstacle.x + obstacle.width) {
-                        player.touchingLeftWall = true;
-                    }
-                    else if (player.x + player.width >= obstacle.x) {
-                        player.touchingRightWall = true;
-                    }
-                }
-            });
-
-            if (player.touchingLeftWall) {
-                player.movingLeft = false;
-            }
-
-            if (player.touchingRightWall) {
-                player.movingRight = false;
-            }
-
-            // Apply gravity if the player is not touching the ground
-            if (!player.touchingGround) {
-                player.y += this.gs.gravity.y;
-            }
-
-            // If the player is moving left, move him left
-            if (player.movingLeft) {
-                player.x -= player.speed;
-            }
-
-            // If the player is moving right, move him right
-            if (player.movingRight) {
-                player.x += player.speed;
-            }
-
 
             requestAnimationFrame(this.updateGameState);
         }
