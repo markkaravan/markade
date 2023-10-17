@@ -16,10 +16,10 @@ export default {
     },
     mounted() {
         this.ctx = this.$refs.canvas.getContext('2d');
-        // this.hiddenCanvas = document.createElement('canvas');
-        // this.hiddenCanvas.width = this.gameWidth;
-        // this.hiddenCanvas.height = this.gameHeight;
-        // this.hiddenCtx = this.hiddenCanvas.getContext('2d');
+        this.hiddenCanvas = document.createElement('canvas');
+        this.hiddenCanvas.width = this.gameWidth;
+        this.hiddenCanvas.height = this.gameHeight;
+        this.hiddenCtx = this.hiddenCanvas.getContext('2d');
         this.player = {
             x: this.gameWidth / 2,
             y: this.gameHeight / 2,
@@ -91,16 +91,16 @@ export default {
             });
         },
         draw() {
-            this.ctx.clearRect(0, 0, this.gameWidth, this.gameHeight);
-            this.ctx.fillStyle = 'black';
-            this.ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
-            this.ctx.fillStyle = 'white';
-            this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
+            this.hiddenCtx.clearRect(0, 0, this.gameWidth, this.gameHeight);
+            this.hiddenCtx.fillStyle = 'black';
+            this.hiddenCtx.fillRect(0, 0, this.gameWidth, this.gameHeight);
+            this.hiddenCtx.fillStyle = 'white';
+            this.hiddenCtx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
             this.obstacles.forEach(obstacle => {
-                this.ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                this.hiddenCtx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             });
-            // this.ctx.clearRect(0, 0, this.gameWidth, this.gameHeight);
-            // this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+            this.ctx.clearRect(0, 0, this.gameWidth, this.gameHeight);
+            this.ctx.drawImage(this.hiddenCanvas, 0, 0);
         },
         checkCollision(rect1, rect2) {
             return (
@@ -112,4 +112,4 @@ export default {
         }
     }
 };
-</script>
+</script> -->

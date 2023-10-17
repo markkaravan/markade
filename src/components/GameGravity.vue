@@ -1,8 +1,12 @@
 <template>
-    <canvas ref="canvas" :width="gameWidth" :height="gameHeight"></canvas>
+    <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
+    <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
 
 <script>
+const gameWidthDefault = 800;
+const gameHeightDefault = 333;
+
 export default {
     name: 'GameGravity',
     props: {
@@ -10,13 +14,16 @@ export default {
             type: Number,
             required: true
         },
-            gameHeight: {
-                type: Number,
-                required: true
-            }
-        },
+        gameHeight: {
+            type: Number,
+            required: true
+        }
+    },
+
     data() {
         return {
+            dataGameWidth: gameWidthDefault,
+            dataGameHeight: gameHeightDefault,
             gs: {
                 // gs has a variable called gravity that is a vector, it has an x and y component
                 gravity: {
@@ -72,12 +79,6 @@ export default {
                         width: this.gameWidth / 2,
                         height: 50
                     },
-                    // {
-                    //     x: 0,
-                    //     y: this.gameHeight + 100,
-                    //     width: this.gameWidth,
-                    //     height: 50
-                    // }
                 ],
 
                 // The gs has a goal property that is an object
@@ -97,10 +98,11 @@ export default {
         this.ctx = this.$refs.canvas.getContext('2d');
 
         
-        this.hiddenCanvas = document.createElement('canvas');
-        this.hiddenCanvas.width = this.gameWidth;
-        this.hiddenCanvas.height = this.gameHeight;
+        this.hiddenCanvas = this.$refs.hiddenCanvas;
         this.hiddenCtx = this.hiddenCanvas.getContext('2d');
+        // this.hiddenCanvas.width = this.gameWidth;
+        // this.hiddenCanvas.height = this.gameHeight;
+        // this.hiddenCtx = this.hiddenCanvas.getContext('2d');
 
         this.updateGameState(performance.now());
         window.addEventListener('keydown', this.handleKeyDown);
@@ -110,6 +112,18 @@ export default {
         window.removeEventListener('keydown', this.handleKeyDown);
         window.removeEventListener('keyup', this.handleKeyUp);
     },
+
+    // Moving Props to Data
+    // This is dumb but I guess it's better than using ref()'s
+    watch: {
+        gameWidth: function(newWidth) {
+        this.dataGameWidth = newWidth;
+        },
+        gameHeight: function(newHeight) {
+        this.dataGameHeight = newHeight;
+        }
+    },
+
     methods: {
         handleKeyDown(event) {
             switch (event.code) {
@@ -205,19 +219,6 @@ export default {
 
 
 
-
-            // if (player.movingUp) {
-            //     player.y -= player.speed;
-            // }
-            // if (player.movingLeft) {
-            //     player.x -= player.speed;
-            // }
-            // if (player.movingDown) {
-            //     player.y += player.speed;
-            // }
-            // if (player.movingRight) {
-            //     player.x += player.speed;
-            // }
 
             /**************************************
              * 
