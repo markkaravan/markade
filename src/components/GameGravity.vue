@@ -7,6 +7,70 @@
 const gameWidthDefault = 800;
 const gameHeightDefault = 333;
 
+const screens = [
+    { name: "Opening", n: null},
+    { name: 'Level',
+        n: 1,
+        gravity: { x: 0, y: .1 },
+        spawnPoint: { x: 400, y: 400 },
+        player: {
+            pos: { x: 400, y: 400 },
+            height: 30,
+            width: 45,
+            vel: { x: 0, y: 0 },
+            movingUp: false,
+            movingDown: false,
+            movingLeft: false,
+            movingRight: false,
+            touchingGround: false,
+            touchingLeftWall: false,
+            touchingRightWall: false,
+        },
+        obstacles: [
+            {
+                x: 100,
+                y: 100,
+                width: 50,
+                height: 50
+            },
+            {
+                x: 200,
+                y: 200,
+                width: 50,
+                height: 50
+            },
+            {
+                x: 300,
+                y: 550,
+                width: 50,
+                height: 50
+            },
+            // There are two additional obstacles which cover the ground of the level.
+            // Between them is a pit.
+            {
+                x: 0,
+                y: 600,
+                width: 1200 / 2,
+                height: 50
+            },
+            {
+                x: 1200 / 2 + 50,
+                y: 600,
+                width: 900,
+                height: 50
+            },
+        ],
+
+        portals: [{
+            x: 700,
+            y: 300,
+            destination: 2
+        }
+    ]},
+    { name: 'Win', n: null },
+    { name: 'Lose', n: null },
+]
+
 export default {
     name: 'GameGravity',
     props: {
@@ -26,22 +90,15 @@ export default {
             dataGameHeight: gameHeightDefault,
             gs: {
                 // gs has a variable called gravity that is a vector, it has an x and y component
-                gravity: {
-                    x: 0,
-                    y: .1
-                },
+                gravity: { x: 0, y: .1 },
+
+                spawnPoint: { x: 400, y: 400 },
 
                 player: {
-                    pos: {
-                        x: 400,
-                        y: 400
-                    },
+                    pos: { x: 400, y: 400 },
                     height: 30,
                     width: 45,
-                    vel: {
-                        x: 0,
-                        y: 0
-                    },
+                    vel: { x: 0, y: 0 },
                     movingUp: false,
                     movingDown: false,
                     movingLeft: false,
@@ -88,14 +145,11 @@ export default {
                     },
                 ],
 
-                // The gs has a goal property that is an object
-                // The goal object has an x, y, width, and height property
-                goal: {
+                portals: [{
                     x: 700,
                     y: 300,
-                    width: 50,
-                    height: 50
-                }
+                    destination: 2
+                }]
 
             }
         }
@@ -191,11 +245,9 @@ export default {
                        player.touchingGround = true;
                     }
                     else if (player.pos.x <= obstacle.x + obstacle.width && player.pos.x >= obstacle.x) {
-                        console.log("Touching left wall");
                         player.touchingLeftWall = true;
                     }
                     else if (player.pos.x + player.width >= obstacle.x && player.pos.x + player.width <= obstacle.x + obstacle.width) {
-                        console.log("Touching right wall");
                         player.touchingRightWall = true;
                     }
                 }
