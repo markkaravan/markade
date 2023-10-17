@@ -43,6 +43,16 @@ const routes = [
             name: 'hellfire',
             component: () => import('../views/GameTemplate.vue')
         },
+        {
+            path: '/games/gravity',
+            name: 'gravity',
+            component: () => import('../views/GameTemplate.vue')
+        },
+        {
+            path: '/games/sandbox',
+            name: 'sandbox',
+            component: () => import('../views/GameTemplate.vue')
+        },
     ]
 
 const router = createRouter({

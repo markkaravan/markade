@@ -34,6 +34,8 @@ import games from '@/assets/games.json'
 import GameLevelQuest from '@/components/GameLevelQuest.vue'
 import GameGalaga from '@/components/GameGalaga.vue'
 import GameHellfire from '@/components/GameHellfire.vue'
+import GameGravity from '@/components/GameGravity.vue'
+import GameSandBox from '@/components/GameSandbox.vue'
 
 const gameWidthDefault = 800;
 const gameHeightDefault = 333;
@@ -43,7 +45,8 @@ export default {
   components: {
     GameLevelQuest,
     GameGalaga,
-    GameHellfire
+    GameHellfire,
+    GameGravity
   },
   computed: {
     gameComponent() {
@@ -54,6 +57,10 @@ export default {
         return 'GameGalaga'
       } else if (route === '/games/hellfire') {
         return 'GameHellfire'
+      } else if (route === '/games/gravity') {
+        return 'GameGravity'
+      } else if (route === '/games/sandbox') {
+        return 'GameSandBox'
       } else {
         // Default to GameLevelQuest if the route is not recognized
         return 'GameLevelQuest'
