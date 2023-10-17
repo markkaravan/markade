@@ -37,7 +37,7 @@ export default {
                         y: 400
                     },
                     height: 30,
-                    width: 15,
+                    width: 45,
                     vel: {
                         x: 0,
                         y: 0
@@ -190,10 +190,12 @@ export default {
                     if (player.pos.y + player.height <= obstacle.y) {
                        player.touchingGround = true;
                     }
-                    else if (player.pos.x <= obstacle.x + obstacle.width) {
+                    else if (player.pos.x <= obstacle.x + obstacle.width && player.pos.x >= obstacle.x) {
+                        console.log("Touching left wall");
                         player.touchingLeftWall = true;
                     }
-                    else if (player.pos.x + player.width >= obstacle.x) {
+                    else if (player.pos.x + player.width >= obstacle.x && player.pos.x + player.width <= obstacle.x + obstacle.width) {
+                        console.log("Touching right wall");
                         player.touchingRightWall = true;
                     }
                 }
@@ -207,6 +209,16 @@ export default {
                 player.movingRight = false;
             }
 
+            // If the player touches the border of the canvas, he dies
+            if (
+                player.pos.x - player.width / 2 < 0 ||
+                player.pos.x + player.width / 2 > this.dataGameWidth ||
+                player.pos.y - player.height / 2 < 0 ||
+                player.pos.y + player.height / 2 > this.dataGameHeight
+            ) {
+                player.pos.x = 400;
+                player.pos.y = 400;
+            }
 
 
 
