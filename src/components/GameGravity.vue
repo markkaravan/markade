@@ -11,7 +11,7 @@ const portalHeight = 70;
 
 const player = {
         height: 30,
-        width: 45,
+        width: 20,
         vel: { x: 0, y: 0 },
         movingUp: false,
         movingDown: false,
@@ -243,7 +243,7 @@ export default {
             return JSON.parse(JSON.stringify(obj));
         },
 
-        loadScreen(screenName, levelNumber) {
+        loadScreen(screenName, levelNumber=null, portalId=null) {
             if (screenName === "Opening") {
                 let currentScreen = screens.find(screen => screen.name === "Opening");
                 // iterate through all properties of currentScreen and add them to this.gs
@@ -251,6 +251,7 @@ export default {
                     this.gs[prop] = currentScreen[prop];
                 }
                 this.gs.name = "Opening";
+                this.gs.lives = 3;
                 this.gs.blinkTimer = Date.now();
                 this.gs.showText = true;
             } else if (screenName === "Level") {
@@ -259,7 +260,16 @@ export default {
                 for (let prop in currentScreen) {
                     this.gs[prop] = currentScreen[prop];
                 }
+                console.log("HERES THE GS:", this.gs);
                 this.gs.player = this.copy(player);
+                this.gs.player.justSpawnedInPortal = "none";
+                if (portalId) {
+                    console.log("Portal id: ", portalId);
+                    let portal = this.gs.portals.find(portal => portal.id === portalId);
+                    this.gs.player.justSpawnedInPortal = portalId;
+                    console.log("justSpawnedInPortal:", this.gs.player.justSpawnedInPortal);
+                    this.gs.spawnPoint = { x: portal.x, y: portal.y };
+                }
                 this.gs.player.pos = { x: this.gs.spawnPoint.x, y: this.gs.spawnPoint.y };
             } else if (screenName === "Win") {
                 let currentScreen = screens.find(screen => screen.name === "Win");
@@ -268,7 +278,15 @@ export default {
                     this.gs[prop] = currentScreen[prop];
                 }
                 this.gs.name = "Win";
-                this.gs.winTimer = Date.now();
+                this.gs.messageTimer = Date.now();
+            } else if (screenName === "Lose") {
+                let currentScreen = screens.find(screen => screen.name === "Lose");
+                // iterate through all properties of currentScreen and add them to this.gs
+                for (let prop in currentScreen) {
+                    this.gs[prop] = currentScreen[prop];
+                }
+                this.gs.name = "Lose";
+                this.gs.messageTimer = Date.now();
             }
         },
 
@@ -277,6 +295,8 @@ export default {
                 this.renderOpeningScreen();
             } else if (this.gs.name === 'Win') {
                 this.renderWinScreen();
+            } else if (this.gs.name === 'Lose') {
+                this.renderLoseScreen();
             } else {
                 this.updateGameState();
             }
@@ -322,7 +342,27 @@ export default {
             this.hiddenCtx.fillText('You win!', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
 
             // If it has been 2 seconds since gs.winTimer, go back to the opening screen
-            if (Date.now() - this.gs.winTimer > 2000) {
+            if (Date.now() - this.gs.messageTimer > 2000) {
+                this.loadScreen('Opening', null);
+            }
+
+            // Draw to main canvas
+            this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+            this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+        },
+
+        renderLoseScreen() {
+            // Draw black background to hidden context
+            this.hiddenCtx.fillStyle = 'black';
+            this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+
+            // Draw white header text saying the title of the game
+            this.hiddenCtx.fillStyle = 'white';
+            this.hiddenCtx.font = '100px Helvetica';
+            this.hiddenCtx.fillText('You lose', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
+
+            // If it has been 2 seconds since gs.winTimer, go back to the opening screen
+            if (Date.now() - this.gs.messageTimer > 2000) {
                 this.loadScreen('Opening', null);
             }
 
@@ -455,25 +495,55 @@ export default {
                 player.pos.y - player.height / 2 < 0 ||
                 player.pos.y + player.height / 2 > this.dataGameHeight
             ) {
-                player.pos.x = 400;
-                player.pos.y = 400;
+                this.gs.lives--;
+                if (this.gs.lives <= 0) {
+                    this.loadScreen('Lose', null);
+                } else {
+                    this.loadScreen('Level', this.gs.n);
+                }
             }
 
-            // If a player reaches the portal, he is transported to the next level
-            this.gs.portals.forEach(portal => {
-                if (
-                    player.pos.x + player.width / 2 > portal.x - portalWidth / 2 &&
-                    player.pos.x - player.width / 2 < portal.x + portalWidth / 2 &&
-                    player.pos.y + player.height / 2 > portal.y - portalHeight / 2 &&
-                    player.pos.y - player.height / 2 < portal.y + portalHeight / 2
-                ) {
-                    if (portal.destination === 'Win') {
-                        this.loadScreen('Win', null);
-                    } else if (typeof portal.destination === 'number') {
-                        this.loadScreen('Level', portal.destination);
+            // No portal collision detection if the player just spawned
+            if (this.gs.player.justSpawnedInPortal === "none") {
+                // console.log("this.gs.player.justSpawnedInPortal", this.gs.player.justSpawnedInPortal);
+                // If a player reaches the portal, he is transported to the next level
+                this.gs.portals.forEach(portal => {
+                    if (
+                        // portal must fully encapsulate the player
+                        player.pos.x - player.width / 2 > portal.x - portalWidth / 2 &&
+                        player.pos.x + player.width / 2 < portal.x + portalWidth / 2 &&
+                        player.pos.y - player.height / 2 > portal.y - portalHeight / 2 &&
+                        player.pos.y + player.height / 2 < portal.y + portalHeight / 2
+                    ) {
+                        if (portal.destination === 'Win') {
+                            this.loadScreen('Win', null);
+                        } else if (typeof portal.destination === 'number') {
+                            this.gs.player.justSpawnedInPortal = "none";
+                            this.loadScreen('Level', portal.destination, portal.id);
+                        }
                     }
+                });
+            }
+
+            // If the player has justSpawnedInPortal, detect when he fully leaves the portal and change this value to null
+            if (this.gs.player.justSpawnedInPortal !== "none") {
+                let portal = this.gs.portals.find(portal => portal.id === this.gs.player.justSpawnedInPortal);
+                console.log("this.gs: ", this.gs);
+                console.log("this.gs.portals: ", this.gs.portals);
+                console.log("portal ", portal);
+                let player = this.gs.player;
+                if (
+                    player.pos.x - player.width / 2 > portal.x - portalWidth / 2 &&
+                    player.pos.x + player.width / 2 < portal.x + portalWidth / 2 &&
+                    player.pos.y - player.height / 2 > portal.y - portalHeight / 2 &&
+                    player.pos.y + player.height / 2 < portal.y + portalHeight / 2
+                ) {
+                    // Do nothing
+                } else {
+                    this.gs.player.justSpawnedInPortal = "none";
                 }
-            });
+            }
+
 
 
 
@@ -517,6 +587,11 @@ export default {
                 player.width,
                 player.height
             );
+
+            // Lives
+            this.hiddenCtx.fillStyle = 'black';
+            this.hiddenCtx.font = '24px Helvetica';
+            this.hiddenCtx.fillText('Lives: ' + this.gs.lives, 10, 30);
 
             // Draw
             this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
