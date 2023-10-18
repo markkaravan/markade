@@ -6,6 +6,8 @@
 <script>
 const gameWidthDefault = 800;
 const gameHeightDefault = 333;
+const portalWidth = 50;
+const portalHeight = 70;
 
 const screens = [
     { name: "Opening", n: null},
@@ -35,7 +37,7 @@ const screens = [
             },
             {
                 x: 200,
-                y: 200,
+                y: 400,
                 width: 50,
                 height: 50
             },
@@ -65,8 +67,8 @@ const screens = [
             x: 700,
             y: 300,
             destination: 2
-        }
-    ]},
+        }]
+    },
     { name: 'Win', n: null },
     { name: 'Lose', n: null },
 ]
@@ -112,14 +114,14 @@ export default {
                 // Each object has an x, y, width, and height property
                 obstacles: [
                     {
-                        x: 100,
-                        y: 100,
+                        x: 700,
+                        y: 350,
                         width: 50,
                         height: 50
                     },
                     {
-                        x: 200,
-                        y: 200,
+                        x: 500,
+                        y: 450,
                         width: 50,
                         height: 50
                     },
@@ -222,6 +224,37 @@ export default {
 
             let player = this.gs.player;
 
+
+            /**************************************
+             * 
+             *       Movement
+             * 
+             * *************************************/
+
+            // Player's vertical velocity  
+            if (!player.touchingGround) {
+                player.vel.y += this.gs.gravity.y;
+            } else if (player.jumping) {
+                player.vel.y = -5;
+            } else {
+                player.vel.y = 0;
+            }
+
+            // Player's horizontal velocity is determined by whether he is moving left or right
+            if (player.movingLeft) {
+                player.vel.x = -5;
+            } else if (player.movingRight) {
+                player.vel.x = 5;
+            } else {
+                player.vel.x = 0;
+            }
+
+            // Move the player's position according to his velocity
+            player.pos.x += player.vel.x;
+            player.pos.y += player.vel.y;
+
+
+
             /**************************************
              * 
              *       Collision Detection
@@ -272,35 +305,21 @@ export default {
                 player.pos.y = 400;
             }
 
+            // If a player reaches the portal, he is transported to the next level
+            this.gs.portals.forEach(portal => {
+                if (
+                    player.pos.x + player.width / 2 > portal.x - portalWidth / 2 &&
+                    player.pos.x - player.width / 2 < portal.x + portalWidth / 2 &&
+                    player.pos.y + player.height / 2 > portal.y - portalHeight / 2 &&
+                    player.pos.y - player.height / 2 < portal.y + portalHeight / 2
+                ) {
+                    console.log("Portal reached");
+                    // this.gs = screens[portal.destination];
+                    // player.pos.x = this.gs.spawnPoint.x;
+                    // player.pos.y = this.gs.spawnPoint.y;
+                }
+            });
 
-
-            /**************************************
-             * 
-             *       Movement
-             * 
-             * *************************************/
-
-            // Player's vertical velocity  
-            if (!player.touchingGround) {
-                player.vel.y += this.gs.gravity.y;
-            } else if (player.jumping) {
-                player.vel.y = -5;
-            } else {
-                player.vel.y = 0;
-            }
-
-            // Player's horizontal velocity is determined by whether he is moving left or right
-            if (player.movingLeft) {
-                player.vel.x = -5;
-            } else if (player.movingRight) {
-                player.vel.x = 5;
-            } else {
-                player.vel.x = 0;
-            }
-
-            // Move the player's position according to his velocity
-            player.pos.x += player.vel.x;
-            player.pos.y += player.vel.y;
 
 
             /**************************************
@@ -330,6 +349,17 @@ export default {
                     obstacle.y - obstacle.height / 2,
                     obstacle.width,
                     obstacle.height
+                );
+            });
+
+            // Portals
+            this.hiddenCtx.fillStyle = 'green';
+            this.gs.portals.forEach(portal => {
+                this.hiddenCtx.fillRect(
+                    portal.x - portalWidth / 2,
+                    portal.y - portalHeight / 2,
+                    portalWidth,
+                    portalHeight
                 );
             });
 
