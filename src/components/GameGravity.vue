@@ -70,7 +70,13 @@ const screens = [
             y: 300,
             destination: 2,
             color: "green",
-        }]
+        }],
+
+        items: [{
+            type: "gravity-up", 
+            x: 700, 
+            y: 550
+        }],
     },
     { name: 'Level',
         n: 2,
@@ -260,14 +266,11 @@ export default {
                 for (let prop in currentScreen) {
                     this.gs[prop] = currentScreen[prop];
                 }
-                console.log("HERES THE GS:", this.gs);
                 this.gs.player = this.copy(player);
                 this.gs.player.justSpawnedInPortal = "none";
                 if (portalId) {
-                    console.log("Portal id: ", portalId);
                     let portal = this.gs.portals.find(portal => portal.id === portalId);
                     this.gs.player.justSpawnedInPortal = portalId;
-                    console.log("justSpawnedInPortal:", this.gs.player.justSpawnedInPortal);
                     this.gs.spawnPoint = { x: portal.x, y: portal.y };
                 }
                 this.gs.player.pos = { x: this.gs.spawnPoint.x, y: this.gs.spawnPoint.y };
@@ -421,37 +424,7 @@ export default {
 
             /**************************************
              * 
-             *       Movement
-             * 
-             * *************************************/
-
-            // Player's vertical velocity  
-            if (!player.touchingGround) {
-                player.vel.y += this.gs.gravity.y;
-            } else if (player.jumping) {
-                player.vel.y = -5;
-            } else {
-                player.vel.y = 0;
-            }
-
-            // Player's horizontal velocity is determined by whether he is moving left or right
-            if (player.movingLeft) {
-                player.vel.x = -3;
-            } else if (player.movingRight) {
-                player.vel.x = 3;
-            } else {
-                player.vel.x = 0;
-            }
-
-            // Move the player's position according to his velocity
-            player.pos.x += player.vel.x;
-            player.pos.y += player.vel.y;
-
-
-
-            /**************************************
-             * 
-             *       Collision Detection
+             *       Collision Detection (must come before movement)
              * 
              * *************************************/
 
@@ -480,6 +453,28 @@ export default {
                 }
             });
 
+            // Detect player collision with the top of an item
+            this.gs.items.forEach(item => {
+                if (
+                    player.pos.x + player.width / 2 > item.x - 25 &&
+                    player.pos.x - player.width / 2 < item.x + 25 &&
+                    player.pos.y + player.height / 2 > item.y - 25 &&
+                    player.pos.y - player.height / 2 < item.y + 25
+                ) {
+                    if (item.type === "gravity-up") {
+                        this.gs.player.touchingGround = false;
+                        this.gs.gravity = { x: 0, y: -.1 };
+                    } else if (item.type === "gravity-down") {
+                        this.gs.gravity = { x: 0, y: .1 };
+                    } else if (item.type === "gravity-left") {
+                        this.gs.gravity = { x: -.1, y: 0 };
+                    } else if (item.type === "gravity-right") {
+                        this.gs.gravity = { x: .1, y: 0 };
+                    }
+                    this.gs.items = this.gs.items.filter(i => i !== item);
+                }
+            });
+
             if (player.touchingLeftWall) {
                 player.movingLeft = false;
             }
@@ -505,7 +500,6 @@ export default {
 
             // No portal collision detection if the player just spawned
             if (this.gs.player.justSpawnedInPortal === "none") {
-                // console.log("this.gs.player.justSpawnedInPortal", this.gs.player.justSpawnedInPortal);
                 // If a player reaches the portal, he is transported to the next level
                 this.gs.portals.forEach(portal => {
                     if (
@@ -528,9 +522,6 @@ export default {
             // If the player has justSpawnedInPortal, detect when he fully leaves the portal and change this value to null
             if (this.gs.player.justSpawnedInPortal !== "none") {
                 let portal = this.gs.portals.find(portal => portal.id === this.gs.player.justSpawnedInPortal);
-                console.log("this.gs: ", this.gs);
-                console.log("this.gs.portals: ", this.gs.portals);
-                console.log("portal ", portal);
                 let player = this.gs.player;
                 if (
                     player.pos.x - player.width / 2 > portal.x - portalWidth / 2 &&
@@ -543,6 +534,35 @@ export default {
                     this.gs.player.justSpawnedInPortal = "none";
                 }
             }
+
+
+            /**************************************
+             * 
+             *       Movement (must come after collision detection)
+             * 
+             * *************************************/
+
+            // Player's vertical velocity  
+            if (!player.touchingGround) {
+                player.vel.y += this.gs.gravity.y;
+            } else if (player.jumping) {
+                player.vel.y = -5;
+            } else {
+                player.vel.y = 0;
+            }
+
+            // Player's horizontal velocity is determined by whether he is moving left or right
+            if (player.movingLeft) {
+                player.vel.x = -3;
+            } else if (player.movingRight) {
+                player.vel.x = 3;
+            } else {
+                player.vel.x = 0;
+            }
+
+            // Move the player's position according to his velocity
+            player.pos.x += player.vel.x;
+            player.pos.y += player.vel.y;
 
 
 
@@ -578,6 +598,37 @@ export default {
                     portalHeight
                 );
             });
+
+            // Items
+            // Each item is a 50x50 purple square.  There are four kinds: gravity-up, gravity-down, gravity-left and gravity-right.
+            // If the player touches the gravity-up item, gravity is reversed.
+            // If the player touches the gravity-down item, gravity is set to normal.
+            // If the player touches the gravity-left item, gravity is set to left.
+            // If the player touches the gravity-right item, gravity is set to right.
+            // THere is small text that says "up", "down", "left", or "right" inside the item.
+            this.gs.items.forEach(item => {
+                this.hiddenCtx.fillStyle = 'purple';
+                this.hiddenCtx.fillRect(
+                    item.x - 25,
+                    item.y - 25,
+                    50,
+                    50
+                );
+                this.hiddenCtx.fillStyle = 'white';
+                this.hiddenCtx.font = '24px Helvetica';
+                let text = "";
+                if (item.type === "gravity-up") {
+                    text = "U";
+                } else if (item.type === "gravity-down") {
+                    text = "D";
+                } else if (item.type === "gravity-left") {
+                    text = "L";
+                } else if (item.type === "gravity-right") {
+                    text = "R";
+                }
+                this.hiddenCtx.fillText(text, item.x - 10, item.y + 10);
+            });
+
 
             // Player
             this.hiddenCtx.fillStyle = 'black';
