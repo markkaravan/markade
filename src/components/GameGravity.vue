@@ -9,25 +9,26 @@ const gameHeightDefault = 333;
 const portalWidth = 50;
 const portalHeight = 70;
 
+const player = {
+        height: 30,
+        width: 45,
+        vel: { x: 0, y: 0 },
+        movingUp: false,
+        movingDown: false,
+        movingLeft: false,
+        movingRight: false,
+        touchingGround: false,
+        touchingLeftWall: false,
+        touchingRightWall: false,
+    };
+
 const screens = [
     { name: "Opening", n: null},
     { name: 'Level',
         n: 1,
         gravity: { x: 0, y: .1 },
         spawnPoint: { x: 400, y: 400 },
-        player: {
-            pos: { x: 400, y: 400 },
-            height: 30,
-            width: 45,
-            vel: { x: 0, y: 0 },
-            movingUp: false,
-            movingDown: false,
-            movingLeft: false,
-            movingRight: false,
-            touchingGround: false,
-            touchingLeftWall: false,
-            touchingRightWall: false,
-        },
+        player: JSON.parse(JSON.stringify(player)),
         obstacles: [
             {
                 x: 700,
@@ -69,6 +70,52 @@ const screens = [
             destination: 2
         }]
     },
+    { name: 'Level',
+        n: 2,
+        gravity: { x: 0, y: .1 },
+        spawnPoint: { x: 400, y: 400 },
+        player: JSON.parse(JSON.stringify(player)),
+        obstacles: [
+            {
+                x: 300,
+                y: 350,
+                width: 50,
+                height: 50
+            },
+            {
+                x: 500,
+                y: 450,
+                width: 50,
+                height: 50
+            },
+            {
+                x: 700,
+                y: 550,
+                width: 50,
+                height: 50
+            },
+            // There are two additional obstacles which cover the ground of the level.
+            // Between them is a pit.
+            {
+                x: 0,
+                y: 600,
+                width: 1200 / 2,
+                height: 50
+            },
+            {
+                x: 1200 / 2 + 50,
+                y: 600,
+                width: 900,
+                height: 50
+            },
+        ],
+
+        portals: [{
+            x: 300,
+            y: 300,
+            destination: 1
+        }]
+    },
     { name: 'Win', n: null },
     { name: 'Lose', n: null },
 ]
@@ -106,6 +153,7 @@ export default {
         window.addEventListener('keyup', this.handleKeyUp);
 
         this.loadScreen('Opening', null);
+        this.gameLoop();
     },
     beforeDestroy() {
         window.removeEventListener('keydown', this.handleKeyDown);
@@ -124,17 +172,29 @@ export default {
     },
 
     methods: {
+        copy (obj) {
+            return JSON.parse(JSON.stringify(obj));
+        },
+
         loadScreen(screenName, levelNumber) {
-            console.log("NOw loading:", screenName, levelNumber);
             if (screenName === "Opening") {
-                this.gs = screens.find(screen => screen.name === screenName);
+                let currentScreen = screens.find(screen => screen.name === screenName);
+                // iterate through all properties of currentScreen and add them to this.gs
+                for (let prop in currentScreen) {
+                    this.gs[prop] = currentScreen[prop];
+                }
                 this.gs.blinkTimer = Date.now();
                 this.gs.showText = true;
-                console.log("this.gs: ",  this.gs);
-                this.gameLoop();
+                // this.gameLoop();
             } else if (screenName === "Level") {
-                this.gs = screens.find(screen => screen.name === screenName && screen.n === levelNumber);
-                this.gameLoop();
+                let currentScreen = screens.find(screen => screen.name === screenName && screen.n === levelNumber);
+                // iterate through all properties of currentScreen and add them to this.gs
+                for (let prop in currentScreen) {
+                    this.gs[prop] = currentScreen[prop];
+                }
+                this.gs.player = this.copy(player);
+                this.gs.player.pos = { x: this.gs.spawnPoint.x, y: this.gs.spawnPoint.y };
+                // this.gameLoop();
             }
         },
 
@@ -164,7 +224,6 @@ export default {
             }
 
             // Draw blinking white subtext that says "press spacebar to start game"
-            console.log("SHow text: " + this.gs.showText);
             if (this.gs.showText) {
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.font = '24px Helvetica';
@@ -241,9 +300,9 @@ export default {
 
             // Player's horizontal velocity is determined by whether he is moving left or right
             if (player.movingLeft) {
-                player.vel.x = -5;
+                player.vel.x = -3;
             } else if (player.movingRight) {
-                player.vel.x = 5;
+                player.vel.x = 3;
             } else {
                 player.vel.x = 0;
             }
@@ -312,7 +371,7 @@ export default {
                     player.pos.y + player.height / 2 > portal.y - portalHeight / 2 &&
                     player.pos.y - player.height / 2 < portal.y + portalHeight / 2
                 ) {
-                    console.log("Portal reached");
+                    this.loadScreen('Level', portal.destination);
                     // this.gs = screens[portal.destination];
                     // player.pos.x = this.gs.spawnPoint.x;
                     // player.pos.y = this.gs.spawnPoint.y;
@@ -330,15 +389,6 @@ export default {
             // Background
             this.hiddenCtx.fillStyle = 'white';
             this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
-
-            // Player
-            this.hiddenCtx.fillStyle = 'black';
-            this.hiddenCtx.fillRect(
-                player.pos.x - player.width / 2,
-                player.pos.y - player.height / 2,
-                player.width,
-                player.height
-            );
 
             // Obstacles
             this.hiddenCtx.fillStyle = 'red';
@@ -361,6 +411,15 @@ export default {
                     portalHeight
                 );
             });
+
+            // Player
+            this.hiddenCtx.fillStyle = 'black';
+            this.hiddenCtx.fillRect(
+                player.pos.x - player.width / 2,
+                player.pos.y - player.height / 2,
+                player.width,
+                player.height
+            );
 
             // Draw
             this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
