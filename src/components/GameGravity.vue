@@ -62,6 +62,12 @@ const screens = [
                 width: 900,
                 height: 50
             },
+            {
+                x: 1200 / 2 + 50,
+                y: 0,
+                width: 900,
+                height: 50
+            },
         ],
 
         portals: [{
@@ -394,7 +400,10 @@ export default {
 
                     case 'KeyJ':
                         // This allows the player to jump if he is touching the ground
-                        if (this.gs.player.touchingGround) {
+                        if (this.gs.gravity.y > 0 && this.gs.player.touchingGround) {
+                            this.gs.player.jumping = true;
+                        }
+                        if (this.gs.gravity.y < 0 && this.gs.player.touchingCeiling) {
                             this.gs.player.jumping = true;
                         }
                         break;
@@ -430,6 +439,7 @@ export default {
 
             // Initialize player's touching states to false
             player.touchingGround = false;
+            player.touchingCeiling = false;
             player.touchingLeftWall = false;
             player.touchingRightWall = false;
 
@@ -443,6 +453,9 @@ export default {
                 ) {
                     if (player.pos.y + player.height <= obstacle.y) {
                        player.touchingGround = true;
+                    }
+                    else if (player.pos.y <= obstacle.y + obstacle.height && player.pos.y >= obstacle.y) {
+                        player.touchingCeiling = true;
                     }
                     else if (player.pos.x <= obstacle.x + obstacle.width && player.pos.x >= obstacle.x) {
                         player.touchingLeftWall = true;
@@ -481,6 +494,14 @@ export default {
 
             if (player.touchingRightWall) {
                 player.movingRight = false;
+            }
+
+            if (player.touchingCeiling) {
+                player.movingUp = false;
+            }
+
+            if (player.touchingGround) {
+                player.movingDown = false;
             }
 
             // If the player touches the border of the canvas, he dies
@@ -542,14 +563,28 @@ export default {
              * 
              * *************************************/
 
-            // Player's vertical velocity  
-            if (!player.touchingGround) {
+            // Player's vertical velocity if gravity is normal 
+            if (this.gs.gravity.y > 0) {
+                if (!player.touchingGround) {
                 player.vel.y += this.gs.gravity.y;
-            } else if (player.jumping) {
-                player.vel.y = -5;
-            } else {
-                player.vel.y = 0;
+                } else if (player.jumping) {
+                    player.vel.y = -5;
+                } else {
+                    player.vel.y = 0;
+                }
             }
+
+            // Player's vertical velocity if gravity is reversed
+            if (this.gs.gravity.y < 0) {
+                if (!player.touchingCeiling) {
+                    player.vel.y += this.gs.gravity.y;
+                } else if (player.jumping) {
+                    player.vel.y = 5;
+                } else {
+                    player.vel.y = 0;
+                }
+            }
+
 
             // Player's horizontal velocity is determined by whether he is moving left or right
             if (player.movingLeft) {
