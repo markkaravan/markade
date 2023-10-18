@@ -30,14 +30,14 @@ const screens = [
         },
         obstacles: [
             {
-                x: 100,
-                y: 100,
+                x: 700,
+                y: 350,
                 width: 50,
                 height: 50
             },
             {
-                x: 200,
-                y: 400,
+                x: 500,
+                y: 450,
                 width: 50,
                 height: 50
             },
@@ -90,70 +90,7 @@ export default {
         return {
             dataGameWidth: gameWidthDefault,
             dataGameHeight: gameHeightDefault,
-            gs: {
-                // gs has a variable called gravity that is a vector, it has an x and y component
-                gravity: { x: 0, y: .1 },
-
-                spawnPoint: { x: 400, y: 400 },
-
-                player: {
-                    pos: { x: 400, y: 400 },
-                    height: 30,
-                    width: 45,
-                    vel: { x: 0, y: 0 },
-                    movingUp: false,
-                    movingDown: false,
-                    movingLeft: false,
-                    movingRight: false,
-                    touchingGround: false,
-                    touchingLeftWall: false,
-                    touchingRightWall: false,
-                },
-
-                // The gs has an obstacle property that is an array of objects
-                // Each object has an x, y, width, and height property
-                obstacles: [
-                    {
-                        x: 700,
-                        y: 350,
-                        width: 50,
-                        height: 50
-                    },
-                    {
-                        x: 500,
-                        y: 450,
-                        width: 50,
-                        height: 50
-                    },
-                    {
-                        x: 300,
-                        y: 550,
-                        width: 50,
-                        height: 50
-                    },
-                    // There are two additional obstacles which cover the ground of the level.
-                    // Between them is a pit.
-                    {
-                        x: 0,
-                        y: 600,
-                        width: 1200 / 2,
-                        height: 50
-                    },
-                    {
-                        x: 1200 / 2 + 50,
-                        y: 600,
-                        width: 900,
-                        height: 50
-                    },
-                ],
-
-                portals: [{
-                    x: 700,
-                    y: 300,
-                    destination: 2
-                }]
-
-            }
+            gs: screens.find(screen => screen.name === 'Opening' && screen.n === null),
         }
     },
     mounted() {
@@ -164,9 +101,11 @@ export default {
         this.hiddenCanvas = this.$refs.hiddenCanvas;
         this.hiddenCtx = this.hiddenCanvas.getContext('2d');
 
-        this.updateGameState(performance.now());
+
         window.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener('keyup', this.handleKeyUp);
+
+        this.loadScreen('Opening', null);
     },
     beforeDestroy() {
         window.removeEventListener('keydown', this.handleKeyDown);
@@ -185,23 +124,83 @@ export default {
     },
 
     methods: {
+        loadScreen(screenName, levelNumber) {
+            console.log("NOw loading:", screenName, levelNumber);
+            if (screenName === "Opening") {
+                this.gs = screens.find(screen => screen.name === screenName);
+                this.gs.blinkTimer = Date.now();
+                this.gs.showText = true;
+                console.log("this.gs: ",  this.gs);
+                this.gameLoop();
+            } else if (screenName === "Level") {
+                this.gs = screens.find(screen => screen.name === screenName && screen.n === levelNumber);
+                this.gameLoop();
+            }
+        },
+
+        gameLoop() {
+            if (this.gs.name === 'Opening') {
+                this.renderOpeningScreen();
+            } else {
+                this.updateGameState();
+            }
+            requestAnimationFrame(this.gameLoop);
+        },
+
+        renderOpeningScreen() {
+            // Draw black background to hidden context
+            this.hiddenCtx.fillStyle = 'black';
+            this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+
+            // Draw white header text saying the title of the game
+            this.hiddenCtx.fillStyle = 'white';
+            this.hiddenCtx.font = '100px Helvetica';
+            this.hiddenCtx.fillText('Gravity', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
+
+            // If it has been > 1 second since the last blink, toggle the showText boolean
+            if (Date.now() - this.gs.blinkTimer > 1000) {
+                this.gs.blinkTimer = Date.now();
+                this.gs.showText = !this.gs.showText;
+            }
+
+            // Draw blinking white subtext that says "press spacebar to start game"
+            console.log("SHow text: " + this.gs.showText);
+            if (this.gs.showText) {
+                this.hiddenCtx.fillStyle = 'white';
+                this.hiddenCtx.font = '24px Helvetica';
+                this.hiddenCtx.fillText('Press spacebar to start game', this.dataGameWidth / 2 - 150, this.dataGameHeight - 50);
+            }
+
+            // Draw to main canvas
+            this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+            this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+        },
+
         handleKeyDown(event) {
-            switch (event.code) {
 
-                case 'KeyA':
-                    this.gs.player.movingLeft = true;
-                    break;
+            if (this.gs.name === 'Opening') {
+                if (event.code === 'Space') {
+                    //this.gs.name = 'Level';
+                    this.loadScreen('Level', 1); 
+                }
+                return;
+            } else {
+                switch (event.code) {
+                    case 'KeyA':
+                        this.gs.player.movingLeft = true;
+                        break;
 
-                case 'KeyD':
-                    this.gs.player.movingRight = true;
-                    break;
+                    case 'KeyD':
+                        this.gs.player.movingRight = true;
+                        break;
 
-                case 'KeyJ':
-                    // This allows the player to jump if he is touching the ground
-                    if (this.gs.player.touchingGround) {
-                        this.gs.player.jumping = true;
+                    case 'KeyJ':
+                        // This allows the player to jump if he is touching the ground
+                        if (this.gs.player.touchingGround) {
+                            this.gs.player.jumping = true;
+                        }
+                        break;
                     }
-                    break;
             }
         },
         handleKeyUp(event) {
@@ -220,7 +219,7 @@ export default {
                     break;
             }
         },
-        updateGameState(timestamp) {
+        updateGameState() {
 
             let player = this.gs.player;
 
@@ -366,16 +365,7 @@ export default {
             // Draw
             this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
             this.ctx.drawImage(this.hiddenCanvas, 0, 0);
-
-
-
-            /**************************************
-             * 
-             *       Next Frame
-             * 
-             * *************************************/
-
-            requestAnimationFrame(this.updateGameState);
+ 
         }
     }
 }
