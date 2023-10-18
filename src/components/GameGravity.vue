@@ -65,9 +65,11 @@ const screens = [
         ],
 
         portals: [{
+            id: "1-2",
             x: 700,
             y: 300,
-            destination: 2
+            destination: 2,
+            color: "green",
         }]
     },
     { name: 'Level',
@@ -111,9 +113,65 @@ const screens = [
         ],
 
         portals: [{
+            id: "1-2",
             x: 300,
             y: 300,
-            destination: 1
+            destination: 1,
+            color: "green",
+        },
+        {
+            id: "2-3",
+            x: 700,
+            y: 500,
+            destination: 3,
+            color: "purple",
+        }
+        ]
+    },
+    { name: 'Level',
+        n: 3,
+        gravity: { x: 0, y: .1 },
+        spawnPoint: { x: 400, y: 400 },
+        player: JSON.parse(JSON.stringify(player)),
+        obstacles: [
+            {
+                x: 0,
+                y: 600,
+                width: 1200 / 2,
+                height: 50
+            },
+            {
+                x: 1200 / 2 + 50,
+                y: 600,
+                width: 900,
+                height: 50
+            },
+            {
+                x: 300,
+                y: 350,
+                width: 50,
+                height: 50
+            },
+            {
+                x: 400,
+                y: 450,
+                width: 50,
+                height: 50
+            },
+            {
+                x: 500,
+                y: 550,
+                width: 50,
+                height: 50
+            },
+        ],
+
+        portals: [{
+            id: "2-3",
+            x: 300,
+            y: 300,
+            destination: 2,
+            color: "purple",
         }]
     },
     { name: 'Win', n: null },
@@ -185,7 +243,6 @@ export default {
                 }
                 this.gs.blinkTimer = Date.now();
                 this.gs.showText = true;
-                // this.gameLoop();
             } else if (screenName === "Level") {
                 let currentScreen = screens.find(screen => screen.name === screenName && screen.n === levelNumber);
                 // iterate through all properties of currentScreen and add them to this.gs
@@ -194,7 +251,6 @@ export default {
                 }
                 this.gs.player = this.copy(player);
                 this.gs.player.pos = { x: this.gs.spawnPoint.x, y: this.gs.spawnPoint.y };
-                // this.gameLoop();
             }
         },
 
@@ -402,8 +458,8 @@ export default {
             });
 
             // Portals
-            this.hiddenCtx.fillStyle = 'green';
             this.gs.portals.forEach(portal => {
+                this.hiddenCtx.fillStyle = portal.color;
                 this.hiddenCtx.fillRect(
                     portal.x - portalWidth / 2,
                     portal.y - portalHeight / 2,
