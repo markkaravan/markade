@@ -172,7 +172,16 @@ const screens = [
             y: 300,
             destination: 2,
             color: "purple",
-        }]
+        },
+        {
+            id: "3-win",
+            x: 700,
+            y: 550,
+            destination: "Win",
+            color: "blue",
+        }
+    ]
+
     },
     { name: 'Win', n: null },
     { name: 'Lose', n: null },
@@ -236,11 +245,12 @@ export default {
 
         loadScreen(screenName, levelNumber) {
             if (screenName === "Opening") {
-                let currentScreen = screens.find(screen => screen.name === screenName);
+                let currentScreen = screens.find(screen => screen.name === "Opening");
                 // iterate through all properties of currentScreen and add them to this.gs
                 for (let prop in currentScreen) {
                     this.gs[prop] = currentScreen[prop];
                 }
+                this.gs.name = "Opening";
                 this.gs.blinkTimer = Date.now();
                 this.gs.showText = true;
             } else if (screenName === "Level") {
@@ -251,12 +261,22 @@ export default {
                 }
                 this.gs.player = this.copy(player);
                 this.gs.player.pos = { x: this.gs.spawnPoint.x, y: this.gs.spawnPoint.y };
+            } else if (screenName === "Win") {
+                let currentScreen = screens.find(screen => screen.name === "Win");
+                // iterate through all properties of currentScreen and add them to this.gs
+                for (let prop in currentScreen) {
+                    this.gs[prop] = currentScreen[prop];
+                }
+                this.gs.name = "Win";
+                this.gs.winTimer = Date.now();
             }
         },
 
         gameLoop() {
             if (this.gs.name === 'Opening') {
                 this.renderOpeningScreen();
+            } else if (this.gs.name === 'Win') {
+                this.renderWinScreen();
             } else {
                 this.updateGameState();
             }
@@ -284,6 +304,26 @@ export default {
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.font = '24px Helvetica';
                 this.hiddenCtx.fillText('Press spacebar to start game', this.dataGameWidth / 2 - 150, this.dataGameHeight - 50);
+            }
+
+            // Draw to main canvas
+            this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+            this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+        },
+
+        renderWinScreen() {
+            // Draw black background to hidden context
+            this.hiddenCtx.fillStyle = 'black';
+            this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+
+            // Draw white header text saying the title of the game
+            this.hiddenCtx.fillStyle = 'white';
+            this.hiddenCtx.font = '100px Helvetica';
+            this.hiddenCtx.fillText('You win!', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
+
+            // If it has been 2 seconds since gs.winTimer, go back to the opening screen
+            if (Date.now() - this.gs.winTimer > 2000) {
+                this.loadScreen('Opening', null);
             }
 
             // Draw to main canvas
@@ -427,10 +467,11 @@ export default {
                     player.pos.y + player.height / 2 > portal.y - portalHeight / 2 &&
                     player.pos.y - player.height / 2 < portal.y + portalHeight / 2
                 ) {
-                    this.loadScreen('Level', portal.destination);
-                    // this.gs = screens[portal.destination];
-                    // player.pos.x = this.gs.spawnPoint.x;
-                    // player.pos.y = this.gs.spawnPoint.y;
+                    if (portal.destination === 'Win') {
+                        this.loadScreen('Win', null);
+                    } else if (typeof portal.destination === 'number') {
+                        this.loadScreen('Level', portal.destination);
+                    }
                 }
             });
 
