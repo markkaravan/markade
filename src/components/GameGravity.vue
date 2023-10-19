@@ -8,6 +8,7 @@ const gameWidthDefault = 800;
 const gameHeightDefault = 333;
 const portalWidth = 50;
 const portalHeight = 70;
+const renderPlayerEdges = true;
 
 const player = {
         height: 30,
@@ -33,22 +34,19 @@ const screens = [
         obstacles: [
             {
                 id: "A",
-                x: 700,
-                y: 250,
+                pos: { x: 700, y: 250 },
                 width: 50,
                 height: 50
             },
             {
                 id: "B",
-                x: 500,
-                y: 350,
+                pos: { x: 500, y: 350 },
                 width: 50,
                 height: 50
             },
             {
                 id: "C",
-                x: 300,
-                y: 500,
+                pos: { x: 300, y: 500 },
                 width: 50,
                 height: 50
             },
@@ -62,8 +60,7 @@ const screens = [
             // },
             {
                 id: "D",
-                x: 0,
-                y: 550,
+                pos: { x: 0, y: 550 },
                 width: 900,
                 height: 50
             },
@@ -100,34 +97,29 @@ const screens = [
         player: JSON.parse(JSON.stringify(player)),
         obstacles: [
             {
-                x: 300,
-                y: 350,
+                pos: { x: 300, y: 250 },
                 width: 50,
                 height: 50
             },
             {
-                x: 500,
-                y: 450,
+                pos: { x: 400, y: 350 },
                 width: 50,
                 height: 50
             },
             {
-                x: 700,
-                y: 550,
+                pos: { x: 500, y: 450 },
                 width: 50,
                 height: 50
             },
             // There are two additional obstacles which cover the ground of the level.
             // Between them is a pit.
             {
-                x: 0,
-                y: 600,
+                pos: { x: 0, y: 600 },
                 width: 1200 / 2,
                 height: 50
             },
             {
-                x: 1200 / 2 + 50,
-                y: 600,
+                pos: { x: 1200 / 2 + 50, y: 600 },
                 width: 900,
                 height: 50
             },
@@ -156,32 +148,27 @@ const screens = [
         player: JSON.parse(JSON.stringify(player)),
         obstacles: [
             {
-                x: 0,
-                y: 600,
+                pos: { x: 300, y: 250 },
                 width: 1200 / 2,
                 height: 50
             },
             {
-                x: 1200 / 2 + 50,
-                y: 600,
+                pos: { x: 1200 / 2 + 50, y: 250 },
                 width: 900,
                 height: 50
             },
             {
-                x: 300,
-                y: 350,
+                pos: { x: 300, y: 350 },
                 width: 50,
                 height: 50
             },
             {
-                x: 400,
-                y: 450,
+                pos: { x: 400, y: 450 },
                 width: 50,
                 height: 50
             },
             {
-                x: 500,
-                y: 550,
+                pos: { x: 500, y: 550 },
                 width: 50,
                 height: 50
             },
@@ -436,17 +423,46 @@ export default {
             }
         },
 
-        encapsulates(inner, outer) {
-            if (
-                outer.x <= inner.x && inner.x < outer.x + outer.width &&
-                outer.x < inner.x + inner.width && inner.x + inner.width <= outer.x + outer.width &&
-                outer.y <= inner.y && inner.y < outer.y + outer.height &&
-                outer.y < inner.y + inner.height && inner.y + inner.height <= outer.y + outer.height
-            ) {
-                return true;
-            } else {
-                return false;
-            }
+        detectEncapsulation(inner, outer) {
+            const threshold = .5;
+            const intersectionX = Math.max(inner.pos.x, outer.pos.x);
+            const intersectionWidth = Math.min(inner.pos.x + inner.width, outer.pos.x + outer.width);
+            const intersectionY = Math.max(inner.pos.y, outer.pos.y);
+            const intersectionHeight = Math.min(inner.pos.y + inner.height, outer.pos.y + outer.height);
+            const intersectionArea = (intersectionWidth - intersectionX) * (intersectionHeight - intersectionY);
+            const innerArea = inner.width * inner.height;
+            const intersectionRatio = intersectionArea / innerArea;
+            return (intersectionRatio > threshold);          
+        },
+
+        detectCompleteEncapsulation(inner, outer) {
+            return outer.pos.x <= inner.pos.x && inner.pos.x < outer.pos.x + outer.width &&
+                outer.pos.x < inner.pos.x + inner.width && inner.pos.x + inner.width <= outer.pos.x + outer.width &&
+                outer.pos.y <= inner.pos.y && inner.pos.y < outer.pos.y + outer.height &&
+                outer.pos.y < inner.pos.y + inner.height && inner.pos.y + inner.height <= outer.pos.y + outer.height;
+        },
+
+        detectCollision(obj1, obj2) {
+            let intersect = function (aLo, aHi, bLo, bHi) {
+                return Math.min(aHi, bHi) > Math.max(aLo, bLo);
+            };
+
+            let horizontalIntersection = intersect(
+                obj1.pos.x, 
+                obj1.pos.x + obj1.width,
+                obj2.pos.x,
+                obj2.pos.x + obj2.width
+            )
+
+            let verticalIntersection = intersect(
+                obj1.pos.y,
+                obj1.pos.y + obj1.height,
+                obj2.pos.y,
+                obj2.pos.y + obj2.height
+            )
+            
+            return (horizontalIntersection && verticalIntersection);
+
         },
 
         updateGameState() {
@@ -459,16 +475,16 @@ export default {
             // There is a left edge, which sits to the player's left
             // There is a bottom edge, which sits directly below the player
             // There is a right edge, which sits to the player's right
-            const edgeThickness = 3;
+            const edgeThickness = 8;
             player.edges = [
                 // Top
-                { color: 'green', x: player.pos.x, y: player.pos.y - edgeThickness, width: player.width, height: edgeThickness },
+                { color: 'green', pos: {x: player.pos.x, y: player.pos.y - edgeThickness}, width: player.width, height: edgeThickness },
                 // Left
-                { color: 'cyan', x: player.pos.x - edgeThickness, y: player.pos.y, width: edgeThickness, height: player.height },
+                { color: 'cyan', pos: {x: player.pos.x - edgeThickness, y: player.pos.y}, width: edgeThickness, height: player.height },
                 // Right
-                { color: 'magenta', x: player.pos.x + player.width, y: player.pos.y, width: edgeThickness, height: player.height },
+                { color: 'magenta', pos: {x: player.pos.x + player.width, y: player.pos.y}, width: edgeThickness, height: player.height },
                 // Bottom
-                { color: 'yellow', x: player.pos.x, y: player.pos.y + player.height, width: player.width, height: edgeThickness },
+                { color: 'yellow', pos: {x: player.pos.x, y: player.pos.y + player.height}, width: player.width, height: edgeThickness },
             ]
 
 
@@ -484,66 +500,59 @@ export default {
             player.touchingLeftWall = false;
             player.touchingRightWall = false;
 
+            let edgeCorrection = { x: player.pos.x, y: player.pos.y };
+
             // Detect player collision with the top of an object
             this.gs.obstacles.forEach(obstacle => {
-                if (
-                    player.pos.x + player.width > obstacle.x - obstacle.width &&
-                    player.pos.x - player.width < obstacle.x + obstacle.width &&
-                    player.pos.y + player.height > obstacle.y - obstacle.height &&
-                    player.pos.y - player.height < obstacle.y + obstacle.height
-                ) {
+                if (this.detectCollision(player, obstacle)) 
+                {
                     // If the player's top edge is fully encapsulated within the obstacle, he is touching the top.  Set the edge color to dark red.
-                    if ( this.encapsulates(player.edges[0], obstacle)) {
+                    if ( this.detectEncapsulation(player.edges[0], obstacle)) {
                         player.touchingCeiling = true;
                         player.edges[0].color = 'darkred';
+                        console.log("TOUCHING TOP: ", obstacle.id);
                         // Correct the player's position so that he is not inside the obstacle
-                        player.pos.y = obstacle.y + obstacle.height;
+                        // player.pos.y = obstacle.pos.y + obstacle.height;
+                        if (player.pos.y < obstacle.pos.y + obstacle.height) {
+                            edgeCorrection.y = obstacle.pos.y + obstacle.height;
+                        }
+
                     } 
 
                     // If the player's left edge is fully encapsulated within the obstacle, he is touching the left.  Set the edge color to dark red.
-                    if (this.encapsulates(player.edges[1], obstacle)) {
+                    if (this.detectEncapsulation(player.edges[1], obstacle)) {
                         player.touchingLeftWall = true;
                         player.edges[1].color = 'darkred';
+                        console.log("TOUCHING LEFT: ", obstacle.id);
                         // Correct the player's position so that he is not inside the obstacle
-                        player.pos.x = obstacle.x + obstacle.width;
+                        if (player.pos.x < obstacle.pos.x + obstacle.width) {
+                            edgeCorrection.x = obstacle.pos.x + obstacle.width;
+                        }
+                        // player.pos.x = obstacle.pos.x + obstacle.width;
                     } 
 
                     // If the player's right edge is fully encapsulated within the obstacle, he is touching the right.  Set the edge color to dark red.
-                    if (this.encapsulates(player.edges[2], obstacle)) {
+                    if (this.detectEncapsulation(player.edges[2], obstacle)) {
                         player.touchingRightWall = true;
                         player.edges[2].color = 'darkred';
+                        console.log("TOUCHING RIGHT: ", obstacle.id);
                         // Correct the player's position so that he is not inside the obstacle
-                        player.pos.x = obstacle.x - player.width;
+                        if (player.pos.x > obstacle.pos.x - player.width) {
+                            edgeCorrection.x = obstacle.pos.x - player.width;
+                        }
+                        // player.pos.x = obstacle.pos.x - player.width;
                     } 
 
                     // If the player's bottom edge is fully encapsulated within the obstacle, he is touching the bottom.  Set the edge color to dark red.
-                    if (this.encapsulates(player.edges[3], obstacle)) {
+                    if (this.detectEncapsulation(player.edges[3], obstacle)) {
                         player.touchingGround = true;
+                        // console.log("TOUCHING GROUND: ", obstacle.id);
                         player.edges[3].color = 'darkred';
                         // Correct the player's position so that he is not inside the obstacle
-                        player.pos.y = obstacle.y - player.height;
+                        if (player.pos.y > obstacle.pos.y - player.height) {
+                            edgeCorrection.y = obstacle.pos.y - player.height;
+                        }
                     } 
-
-
-
-                    // if (player.pos.y + player.height >= obstacle.y && player.pos.y < obstacle.y) {
-                    //     console.log("TOUCHING BOTTOM: ", obstacle.id);
-                    //     player.touchingGround = true;
-                    //    // Correct the player's position so that he is not inside the obstacle
-                    //     player.pos.y = obstacle.y - player.height  ;
-                    // } 
-                    // if (player.pos.y <= obstacle.y + obstacle.height && player.pos.y >= obstacle.y) {
-                    //     console.log("TOUCHING TOP", obstacle.id);
-                    //     player.touchingCeiling = true;
-                    // }
-                    // if (player.pos.x <= obstacle.x + obstacle.width && player.pos.x >= obstacle.x) {
-                    //     console.log("TOUCHING LEFT", obstacle.id);
-                    //     player.touchingLeftWall = true;
-                    // }
-                    // if (player.pos.x + player.width >= obstacle.x && player.pos.x + player.width <= obstacle.x + obstacle.width) {
-                    //     console.log("TOUCHING RIGHT", obstacle.id);
-                    //     player.touchingRightWall = true;
-                    // }
                 }
             });
 
@@ -596,19 +605,19 @@ export default {
             }
 
             // If the player touches the border of the canvas, he dies
-            // if (
-            //     player.pos.x - player.width / 2 < 0 ||
-            //     player.pos.x + player.width / 2 > this.dataGameWidth ||
-            //     player.pos.y - player.height / 2 < 0 ||
-            //     player.pos.y + player.height / 2 > this.dataGameHeight
-            // ) {
-            //     this.gs.lives--;
-            //     if (this.gs.lives <= 0) {
-            //         this.loadScreen('Lose', null);
-            //     } else {
-            //         this.loadScreen('Level', this.gs.n);
-            //     }
-            // }
+            if (
+                player.pos.x - player.width / 2 < 0 ||
+                player.pos.x + player.width / 2 > this.dataGameWidth ||
+                player.pos.y - player.height / 2 < 0 ||
+                player.pos.y + player.height / 2 > this.dataGameHeight
+            ) {
+                this.gs.lives--;
+                if (this.gs.lives <= 0) {
+                    this.loadScreen('Lose', null);
+                } else {
+                    this.loadScreen('Level', this.gs.n);
+                }
+            }
 
             // No portal collision detection if the player just spawned
             if (this.gs.player.justSpawnedInPortal === "none") {
@@ -700,6 +709,10 @@ export default {
                 player.vel.x = 0;
             }
 
+            // Edge correction
+            player.pos.x = edgeCorrection.x;
+            player.pos.y = edgeCorrection.y;
+
             // Move the player's position according to his velocity
             player.pos.x += player.vel.x;
             player.pos.y += player.vel.y;
@@ -724,8 +737,8 @@ export default {
             this.hiddenCtx.fillStyle = 'red';
             this.gs.obstacles.forEach(obstacle => {
                 this.hiddenCtx.fillRect(
-                    obstacle.x,
-                    obstacle.y,
+                    obstacle.pos.x,
+                    obstacle.pos.y,
                     obstacle.width,
                     obstacle.height
                 );
@@ -783,15 +796,18 @@ export default {
             );
 
             // Render each of the player edges
-            player.edges.forEach(edge => {
-                this.hiddenCtx.fillStyle = edge.color;
-                this.hiddenCtx.fillRect(
-                    edge.x,
-                    edge.y,
-                    edge.width,
-                    edge.height
-                );
-            });
+            if (renderPlayerEdges) {
+                player.edges.forEach(edge => {
+                    this.hiddenCtx.fillStyle = edge.color;
+                    this.hiddenCtx.fillRect(
+                        edge.pos.x,
+                        edge.pos.y,
+                        edge.width,
+                        edge.height
+                    );
+                });
+            }
+
 
             // Lives
             this.hiddenCtx.fillStyle = 'black';
