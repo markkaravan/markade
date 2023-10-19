@@ -1,4 +1,5 @@
 <template>
+    <img ref="playerImage" :src="'/src/assets/images/gravity_player_A.png'" :width="34" :height="82">
     <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
@@ -28,7 +29,6 @@ const screens = [
     { name: 'Level',
         n: 1,
         gravity: { x: 0, y: .1 },
-        // gravity: { x: 0, y: 0 },
         spawnPoint: { x: 400, y: 500 },
         player: JSON.parse(JSON.stringify(player)),
         obstacles: [
@@ -61,6 +61,12 @@ const screens = [
             {
                 id: "D",
                 pos: { x: 0, y: 550 },
+                width: 900,
+                height: 50
+            },
+            {
+                id: "E",
+                pos: { x: 0, y: 0 },
                 width: 900,
                 height: 50
             },
@@ -194,6 +200,8 @@ const screens = [
     { name: 'Win', n: null },
     { name: 'Lose', n: null },
 ]
+
+import playerImageA from '../assets/images/gravity_player_A.png';
 
 export default {
     name: 'GameGravity',
@@ -394,7 +402,7 @@ export default {
                         this.gs.player.movingRight = true;
                         break;
 
-                    case 'KeyJ':
+                    case 'KeyH':
                         // This allows the player to jump if he is touching the ground
                         if (this.gs.gravity.y > 0 && this.gs.player.touchingGround) {
                             this.gs.player.jumping = true;
@@ -403,9 +411,24 @@ export default {
                             this.gs.player.jumping = true;
                         }
                         break;
-                    }
+                    
+                    //  Special development keys to change the direction of gravity
+                    case 'KeyI':
+                        this.gs.gravity = { x: 0, y: -.1 };
+                        break;
+                    case 'KeyK':
+                        this.gs.gravity = { x: 0, y: .1 };
+                        break;
+                    case 'KeyJ':
+                        this.gs.gravity = { x: -.1, y: 0 };
+                        break;
+                    case 'KeyL':
+                        this.gs.gravity = { x: .1, y: 0 };
+                        break;
+                }
             }
         },
+
         handleKeyUp(event) {
             switch (event.code) {
 
@@ -417,7 +440,7 @@ export default {
                     this.gs.player.movingRight = false;
                     break;
 
-                case 'KeyJ':
+                case 'KeyH':
                     this.gs.player.jumping = false; 
                     break;
             }
@@ -510,9 +533,7 @@ export default {
                     if ( this.detectEncapsulation(player.edges[0], obstacle)) {
                         player.touchingCeiling = true;
                         player.edges[0].color = 'darkred';
-                        console.log("TOUCHING TOP: ", obstacle.id);
                         // Correct the player's position so that he is not inside the obstacle
-                        // player.pos.y = obstacle.pos.y + obstacle.height;
                         if (player.pos.y < obstacle.pos.y + obstacle.height) {
                             edgeCorrection.y = obstacle.pos.y + obstacle.height;
                         }
@@ -528,7 +549,6 @@ export default {
                         if (player.pos.x < obstacle.pos.x + obstacle.width) {
                             edgeCorrection.x = obstacle.pos.x + obstacle.width;
                         }
-                        // player.pos.x = obstacle.pos.x + obstacle.width;
                     } 
 
                     // If the player's right edge is fully encapsulated within the obstacle, he is touching the right.  Set the edge color to dark red.
@@ -540,13 +560,11 @@ export default {
                         if (player.pos.x > obstacle.pos.x - player.width) {
                             edgeCorrection.x = obstacle.pos.x - player.width;
                         }
-                        // player.pos.x = obstacle.pos.x - player.width;
                     } 
 
                     // If the player's bottom edge is fully encapsulated within the obstacle, he is touching the bottom.  Set the edge color to dark red.
                     if (this.detectEncapsulation(player.edges[3], obstacle)) {
                         player.touchingGround = true;
-                        // console.log("TOUCHING GROUND: ", obstacle.id);
                         player.edges[3].color = 'darkred';
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.y > obstacle.pos.y - player.height) {
@@ -666,24 +684,22 @@ export default {
             // Player's vertical velocity if gravity is normal 
             if (this.gs.gravity.y > 0) {
                 if (player.jumping) {
-                    console.log("JUMPING");
                     player.vel.y = -5;
+                    player.jumping = false;
                 } else {
-                    console.log("NO JUMP");
                     player.vel.y += this.gs.gravity.y;
                 }
             }
 
-            // // Player's vertical velocity if gravity is reversed
-            // if (this.gs.gravity.y < 0) {
-            //     if (!player.touchingCeiling) {
-            //         player.vel.y += this.gs.gravity.y;
-            //     } else if (player.jumping) {
-            //         player.vel.y = 5;
-            //     } else {
-            //         player.vel.y = 0;
-            //     }
-            // }
+            // Player's vertical velocity if gravity is reversed
+            if (this.gs.gravity.y < 0) {
+                if (player.jumping) {
+                    player.vel.y = 5;
+                    player.jumping = false;
+                } else {
+                    player.vel.y += this.gs.gravity.y;
+                }
+            }
 
 
             // Player's horizontal velocity is determined by whether he is moving left or right
@@ -787,13 +803,21 @@ export default {
 
 
             // Player
-            this.hiddenCtx.fillStyle = 'black';
-            this.hiddenCtx.fillRect(
-                player.pos.x,
-                player.pos.y,
-                player.width,
-                player.height
-            );
+            // Render the player with the background of image in src/assets/images/gravity_player_A.png
+            // The player is player.width x player.height
+            // Don't worry about the player edges
+            // this.hiddenCtx.fillStyle = 'blue';
+            // this.hiddenCtx.fillRect(
+            //     player.pos.x,
+            //     player.pos.y,
+            //     player.width,
+            //     player.height
+            // );
+            // let playerImage = new Image();
+            const image = this.$refs.playerImage;
+            this.hiddenCtx.drawImage(image, player.pos.x, player.pos.y, player.width, player.height);
+
+
 
             // Render each of the player edges
             if (renderPlayerEdges) {
