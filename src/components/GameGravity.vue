@@ -26,7 +26,7 @@ const screens = [
     { name: "Opening", n: null},
     { name: 'Level',
         n: 1,
-        gravity: { x: 0, y: .05 },
+        gravity: { x: 0, y: .1 },
         // gravity: { x: 0, y: 0 },
         spawnPoint: { x: 400, y: 500 },
         player: JSON.parse(JSON.stringify(player)),
@@ -486,7 +486,6 @@ export default {
 
             // Detect player collision with the top of an object
             this.gs.obstacles.forEach(obstacle => {
-                console.log("Obstacle Id: ", obstacle.id);
                 if (
                     player.pos.x + player.width > obstacle.x - obstacle.width &&
                     player.pos.x - player.width < obstacle.x + obstacle.width &&
@@ -594,7 +593,6 @@ export default {
 
             if (player.touchingGround) {
                 player.movingDown = false;
-                console.log("Moving down:", player.movingDown);
             }
 
             // If the player touches the border of the canvas, he dies
@@ -658,25 +656,25 @@ export default {
 
             // Player's vertical velocity if gravity is normal 
             if (this.gs.gravity.y > 0) {
-                if (!player.touchingGround) {
-                    player.vel.y += this.gs.gravity.y;
-                } else if (player.jumping) {
+                if (player.jumping) {
+                    console.log("JUMPING");
                     player.vel.y = -5;
                 } else {
-                    player.vel.y = 0;
+                    console.log("NO JUMP");
+                    player.vel.y += this.gs.gravity.y;
                 }
             }
 
-            // Player's vertical velocity if gravity is reversed
-            if (this.gs.gravity.y < 0) {
-                if (!player.touchingCeiling) {
-                    player.vel.y += this.gs.gravity.y;
-                } else if (player.jumping) {
-                    player.vel.y = 5;
-                } else {
-                    player.vel.y = 0;
-                }
-            }
+            // // Player's vertical velocity if gravity is reversed
+            // if (this.gs.gravity.y < 0) {
+            //     if (!player.touchingCeiling) {
+            //         player.vel.y += this.gs.gravity.y;
+            //     } else if (player.jumping) {
+            //         player.vel.y = 5;
+            //     } else {
+            //         player.vel.y = 0;
+            //     }
+            // }
 
 
             // Player's horizontal velocity is determined by whether he is moving left or right
@@ -688,16 +686,25 @@ export default {
                 player.vel.x = 0;
             }
 
+            // If the player is colliding with an object, set his velocity in that direction to zero
+            if (player.touchingGround && player.vel.y > 0) {
+                player.vel.y = 0;
+            }
+            if (player.touchingCeiling && player.vel.y < 0) {
+                player.vel.y = 0;
+            }
+            if (player.touchingLeftWall && player.vel.x < 0) {
+                player.vel.x = 0;
+            }
+            if (player.touchingRightWall && player.vel.x > 0) {
+                player.vel.x = 0;
+            }
+
             // Move the player's position according to his velocity
             player.pos.x += player.vel.x;
-
-            if (player.movingDown && player.vel.y > 0) {
-                console.log("I should be invisible");
-                player.pos.y += player.vel.y;
-            }
-            if (player.movingUp && player.vel.y < 0) {
-                player.pos.y += player.vel.y;
-            }
+            player.pos.y += player.vel.y;
+    
+            
 
 
 
