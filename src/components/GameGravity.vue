@@ -1,5 +1,6 @@
 <template>
-    <img ref="playerImage" :src="'/src/assets/images/gravity_player_A.png'" :width="34" :height="82">
+    <img ref="playerUpForwardA" :src="'/src/assets/images/gravity_player_up_forward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerUpBackwardA" :src="'/src/assets/images/gravity_player_up_backward_A.png'" :style="{ display: 'none' }">
     <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
@@ -12,8 +13,8 @@ const portalHeight = 70;
 const renderPlayerEdges = true;
 
 const player = {
-        height: 30,
-        width: 20,
+        height: 82,
+        width: 34,
         vel: { x: 0, y: 0 },
         movingUp: false,
         movingDown: false,
@@ -22,6 +23,8 @@ const player = {
         touchingGround: false,
         touchingLeftWall: false,
         touchingRightWall: false,
+        facingForward: true,
+        image: null,
     };
 
 const screens = [
@@ -201,7 +204,6 @@ const screens = [
     { name: 'Lose', n: null },
 ]
 
-import playerImageA from '../assets/images/gravity_player_A.png';
 
 export default {
     name: 'GameGravity',
@@ -259,6 +261,14 @@ export default {
             return JSON.parse(JSON.stringify(obj));
         },
 
+        changePlayerImage() {
+            if (this.gs.player.facingForward) {
+                this.gs.player.image = this.$refs.playerUpForwardA;
+            } else {
+                this.gs.player.image = this.$refs.playerUpBackwardA;
+            }
+        },
+
         loadScreen(screenName, levelNumber=null, portalId=null) {
             if (screenName === "Opening") {
                 let currentScreen = screens.find(screen => screen.name === "Opening");
@@ -278,6 +288,8 @@ export default {
                 }
                 this.gs.player = this.copy(player);
                 this.gs.player.justSpawnedInPortal = "none";
+                this.gs.player.image = this.gs.player.facingForward? this.$refs.playerUpForwardA : this.$refs.playerUpBackwardA;
+                this.gs.player.image = this.$refs.playerUpForwardA;
                 if (portalId) {
                     let portal = this.gs.portals.find(portal => portal.id === portalId);
                     this.gs.player.justSpawnedInPortal = portalId;
@@ -396,10 +408,14 @@ export default {
                 switch (event.code) {
                     case 'KeyA':
                         this.gs.player.movingLeft = true;
+                        this.gs.player.facingForward = false;
+                        this.changePlayerImage();
                         break;
 
                     case 'KeyD':
                         this.gs.player.movingRight = true;
+                        this.gs.player.facingForward = true;
+                        this.changePlayerImage();
                         break;
 
                     case 'KeyH':
@@ -814,8 +830,17 @@ export default {
             //     player.height
             // );
             // let playerImage = new Image();
-            const image = this.$refs.playerImage;
-            this.hiddenCtx.drawImage(image, player.pos.x, player.pos.y, player.width, player.height);
+            // const image = this.$refs.playerUpBackwardA;
+
+            // Facing right
+            // this.hiddenCtx.drawImage(image, player.pos.x, player.pos.y, player.width, player.height);
+
+            // Facing left
+            // this.hiddenCtx.scale(-1,1);
+            // this.hiddenCtx.drawImage(image, -player.pos.x - player.width, player.pos.y, player.width, player.height);
+
+            // this.hiddenCtx.rotate(Math.PI/4);
+            this.hiddenCtx.drawImage(player.image, player.pos.x, player.pos.y, player.width, player.height);
 
 
 
