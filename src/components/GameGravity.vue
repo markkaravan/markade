@@ -1,6 +1,8 @@
 <template>
     <img ref="playerUpForwardA" :src="'/src/assets/images/gravity_player_up_forward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerUpForwardB" :src="'/src/assets/images/gravity_player_up_forward_B.png'" :style="{ display: 'none' }">
     <img ref="playerUpBackwardA" :src="'/src/assets/images/gravity_player_up_backward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerUpBackwardB" :src="'/src/assets/images/gravity_player_up_backward_B.png'" :style="{ display: 'none' }">
     <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
@@ -10,7 +12,8 @@ const gameWidthDefault = 800;
 const gameHeightDefault = 333;
 const portalWidth = 50;
 const portalHeight = 70;
-const renderPlayerEdges = true;
+const renderPlayerEdges = false;
+const walkTimerDelay = 50;
 
 const player = {
         height: 82,
@@ -24,6 +27,8 @@ const player = {
         touchingLeftWall: false,
         touchingRightWall: false,
         facingForward: true,
+        walkTimer: null,
+        walkPlayerState: 'A',
         image: null,
     };
 
@@ -262,10 +267,11 @@ export default {
         },
 
         changePlayerImage() {
-            if (this.gs.player.facingForward) {
-                this.gs.player.image = this.$refs.playerUpForwardA;
+            let player = this.gs.player;
+            if (player.facingForward) {
+                player.image = (player.walkPlayerState == "A")? this.$refs.playerUpForwardA : this.$refs.playerUpForwardB;
             } else {
-                this.gs.player.image = this.$refs.playerUpBackwardA;
+                player.image = (player.walkPlayerState == "A")? this.$refs.playerUpBackwardA : this.$refs.playerUpBackwardB;
             }
         },
 
@@ -409,12 +415,14 @@ export default {
                     case 'KeyA':
                         this.gs.player.movingLeft = true;
                         this.gs.player.facingForward = false;
+                        this.gs.player.walkTimer = Date.now();
                         this.changePlayerImage();
                         break;
 
                     case 'KeyD':
                         this.gs.player.movingRight = true;
                         this.gs.player.facingForward = true;
+                        this.gs.player.walkTimer = Date.now();
                         this.changePlayerImage();
                         break;
 
@@ -450,10 +458,12 @@ export default {
 
                 case 'KeyA':
                     this.gs.player.movingLeft = false;
+                    this.gs.player.walkTimer = null;
                     break;
 
                 case 'KeyD':
                     this.gs.player.movingRight = false;
+                    this.gs.player.walkTimer = null;
                     break;
 
                 case 'KeyH':
@@ -507,6 +517,12 @@ export default {
         updateGameState() {
 
             let player = this.gs.player;
+            // Update player's walk animation
+            if (player.walkTimer && (Date.now() - player.walkTimer) > walkTimerDelay) {
+                player.walkTimer = Date.now();
+                player.walkPlayerState = player.walkPlayerState === 'A' ? 'B' : 'A';
+                this.changePlayerImage();
+            }
 
             // The player has four adjacent edges, each of which are 3px thick.
             // The edges are green.
