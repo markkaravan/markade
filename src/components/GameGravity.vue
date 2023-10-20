@@ -28,6 +28,9 @@ const renderPlayerEdges = false;
 const walkTimerDelay = 50;
 const playerHeight = 82;
 const playerWidth = 34;
+const playerSpeed = 3;
+const gravitySpeed = .1;
+const jumpVelocity = 5;
 
 const player = {
         height: playerHeight,
@@ -50,7 +53,7 @@ const screens = [
     { name: "Opening", n: null},
     { name: 'Level',
         n: 1,
-        gravity: { x: 0, y: .1 },
+        gravity: { x: 0, y: gravitySpeed },
         spawnPoint: { x: 400, y: 500 },
         player: JSON.parse(JSON.stringify(player)),
         obstacles: [
@@ -98,6 +101,12 @@ const screens = [
                 width: 50,
                 height: 600
             },
+            {
+                id: "G",
+                pos: { x: 1000, y: 0 },
+                width: 50,
+                height: 600
+            },
             // {
             //     x: 1200 / 2 + 50,
             //     y: 0,
@@ -126,7 +135,7 @@ const screens = [
     },
     { name: 'Level',
         n: 2,
-        gravity: { x: 0, y: .1 },
+        gravity: { x: 0, y: gravitySpeed },
         spawnPoint: { x: 400, y: 400 },
         player: JSON.parse(JSON.stringify(player)),
         obstacles: [
@@ -177,7 +186,7 @@ const screens = [
     },
     { name: 'Level',
         n: 3,
-        gravity: { x: 0, y: .1 },
+        gravity: { x: 0, y: gravitySpeed },
         spawnPoint: { x: 400, y: 400 },
         player: JSON.parse(JSON.stringify(player)),
         obstacles: [
@@ -335,6 +344,7 @@ export default {
                 for (let prop in currentScreen) {
                     this.gs[prop] = currentScreen[prop];
                 }
+                this.gs.isPaused = false;
                 this.gs.player = this.copy(player);
                 this.gs.player.justSpawnedInPortal = "none";
                 this.gs.player.image = this.gs.player.facingForward? this.$refs.playerUpForwardA : this.$refs.playerUpBackwardA;
@@ -365,6 +375,9 @@ export default {
         },
 
         gameLoop() {
+
+            // If the game is paused, don't update the game state
+
             if (this.gs.name === 'Opening') {
                 this.renderOpeningScreen();
             } else if (this.gs.name === 'Win') {
@@ -374,7 +387,9 @@ export default {
             } else {
                 this.updateGameState();
             }
-            requestAnimationFrame(this.gameLoop);
+            if (!this.gs.isPaused) {
+                requestAnimationFrame(this.gameLoop);
+            }
         },
 
         renderOpeningScreen() {
@@ -449,80 +464,141 @@ export default {
 
             if (this.gs.name === 'Opening') {
                 if (event.code === 'Space') {
-                    //this.gs.name = 'Level';
                     this.loadScreen('Level', 1); 
                 }
                 return;
             } else {
                 switch (event.code) {
+                    // A and D move the player left and right, only in vertical gravity
                     case 'KeyA':
-                        this.gs.player.movingLeft = true;
-                        this.gs.player.facingForward = false;
-                        this.gs.player.walkTimer = Date.now();
-                        this.changePlayerImage();
+                        if (this.gs.gravity.x === 0 && this.gs.gravity.y !== 0) {
+                            this.gs.player.movingLeft = true;
+                            this.gs.player.facingForward = false;
+                            this.gs.player.walkTimer = Date.now();
+                            this.changePlayerImage();
+                        }
                         break;
 
                     case 'KeyD':
-                        this.gs.player.movingRight = true;
-                        this.gs.player.facingForward = true;
-                        this.gs.player.walkTimer = Date.now();
-                        this.changePlayerImage();
+                        if (this.gs.gravity.x === 0 && this.gs.gravity.y !== 0) {
+                            this.gs.player.movingRight = true;
+                            this.gs.player.facingForward = true;
+                            this.gs.player.walkTimer = Date.now();
+                            this.changePlayerImage();
+                        }
                         break;
 
+                    // W and S move the player up and down, only in horizontal gravity
+                    case 'KeyW':
+                        if (this.gs.gravity.x !== 0 && this.gs.gravity.y === 0) {
+                            this.gs.player.movingUp = true;
+                            this.gs.player.facingForward = false;
+                            this.gs.player.walkTimer = Date.now();
+                            this.changePlayerImage();
+                        }
+                        break;
+
+                    case 'KeyS':
+                        if (this.gs.gravity.x !== 0 && this.gs.gravity.y === 0) {
+                            this.gs.player.movingDown = true;
+                            this.gs.player.facingForward = true;
+                            this.gs.player.walkTimer = Date.now();
+                            this.changePlayerImage();
+                        }
+                        break;
+                    
+                    // H is jump
                     case 'KeyH':
                         // This allows the player to jump if he is touching the ground
+                        console.log("TOUCHING LEFT: ", this.gs.player.touchingLeftWall);
                         if (this.gs.gravity.y > 0 && this.gs.player.touchingGround) {
                             this.gs.player.jumping = true;
                         }
                         if (this.gs.gravity.y < 0 && this.gs.player.touchingCeiling) {
                             this.gs.player.jumping = true;
                         }
+                        if (this.gs.gravity.x < 0 && this.gs.player.touchingLeftWall) {
+                            this.gs.player.jumping = true;
+                        }
+                        if (this.gs.gravity.x > 0 && this.gs.player.touchingRightWall) {
+                            this.gs.player.jumping = true;
+                        }
                         break;
                     
                     //  Special development keys to change the direction of gravity
                     case 'KeyI':
-                        this.gs.gravity = { x: 0, y: -.1 };
+                        this.gs.gravity = { x: 0, y: -gravitySpeed };
                         this.gs.player.height = playerHeight;
                         this.gs.player.width = playerWidth;
                         this.changePlayerImage();
                         break;
                     case 'KeyK':
-                        this.gs.gravity = { x: 0, y: .1 };
+                        this.gs.gravity = { x: 0, y: gravitySpeed };
                         this.gs.player.height = playerHeight;
                         this.gs.player.width = playerWidth;
                         this.changePlayerImage();
                         break;
                     case 'KeyJ':
-                        this.gs.gravity = { x: -.1, y: 0 };
+                        this.gs.gravity = { x: -gravitySpeed, y: 0 };
                         this.gs.player.height = playerWidth;
                         this.gs.player.width = playerHeight;
                         this.changePlayerImage();
                         break;
                     case 'KeyL':
-                        this.gs.gravity = { x: .1, y: 0 };
+                        this.gs.gravity = { x: gravitySpeed, y: 0 };
                         this.gs.player.height = playerWidth;
                         this.gs.player.width = playerHeight;
                         this.changePlayerImage();
                         break;
+
+
                 }
             }
         },
 
         handleKeyUp(event) {
             switch (event.code) {
-
+                // A and D move the player left and right, only in vertical gravity
                 case 'KeyA':
-                    this.gs.player.movingLeft = false;
-                    this.gs.player.walkTimer = null;
+                    if (this.gs.gravity.x === 0 && this.gs.gravity.y !== 0) {
+                        this.gs.player.movingLeft = false;
+                        this.gs.player.walkTimer = null;
+                    }
                     break;
 
                 case 'KeyD':
-                    this.gs.player.movingRight = false;
-                    this.gs.player.walkTimer = null;
+                    if (this.gs.gravity.x === 0 && this.gs.gravity.y !== 0) {
+                        this.gs.player.movingRight = false;
+                        this.gs.player.walkTimer = null;
+                    }
                     break;
 
+                // W and S move the player up and down, only in horizontal gravity
+                case 'KeyW':
+                    if (this.gs.gravity.x !== 0 && this.gs.gravity.y === 0) {
+                        this.gs.player.movingUp = false;
+                        this.gs.player.walkTimer = null;
+                    }
+                    break;
+                
+                case 'KeyS':
+                    if (this.gs.gravity.x !== 0 && this.gs.gravity.y === 0) {
+                        this.gs.player.movingDown = false;
+                        this.gs.player.walkTimer = null;
+                    }
+                    break;
+
+                // H is jump
                 case 'KeyH':
                     this.gs.player.jumping = false; 
+                    break;
+
+                // Pause the game
+                case 'KeyP':
+                    this.gs.isPaused = !this.gs.isPaused;
+                    if (!this.gs.isPaused) {
+                        this.gameLoop();
+                    }
                     break;
             }
         },
@@ -630,6 +706,7 @@ export default {
                     // If the player's left edge is fully encapsulated within the obstacle, he is touching the left.  Set the edge color to dark red.
                     if (this.detectEncapsulation(player.edges[1], obstacle)) {
                         player.touchingLeftWall = true;
+                    console.log("TOUCHING LEFT");
                         player.edges[1].color = 'darkred';
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.x < obstacle.pos.x + obstacle.width) {
@@ -650,6 +727,7 @@ export default {
                     // If the player's bottom edge is fully encapsulated within the obstacle, he is touching the bottom.  Set the edge color to dark red.
                     if (this.detectEncapsulation(player.edges[3], obstacle)) {
                         player.touchingGround = true;
+                    console.log("TOUCHING GROUND");
                         player.edges[3].color = 'darkred';
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.y > obstacle.pos.y - player.height) {
@@ -669,26 +747,37 @@ export default {
                 ) {
                     if (item.type === "gravity-up") {
                         this.gs.player.touchingGround = false;
-                        this.gs.gravity = { x: 0, y: -.1 };
+                        this.gs.gravity = { x: 0, y: -gravitySpeed };
                     } else if (item.type === "gravity-down") {
-                        this.gs.gravity = { x: 0, y: .1 };
+                        this.gs.player.touchingCeiling = false;
+                        this.gs.gravity = { x: 0, y: gravitySpeed };
                     } else if (item.type === "gravity-left") {
-                        this.gs.gravity = { x: -.1, y: 0 };
+                        this.gs.player.touchingRightWall = false;
+                        this.gs.gravity = { x: -gravitySpeed, y: 0 };
                     } else if (item.type === "gravity-right") {
-                        this.gs.gravity = { x: .1, y: 0 };
+                        this.gs.player.touchingLeftWall = false;
+                        this.gs.gravity = { x: gravitySpeed, y: 0 };
                     }
                     this.gs.items = this.gs.items.filter(i => i !== item);
                 }
             });
 
             // Initialize movement with gravity
-            if (this.gs.gravity.y > 0) {
-                player.movingDown = true;
-            }
+            // if (this.gs.gravity.y > 0) {
+            //     player.movingDown = true;
+            // }
 
-            if (this.gs.gravity.y < 0) {
-                player.movingUp = true;
-            }
+            // if (this.gs.gravity.y < 0) {
+            //     player.movingUp = true;
+            // }
+
+            // if (this.gs.gravity.x > 0) {
+            //     player.movingRight = true;
+            // }
+
+            // if (this.gs.gravity.x < 0) {
+            //     player.movingLeft = true;
+            // }
 
             // Stop player movement with object collision
             if (player.touchingLeftWall) {
@@ -766,11 +855,16 @@ export default {
              * 
              * ************************************************************/
 
+            // if (player.jumping) {
+            //     console.log("PLAYER IS JUMPING!");
+            // }
+            //  GRAVITY MOVEMENT
+            //
             // Player's vertical velocity if gravity is normal 
             let gravity = this.gs.gravity;
             if (gravity.x === 0 && gravity.y > 0) {
                 if (player.jumping) {
-                    player.vel.y = -5;
+                    player.vel.y = -jumpVelocity;
                     player.jumping = false;
                 } else {
                     player.vel.y += gravity.y;
@@ -780,7 +874,7 @@ export default {
             // Player's vertical velocity if gravity is reversed
             else if (gravity.x === 0 && gravity.y < 0) {
                 if (player.jumping) {
-                    player.vel.y = 5;
+                    player.vel.y = jumpVelocity;
                     player.jumping = false;
                 } else {
                     player.vel.y += gravity.y;
@@ -790,7 +884,7 @@ export default {
             // Player's horizontal velocity if gravity is left
             else if (gravity.y === 0 && gravity.x < 0) {
                 if (player.jumping) {
-                    player.vel.x = 5;
+                    player.vel.x = jumpVelocity;
                     player.jumping = false;
                 } else {
                     player.vel.x += gravity.x;
@@ -800,7 +894,7 @@ export default {
             // Player's horizontal velocity if gravity is right
             else if (gravity.y === 0 && gravity.x > 0) {
                 if (player.jumping) {
-                    player.vel.x = -5;
+                    player.vel.x = -jumpVelocity;
                     player.jumping = false;
                 } else {
                     player.vel.x += gravity.x;
@@ -808,12 +902,15 @@ export default {
             }
 
 
+
+            // LATERAL MOVEMENT
+            //
             // Vertical gravity: Player's horizontal velocity is determined by whether he is moving left or right
             if (gravity.x === 0 && gravity.y !== 0) {
                 if (player.movingLeft) {
-                    player.vel.x = -3;
+                    player.vel.x = -playerSpeed;
                 } else if (player.movingRight) {
-                    player.vel.x = 3;
+                    player.vel.x = playerSpeed;
                 } else {
                     player.vel.x = 0;
                 }
@@ -821,15 +918,15 @@ export default {
 
             // Horizontal gravity: Player's vertical velocity is determined by whether he is moving left or right
             if (gravity.y === 0 && gravity.x !== 0) {
-                if (player.movingLeft) {
-                    player.vel.y = -3;
-                } else if (player.movingRight) {
-                    player.vel.y = 3;
+                if (player.movingUp) {
+                    player.vel.y = -playerSpeed;
+                } else if (player.movingDown) {
+                    player.vel.y = playerSpeed;
                 } else {
                     player.vel.y = 0;
                 }
-            }
 
+            }
 
             // If the player is colliding with an object, set his velocity in that direction to zero
             if (player.touchingGround && player.vel.y > 0) {
