@@ -3,6 +3,18 @@
     <img ref="playerUpForwardB" :src="'/src/assets/images/gravity_player_up_forward_B.png'" :style="{ display: 'none' }">
     <img ref="playerUpBackwardA" :src="'/src/assets/images/gravity_player_up_backward_A.png'" :style="{ display: 'none' }">
     <img ref="playerUpBackwardB" :src="'/src/assets/images/gravity_player_up_backward_B.png'" :style="{ display: 'none' }">
+    <img ref="playerDownForwardA" :src="'/src/assets/images/gravity_player_down_forward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerDownForwardB" :src="'/src/assets/images/gravity_player_down_forward_B.png'" :style="{ display: 'none' }">
+    <img ref="playerDownBackwardA" :src="'/src/assets/images/gravity_player_down_backward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerDownBackwardB" :src="'/src/assets/images/gravity_player_down_backward_B.png'" :style="{ display: 'none' }">
+    <img ref="playerLeftForwardA" :src="'/src/assets/images/gravity_player_left_forward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerLeftForwardB" :src="'/src/assets/images/gravity_player_left_forward_B.png'" :style="{ display: 'none' }">
+    <img ref="playerLeftBackwardA" :src="'/src/assets/images/gravity_player_left_backward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerLeftBackwardB" :src="'/src/assets/images/gravity_player_left_backward_B.png'" :style="{ display: 'none' }">
+    <img ref="playerRightForwardA" :src="'/src/assets/images/gravity_player_right_forward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerRightForwardB" :src="'/src/assets/images/gravity_player_right_forward_B.png'" :style="{ display: 'none' }">
+    <img ref="playerRightBackwardA" :src="'/src/assets/images/gravity_player_right_backward_A.png'" :style="{ display: 'none' }">
+    <img ref="playerRightBackwardB" :src="'/src/assets/images/gravity_player_right_backward_B.png'" :style="{ display: 'none' }">
     <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
@@ -14,10 +26,12 @@ const portalWidth = 50;
 const portalHeight = 70;
 const renderPlayerEdges = false;
 const walkTimerDelay = 50;
+const playerHeight = 82;
+const playerWidth = 34;
 
 const player = {
-        height: 82,
-        width: 34,
+        height: playerHeight,
+        width: playerWidth,
         vel: { x: 0, y: 0 },
         movingUp: false,
         movingDown: false,
@@ -77,6 +91,12 @@ const screens = [
                 pos: { x: 0, y: 0 },
                 width: 900,
                 height: 50
+            },
+            {
+                id: "F",
+                pos: { x: 0, y: 0 },
+                width: 50,
+                height: 600
             },
             // {
             //     x: 1200 / 2 + 50,
@@ -268,11 +288,34 @@ export default {
 
         changePlayerImage() {
             let player = this.gs.player;
-            if (player.facingForward) {
-                player.image = (player.walkPlayerState == "A")? this.$refs.playerUpForwardA : this.$refs.playerUpForwardB;
-            } else {
-                player.image = (player.walkPlayerState == "A")? this.$refs.playerUpBackwardA : this.$refs.playerUpBackwardB;
+            // Gravity goes down
+            if (this.gs.gravity.y < 0) {
+                if (player.facingForward) {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerDownForwardA : this.$refs.playerDownForwardB;
+                } else {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerDownBackwardA : this.$refs.playerDownBackwardB;
+                }
+            } else if (this.gs.gravity.y > 0) {
+                if (player.facingForward) {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerUpForwardA : this.$refs.playerUpForwardB;
+                } else {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerUpBackwardA : this.$refs.playerUpBackwardB;
+                }
+            } else if (this.gs.gravity.x < 0) {
+                if (player.facingForward) {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerRightForwardA : this.$refs.playerRightForwardB;
+                } else {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerRightBackwardA : this.$refs.playerRightBackwardB;
+                }
+            } else if (this.gs.gravity.x > 0) {
+                if (player.facingForward) {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerLeftForwardA : this.$refs.playerLeftForwardB;
+                } else {
+                    player.image = (player.walkPlayerState == "A")? this.$refs.playerLeftBackwardA : this.$refs.playerLeftBackwardB;
+                }
             }
+
+
         },
 
         loadScreen(screenName, levelNumber=null, portalId=null) {
@@ -439,15 +482,27 @@ export default {
                     //  Special development keys to change the direction of gravity
                     case 'KeyI':
                         this.gs.gravity = { x: 0, y: -.1 };
+                        this.gs.player.height = playerHeight;
+                        this.gs.player.width = playerWidth;
+                        this.changePlayerImage();
                         break;
                     case 'KeyK':
                         this.gs.gravity = { x: 0, y: .1 };
+                        this.gs.player.height = playerHeight;
+                        this.gs.player.width = playerWidth;
+                        this.changePlayerImage();
                         break;
                     case 'KeyJ':
                         this.gs.gravity = { x: -.1, y: 0 };
+                        this.gs.player.height = playerWidth;
+                        this.gs.player.width = playerHeight;
+                        this.changePlayerImage();
                         break;
                     case 'KeyL':
                         this.gs.gravity = { x: .1, y: 0 };
+                        this.gs.player.height = playerWidth;
+                        this.gs.player.width = playerHeight;
+                        this.changePlayerImage();
                         break;
                 }
             }
@@ -576,7 +631,6 @@ export default {
                     if (this.detectEncapsulation(player.edges[1], obstacle)) {
                         player.touchingLeftWall = true;
                         player.edges[1].color = 'darkred';
-                        console.log("TOUCHING LEFT: ", obstacle.id);
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.x < obstacle.pos.x + obstacle.width) {
                             edgeCorrection.x = obstacle.pos.x + obstacle.width;
@@ -587,7 +641,6 @@ export default {
                     if (this.detectEncapsulation(player.edges[2], obstacle)) {
                         player.touchingRightWall = true;
                         player.edges[2].color = 'darkred';
-                        console.log("TOUCHING RIGHT: ", obstacle.id);
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.x > obstacle.pos.x - player.width) {
                             edgeCorrection.x = obstacle.pos.x - player.width;
@@ -714,34 +767,69 @@ export default {
              * ************************************************************/
 
             // Player's vertical velocity if gravity is normal 
-            if (this.gs.gravity.y > 0) {
+            let gravity = this.gs.gravity;
+            if (gravity.x === 0 && gravity.y > 0) {
                 if (player.jumping) {
                     player.vel.y = -5;
                     player.jumping = false;
                 } else {
-                    player.vel.y += this.gs.gravity.y;
+                    player.vel.y += gravity.y;
                 }
             }
 
             // Player's vertical velocity if gravity is reversed
-            if (this.gs.gravity.y < 0) {
+            else if (gravity.x === 0 && gravity.y < 0) {
                 if (player.jumping) {
                     player.vel.y = 5;
                     player.jumping = false;
                 } else {
-                    player.vel.y += this.gs.gravity.y;
+                    player.vel.y += gravity.y;
+                }
+            }
+
+            // Player's horizontal velocity if gravity is left
+            else if (gravity.y === 0 && gravity.x < 0) {
+                if (player.jumping) {
+                    player.vel.x = 5;
+                    player.jumping = false;
+                } else {
+                    player.vel.x += gravity.x;
+                }
+            }
+
+            // Player's horizontal velocity if gravity is right
+            else if (gravity.y === 0 && gravity.x > 0) {
+                if (player.jumping) {
+                    player.vel.x = -5;
+                    player.jumping = false;
+                } else {
+                    player.vel.x += gravity.x;
                 }
             }
 
 
-            // Player's horizontal velocity is determined by whether he is moving left or right
-            if (player.movingLeft) {
-                player.vel.x = -3;
-            } else if (player.movingRight) {
-                player.vel.x = 3;
-            } else {
-                player.vel.x = 0;
+            // Vertical gravity: Player's horizontal velocity is determined by whether he is moving left or right
+            if (gravity.x === 0 && gravity.y !== 0) {
+                if (player.movingLeft) {
+                    player.vel.x = -3;
+                } else if (player.movingRight) {
+                    player.vel.x = 3;
+                } else {
+                    player.vel.x = 0;
+                }
             }
+
+            // Horizontal gravity: Player's vertical velocity is determined by whether he is moving left or right
+            if (gravity.y === 0 && gravity.x !== 0) {
+                if (player.movingLeft) {
+                    player.vel.y = -3;
+                } else if (player.movingRight) {
+                    player.vel.y = 3;
+                } else {
+                    player.vel.y = 0;
+                }
+            }
+
 
             // If the player is colliding with an object, set his velocity in that direction to zero
             if (player.touchingGround && player.vel.y > 0) {
