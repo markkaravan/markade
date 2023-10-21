@@ -108,7 +108,7 @@
                         this.gs.board[row] = [];
                         for (let col = 0; col < columns; col++) {
                             let randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
-                            this.gs.board[row][col] = randomFruitType;
+                            this.gs.board[row][col] = this.generateFruit(randomFruitType.name, randomFruitType.fruit, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
                         }
                     }
                     this.gs.timerStart = Date.now();
@@ -118,6 +118,15 @@
                 }
             },
         
+            generateFruit(name, fruit, x, y, falling = false) {
+                return {
+                    name: name,
+                    fruit: fruit,
+                    x: x,
+                    y: y,
+                    falling: falling,
+                }
+            },
 
             gameLoop() {
                 if (this.gs.name === "Opening") {
@@ -188,41 +197,66 @@
                 }
             },
 
-            findClusterAndRemoveCluster(row, col, fruitType, visitedTiles) {
-                let cluster = this.findCluster(row, col, fruitType, visitedTiles);
+            findClusterAndRemoveCluster(row, col, fruitTypeName, visitedTiles) {
+                let cluster = this.findCluster(row, col, fruitTypeName, visitedTiles);
                 if (cluster.length >= 3) {
                     this.removeCluster(cluster);
                 }
-                // Return all affected columns
-                let affectedCols = new Set();
+
+                // Find each tile in the cluster that has the lowest row value for each column
+                let lowestRowForCol = new Map();
                 for (let tile of cluster) {
-                    affectedCols.add(tile.col);
+                    if (!lowestRowForCol.has(tile.col)) {
+                        lowestRowForCol.set(tile.col, tile.row);
+                    } else {
+                        if (tile.row < lowestRowForCol.get(tile.col)) {
+                            lowestRowForCol.set(tile.col, tile.row);
+                        }
+                    }
                 }
-                return affectedCols;
+                console.log("lowestRowForCol:", lowestRowForCol);
+
+                for (let [col, row] of lowestRowForCol) {
+                    for (let r = row-1; r >= 0; r--) {
+                        if (this.gs.board[r][col]) {
+                            this.gs.board[r][col].falling = true;
+                            console.log(r, col);
+                        }
+                        
+                    }
+                }
+
+
+                // Return all affected columns
+                // let affectedCols = new Set();
+                // for (let tile of cluster) {
+                //     affectedCols.add(tile.col);
+                // }
+                // return affectedCols;
             },
 
-            findCluster(row, col, fruitType, visitedTiles) {
+            findCluster(row, col, fruitTypeName, visitedTiles) {
                 let cluster = [];
-                this.findClusterHelper(row, col, fruitType, visitedTiles, cluster);
+                this.findClusterHelper(row, col, fruitTypeName, visitedTiles, cluster);
                 return cluster;
             },
 
-            findClusterHelper(row, col, fruitType, visitedTiles, cluster) {
+            findClusterHelper(row, col, fruitTypeName, visitedTiles, cluster) {
                 if (row < 0 || row >= rows || col < 0 || col >= columns) {
                     return;
                 }
                 if (visitedTiles.has(`${row},${col}`)) {
                     return;
                 }
-                if (this.gs.board[row][col] !== fruitType) {
+                if (this.gs.board[row][col].name !== fruitTypeName) {
                     return;
                 }
                 visitedTiles.add(`${row},${col}`);
                 cluster.push({ row, col });
-                this.findClusterHelper(row - 1, col, fruitType, visitedTiles, cluster);
-                this.findClusterHelper(row + 1, col, fruitType, visitedTiles, cluster);
-                this.findClusterHelper(row, col - 1, fruitType, visitedTiles, cluster);
-                this.findClusterHelper(row, col + 1, fruitType, visitedTiles, cluster);
+                this.findClusterHelper(row - 1, col, fruitTypeName, visitedTiles, cluster);
+                this.findClusterHelper(row + 1, col, fruitTypeName, visitedTiles, cluster);
+                this.findClusterHelper(row, col - 1, fruitTypeName, visitedTiles, cluster);
+                this.findClusterHelper(row, col + 1, fruitTypeName, visitedTiles, cluster);
             },
 
             removeCluster(cluster) {
@@ -256,6 +290,7 @@
                 }
             },
 
+
             dropNewFruits(affectedCols) {
                 // Drop new, randomly generated fruits from the top
                 for (let col of affectedCols) {
@@ -279,17 +314,20 @@
                 const row = Math.floor((y - boardOffsetY) / tileWidth);
 
                 // Replace the fruit at the clicked square with the current fruit
-                this.gs.board[row][col] = this.gs.currentFruitType;
+                this.gs.board[row][col] = this.generateFruit(this.gs.currentFruitType.name, this.gs.currentFruitType.fruit, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
+                
+                // Set the game state to detecting clusters
                 this.gs.mode = "detectingClusters";
 
                 // Detect clusters and remove them
-                let affectedCols = this.findClusterAndRemoveCluster(row, col, this.gs.currentFruitType, new Set());
+                let affectedCols = this.findClusterAndRemoveCluster(row, col, this.gs.currentFruitType.name, new Set());
 
                 // Drop the fruit down
-                this.dropFruit(affectedCols);
+                // this.dropFruit(affectedCols);
+                //this.markFallingFruits(affectedCols);
 
                 // Drop new, randomly generated fruits from the top
-                this.dropNewFruits(affectedCols);
+                // this.dropNewFruits(affectedCols);
 
                 // Set a new current fruit
                 this.gs.currentFruitType = this.selectRandomFruitType();
@@ -311,10 +349,14 @@
                 for (let row = 0; row < rows; row++) {
                     for (let col = 0; col < columns; col++) {
                         if (this.gs.board[row][col]) {
-                            let fruitType = this.gs.board[row][col];
-                            let fruit = fruitType.fruit;
+                            let tile = this.gs.board[row][col];
                             // Don't render an image, just make the square the fruit color
-                            this.hiddenCtx.fillStyle = fruitType.name;
+                            if (tile.falling) {
+                                this.hiddenCtx.fillStyle = 'white';
+                            } else {
+                                this.hiddenCtx.fillStyle = tile.name;
+                            }
+                            
                             const offsetX = boardOffsetX;
                             const offsetY = boardOffsetY;
                             this.hiddenCtx.fillRect(col * tileWidth + offsetX, row * tileWidth + offsetY, tileWidth, tileWidth);
