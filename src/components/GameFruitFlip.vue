@@ -10,7 +10,7 @@
     const boardOffsetY = 100;
     const rows = 10;
     const columns = 10;
-    const tileWidth = 40;
+    const tileWidth = 50;
     const levelSeconds = 60;
     const fruitTypes = [
         { name: "red", fruit: "strawberry" },
@@ -50,6 +50,7 @@
                     timerStart: null,
                     score: 0,
                     currentFruitType: null,
+                    mode: "playing",
                     // blinkTimer: Date.now(),
                     // showText: true,
                 },
@@ -100,6 +101,7 @@
                     let currentScreen = screens.find(screen => screen.name === screenName);
                     this.gs.name = currentScreen.name;
                     this.gs.score = 0;
+                    this.gs.mode = "playing";
                     // initialize this.gs.board with a 2D array of random fruitTypes
                     this.gs.board = [];
                     for (let row = 0; row < rows; row++) {
@@ -168,6 +170,57 @@
                 }
             },
 
+            detectClusters() {
+                let visitedTiles = new Set();
+                // A cluster is a series of adjacent tiles of the same fruit type
+                // Iterate through the board and find clusters
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < columns; col++) {
+                        let fruitType = this.gs.board[row][col];
+                        if (visitedTiles.has(`${row},${col}`)) {
+                            continue;
+                        }
+                        let cluster = this.findCluster(row, col, fruitType, visitedTiles);
+                        if (cluster.length >= 3) {
+                            console.log(cluster);
+                            this.removeCluster(cluster);
+                        }
+                    }
+                }
+            },
+
+            findCluster(row, col, fruitType, visitedTiles) {
+                let cluster = [];
+                this.findClusterHelper(row, col, fruitType, visitedTiles, cluster);
+                return cluster;
+            },
+
+            findClusterHelper(row, col, fruitType, visitedTiles, cluster) {
+                if (row < 0 || row >= rows || col < 0 || col >= columns) {
+                    return;
+                }
+                if (visitedTiles.has(`${row},${col}`)) {
+                    return;
+                }
+                if (this.gs.board[row][col] !== fruitType) {
+                    return;
+                }
+                visitedTiles.add(`${row},${col}`);
+                cluster.push({ row, col });
+                this.findClusterHelper(row - 1, col, fruitType, visitedTiles, cluster);
+                this.findClusterHelper(row + 1, col, fruitType, visitedTiles, cluster);
+                this.findClusterHelper(row, col - 1, fruitType, visitedTiles, cluster);
+                this.findClusterHelper(row, col + 1, fruitType, visitedTiles, cluster);
+            },
+
+            removeCluster(cluster) {
+                for (let tile of cluster) {
+                    this.gs.board[tile.row][tile.col] = null;
+                }
+                this.gs.score += cluster.length;
+                console.log("this.gs.board:", this.gs.board);
+            },
+
             handleClick(event) {
                 // Calculate the row and column of the clicked square
                 const rect = this.$refs.canvas.getBoundingClientRect();
@@ -177,11 +230,11 @@
                 const row = Math.floor((y - boardOffsetY) / tileWidth);
 
                 // Replace the fruit at the clicked square with the current fruit
-                console.log("===============")
-                console.log("row, col: ", row, col);
-                console.log(this.gs.board[row][col].fruit);
                 this.gs.board[row][col] = this.gs.currentFruitType;
-                // console.log(this.gs.board[row][col].fruit);
+                this.gs.mode = "detectingClusters";
+
+                // Detect clusters
+                this.detectClusters();
 
                 // Set a new current fruit
                 this.gs.currentFruitType = this.selectRandomFruitType();
@@ -202,13 +255,15 @@
                 // Draw the board
                 for (let row = 0; row < rows; row++) {
                     for (let col = 0; col < columns; col++) {
-                        let fruitType = this.gs.board[row][col];
-                        let fruit = fruitType.fruit;
-                        // Don't render an image, just make the square the fruit color
-                        this.hiddenCtx.fillStyle = fruitType.name;
-                        const offsetX = boardOffsetX;
-                        const offsetY = boardOffsetY;
-                        this.hiddenCtx.fillRect(col * tileWidth + offsetX, row * tileWidth + offsetY, tileWidth, tileWidth);
+                        if (this.gs.board[row][col]) {
+                            let fruitType = this.gs.board[row][col];
+                            let fruit = fruitType.fruit;
+                            // Don't render an image, just make the square the fruit color
+                            this.hiddenCtx.fillStyle = fruitType.name;
+                            const offsetX = boardOffsetX;
+                            const offsetY = boardOffsetY;
+                            this.hiddenCtx.fillRect(col * tileWidth + offsetX, row * tileWidth + offsetY, tileWidth, tileWidth);
+                        }
                     }
                 }
 
