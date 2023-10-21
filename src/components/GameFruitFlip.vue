@@ -1,11 +1,13 @@
 <template>
-    <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
+    <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
 
 <script>
     const gameWidthDefault = 800;
     const gameHeightDefault = 600;
+    const boardOffsetX = 100;
+    const boardOffsetY = 100;
     const rows = 10;
     const columns = 10;
     const tileWidth = 40;
@@ -119,7 +121,6 @@
                 if (this.gs.name === "Opening") {
                     this.renderOpeningScreen();
                 } else if (this.gs.name === "Level") {
-                    console.log("Level of stuff");
                     this.updateGameState();
                 } else if (this.gs.name === "Level End") {
                     this.drawLevelEndScreen();
@@ -167,12 +168,33 @@
                 }
             },
 
+            handleClick(event) {
+                // Calculate the row and column of the clicked square
+                const rect = this.$refs.canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                const col = Math.floor((x - boardOffsetX) / tileWidth);
+                const row = Math.floor((y - boardOffsetY) / tileWidth);
+
+                // Replace the fruit at the clicked square with the current fruit
+                console.log("===============")
+                console.log("row, col: ", row, col);
+                console.log(this.gs.board[row][col].fruit);
+                this.gs.board[row][col] = this.gs.currentFruitType;
+                // console.log(this.gs.board[row][col].fruit);
+
+                // Set a new current fruit
+                this.gs.currentFruitType = this.selectRandomFruitType();
+
+                // Update the game state
+                this.updateGameState();
+            },
+
             selectRandomFruitType() {
                 return fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
             },
 
             updateGameState() {
-                console.log("updateGameState()");
                 // Draw black background to hidden context
                 this.hiddenCtx.fillStyle = 'black';
                 this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
@@ -184,8 +206,8 @@
                         let fruit = fruitType.fruit;
                         // Don't render an image, just make the square the fruit color
                         this.hiddenCtx.fillStyle = fruitType.name;
-                        const offsetX = 100;
-                        const offsetY = 100;
+                        const offsetX = boardOffsetX;
+                        const offsetY = boardOffsetY;
                         this.hiddenCtx.fillRect(col * tileWidth + offsetX, row * tileWidth + offsetY, tileWidth, tileWidth);
                     }
                 }
@@ -206,8 +228,6 @@
                 // Display the fruit as a colored square
                 this.hiddenCtx.fillRect(this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
 
-
-                
 
                 // Draw to main canvas
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
