@@ -49,8 +49,9 @@
                     lives: 3,
                     timerStart: null,
                     score: 0,
+                    isPaused: false,
                     currentFruitType: null,
-                    mode: "playing",
+                    mode: "playing", // "playing", "detectingClusters", "droppingFruits", "replacingFruits"
                     // blinkTimer: Date.now(),
                     // showText: true,
                 },
@@ -125,6 +126,7 @@
                     x: x,
                     y: y,
                     falling: falling,
+                    fallVelocity: 0,
                 }
             },
 
@@ -136,9 +138,10 @@
                 } else if (this.gs.name === "Level End") {
                     this.drawLevelEndScreen();
                 }
-
                 // Call the game loop again
-                requestAnimationFrame(this.gameLoop);
+                if (!this.gs.isPaused) {
+                    requestAnimationFrame(this.gameLoop);
+                }
             },
 
             renderOpeningScreen() {
@@ -176,6 +179,12 @@
                     }
                     return;
                 } else {
+                    if (event.code === 'KeyP') {
+                        this.gs.isPaused = !this.gs.isPaused;
+                        if (!this.gs.isPaused) {
+                            this.gameLoop();
+                        }
+                    }
                 }
             },
 
@@ -205,7 +214,9 @@
 
                 // Find each tile in the cluster that has the lowest row value for each column
                 let lowestRowForCol = new Map();
+                let affectedCols = new Set();
                 for (let tile of cluster) {
+                    affectedCols.add(tile.col);
                     if (!lowestRowForCol.has(tile.col)) {
                         lowestRowForCol.set(tile.col, tile.row);
                     } else {
@@ -214,25 +225,22 @@
                         }
                     }
                 }
-                console.log("lowestRowForCol:", lowestRowForCol);
 
+                // Mark the tiles above as falling
                 for (let [col, row] of lowestRowForCol) {
                     for (let r = row-1; r >= 0; r--) {
                         if (this.gs.board[r][col]) {
                             this.gs.board[r][col].falling = true;
                             console.log(r, col);
                         }
-                        
                     }
                 }
+                this.gs.mode = "droppingFruits";
 
+                console.log(this.gs.board);
 
                 // Return all affected columns
-                // let affectedCols = new Set();
-                // for (let tile of cluster) {
-                //     affectedCols.add(tile.col);
-                // }
-                // return affectedCols;
+                return affectedCols;
             },
 
             findCluster(row, col, fruitTypeName, visitedTiles) {
@@ -326,8 +334,12 @@
                 // this.dropFruit(affectedCols);
                 //this.markFallingFruits(affectedCols);
 
+                this.gs.mode = "replacingFruits";
+
                 // Drop new, randomly generated fruits from the top
                 // this.dropNewFruits(affectedCols);
+
+                // NOW LOOK FOR NEW CLUSTERS
 
                 // Set a new current fruit
                 this.gs.currentFruitType = this.selectRandomFruitType();
@@ -345,21 +357,52 @@
                 this.hiddenCtx.fillStyle = 'black';
                 this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
 
-                // Draw the board
+                // Draw the board's static tiles
                 for (let row = 0; row < rows; row++) {
                     for (let col = 0; col < columns; col++) {
-                        if (this.gs.board[row][col]) {
+                        let tile = this.gs.board[row][col];
+                        if (tile && !tile.falling) {
                             let tile = this.gs.board[row][col];
-                            // Don't render an image, just make the square the fruit color
-                            if (tile.falling) {
-                                this.hiddenCtx.fillStyle = 'white';
-                            } else {
-                                this.hiddenCtx.fillStyle = tile.name;
-                            }
-                            
+                            this.hiddenCtx.fillStyle = tile.name;
                             const offsetX = boardOffsetX;
                             const offsetY = boardOffsetY;
-                            this.hiddenCtx.fillRect(col * tileWidth + offsetX, row * tileWidth + offsetY, tileWidth, tileWidth);
+                            this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
+                        }
+                    }
+                }
+
+                // Update the position of the falling tiles
+                if (this.gs.mode === "droppingFruits" || this.gs.mode === "replacingFruits") {
+                    let fallingArray = [];
+                    for (let row = 0; row < rows; row++) {
+                        for (let col = 0; col < columns; col++) {
+                            let tile = this.gs.board[row][col];
+                            if (tile && tile.falling) {
+                                fallingArray.push(tile);
+                                tile.y += tile.fallVelocity;
+                                tile.fallVelocity += 0.1;
+                                if (tile.y >= row * tileWidth + boardOffsetY) {
+                                    tile.y = row * tileWidth + boardOffsetY;
+                                    tile.falling = false;
+                                    tile.fallVelocity = 0;
+                                }
+                            }
+                        }
+                    }
+                    console.log("fallingArray:", fallingArray);
+                }
+
+
+                // Draw the board's falling tiles
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < columns; col++) {
+                        let tile = this.gs.board[row][col];
+                        if (tile && tile.falling) {
+                            let tile = this.gs.board[row][col];
+                            this.hiddenCtx.fillStyle = tile.name;
+                            const offsetX = boardOffsetX;
+                            const offsetY = boardOffsetY;
+                            this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
                         }
                     }
                 }
@@ -379,6 +422,13 @@
                 this.hiddenCtx.fillText('Current Fruit', this.dataGameWidth - 200, this.dataGameHeight / 2 - 50);
                 // Display the fruit as a colored square
                 this.hiddenCtx.fillRect(this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
+
+                // If the game is paused, display "PAUSED" in the center of the screen in big letters
+                if (this.gs.isPaused) {
+                    this.hiddenCtx.fillStyle = 'white';
+                    this.hiddenCtx.font = '100px Helvetica';
+                    this.hiddenCtx.fillText('PAUSED', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
+                }
 
 
                 // Draw to main canvas
