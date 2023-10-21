@@ -5,13 +5,26 @@
 
 <script>
     const gameWidthDefault = 800;
-    const gameHeightDefault = 333;
+    const gameHeightDefault = 600;
+    const rows = 10;
+    const columns = 10;
+    const tileWidth = 40;
+    const levelSeconds = 60;
+    const fruitTypes = [
+        { name: "red", fruit: "strawberry" },
+        { name: "orange", fruit: "orange" },
+        { name: "yellow", fruit: "banana" },
+        { name: "green", fruit: "pear" },
+        { name: "blue", fruit: "blueberry" },
+        { name: "purple", fruit: "grape" }
+    ];
 
     const screens = [
         { name: "Opening"},
         { name: "Level"},
         { name: "Level End"}
     ];
+
     export default {
         name: 'GameFruitFlip',
         props: {
@@ -32,6 +45,9 @@
                 gs: {
                     name: "Opening",
                     lives: 3,
+                    timerStart: null,
+                    score: 0,
+                    currentFruitType: null,
                     // blinkTimer: Date.now(),
                     // showText: true,
                 },
@@ -74,17 +90,25 @@
             },
             loadScreen(screenName) {
                 if (screenName === "Opening") {
-                    // let currentScreen = screens.find(screen => screen.name === "Opening");
-                    // // iterate through all properties of currentScreen and add them to this.gs
-                    // for (let prop in currentScreen) {
-                    //     this.gs[prop] = currentScreen[prop];
-                    // }
                     this.gs.name = "Opening";
                     this.gs.lives = 3;
                     this.gs.blinkTimer = Date.now();
                     this.gs.showText = true;
                 } else if (screenName === "Level") {
-                    // Load the level
+                    let currentScreen = screens.find(screen => screen.name === screenName);
+                    this.gs.name = currentScreen.name;
+                    this.gs.score = 0;
+                    // initialize this.gs.board with a 2D array of random fruitTypes
+                    this.gs.board = [];
+                    for (let row = 0; row < rows; row++) {
+                        this.gs.board[row] = [];
+                        for (let col = 0; col < columns; col++) {
+                            let randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+                            this.gs.board[row][col] = randomFruitType;
+                        }
+                    }
+                    this.gs.timerStart = Date.now();
+                    this.gs.currentFruitType = this.selectRandomFruitType();
                 } else if (screenName === "Level End") {
                     // Load the level end screen
                 }
@@ -95,7 +119,8 @@
                 if (this.gs.name === "Opening") {
                     this.renderOpeningScreen();
                 } else if (this.gs.name === "Level") {
-                    this.drawLevelScreen();
+                    console.log("Level of stuff");
+                    this.updateGameState();
                 } else if (this.gs.name === "Level End") {
                     this.drawLevelEndScreen();
                 }
@@ -131,6 +156,64 @@
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
                 this.ctx.drawImage(this.hiddenCanvas, 0, 0);
             },
+
+            handleKeyDown(event) {
+                if (this.gs.name === 'Opening') {
+                    if (event.code === 'Space') {
+                        this.loadScreen('Level'); 
+                    }
+                    return;
+                } else {
+                }
+            },
+
+            selectRandomFruitType() {
+                return fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+            },
+
+            updateGameState() {
+                console.log("updateGameState()");
+                // Draw black background to hidden context
+                this.hiddenCtx.fillStyle = 'black';
+                this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+
+                // Draw the board
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < columns; col++) {
+                        let fruitType = this.gs.board[row][col];
+                        let fruit = fruitType.fruit;
+                        // Don't render an image, just make the square the fruit color
+                        this.hiddenCtx.fillStyle = fruitType.name;
+                        const offsetX = 100;
+                        const offsetY = 100;
+                        this.hiddenCtx.fillRect(col * tileWidth + offsetX, row * tileWidth + offsetY, tileWidth, tileWidth);
+                    }
+                }
+
+                // Draw the timer and the score.  The timer is at the top middle and the score is at the top left.
+                this.hiddenCtx.fillStyle = 'white';
+                this.hiddenCtx.font = '24px Helvetica';
+                this.hiddenCtx.fillText('Timer', this.dataGameWidth / 2 - 150, 50);
+                this.hiddenCtx.fillText('Score', 50, 50);
+                let timerDisplay = levelSeconds - Math.floor((Date.now() - this.gs.timerStart) / 1000);
+                this.hiddenCtx.fillText(timerDisplay, this.dataGameWidth / 2 - 150, 80);
+                this.hiddenCtx.fillText(this.gs.score, 50, 80);
+
+                // Draw the current fruit type at the right middle of the screen
+                this.hiddenCtx.fillStyle = this.gs.currentFruitType.name;
+                this.hiddenCtx.font = '24px Helvetica';
+                this.hiddenCtx.fillText('Current Fruit', this.dataGameWidth - 200, this.dataGameHeight / 2 - 50);
+                // Display the fruit as a colored square
+                this.hiddenCtx.fillRect(this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
+
+
+                
+
+                // Draw to main canvas
+                this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
+                this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+            },
+
         } // methods
     }; // export default
 
