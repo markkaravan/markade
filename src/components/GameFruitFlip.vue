@@ -51,6 +51,7 @@
                     score: 0,
                     isPaused: false,
                     currentFruitType: null,
+                    inspectMode: false,
                     mode: "playing", // "playing", "detectingClusters", "droppingFruits", "replacingFruits"
                     // blinkTimer: Date.now(),
                     // showText: true,
@@ -184,6 +185,8 @@
                         if (!this.gs.isPaused) {
                             this.gameLoop();
                         }
+                    } else if (event.code === 'KeyI') {
+                        this.gs.inspectMode = !this.gs.inspectMode;
                     }
                 }
             },
@@ -321,31 +324,66 @@
                 const col = Math.floor((x - boardOffsetX) / tileWidth);
                 const row = Math.floor((y - boardOffsetY) / tileWidth);
 
+                // If inspect mode is on, it shows the details of the tile and stops here
+                if (this.gs.inspectMode) {
+                    console.log("Inspecting: ", this.gs.board[row][col]);
+                    return;
+                }
+
+                // Determine whether a tile was clicked
+                if (row < 0 || row >= rows || col < 0 || col >= columns) {
+                    console.log("nothing clicked");
+                    return;
+                }
+
+                // If the clicked square is the same color as the current fruit, do nothing
+                if (this.gs.board[row][col] && this.gs.board[row][col].name === this.gs.currentFruitType.name) {
+                    console.log("same color");
+                    return; 
+                }
+
                 // Replace the fruit at the clicked square with the current fruit
                 this.gs.board[row][col] = this.generateFruit(this.gs.currentFruitType.name, this.gs.currentFruitType.fruit, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
                 
-                // Set the game state to detecting clusters
+                // Look for clusters
                 this.gs.mode = "detectingClusters";
+                let cluster = this.findCluster(row, col, this.gs.currentFruitType.name, new Set());
 
-                // Detect clusters and remove them
-                let affectedCols = this.findClusterAndRemoveCluster(row, col, this.gs.currentFruitType.name, new Set());
+                // If there are no clusters, revert the fruit back to the original fruit
+                if (cluster.length < 3) {
+                    this.gs.currentFruitType = this.selectRandomFruitType();
+                    this.gs.mode = "playing";
+                    return;
+                }
 
-                // Drop the fruit down
-                // this.dropFruit(affectedCols);
-                //this.markFallingFruits(affectedCols);
+                // Remove the cluster
+                this.removeCluster(cluster);
 
-                this.gs.mode = "replacingFruits";
+                // Find each tile in the cluster that has the lowest row value for each column
+                // Mark the tiles above as falling
+                let lowestRowForCol = new Map();
+                let affectedCols = new Set();
+                for (let tile of cluster) {
+                    affectedCols.add(tile.col);
+                    if (!lowestRowForCol.has(tile.col)) {
+                        lowestRowForCol.set(tile.col, tile.row);
+                    } else {
+                        if (tile.row < lowestRowForCol.get(tile.col)) {
+                            lowestRowForCol.set(tile.col, tile.row);
+                        }
+                    }
+                }
+                for (let [col, row] of lowestRowForCol) {
+                    for (let r = row-1; r >= 0; r--) {
+                        if (this.gs.board[r][col]) {
+                            this.gs.board[r][col].falling = true;
+                        }
+                    }
+                }
+                // Change the mode to droppingFruits
+                this.gs.mode = "droppingFruits";
 
-                // Drop new, randomly generated fruits from the top
-                // this.dropNewFruits(affectedCols);
-
-                // NOW LOOK FOR NEW CLUSTERS
-
-                // Set a new current fruit
                 this.gs.currentFruitType = this.selectRandomFruitType();
-
-                // Update the game state
-                this.updateGameState();
             },
 
             selectRandomFruitType() {
@@ -373,39 +411,75 @@
 
                 // Update the position of the falling tiles
                 if (this.gs.mode === "droppingFruits" || this.gs.mode === "replacingFruits") {
+
+                    // Update the falling fruit position
+                    // Loop through rows, bottom to top, then loop through the cols
                     let fallingArray = [];
-                    for (let row = 0; row < rows; row++) {
+                    for (let row = rows-1; row >= 0; row--) {
                         for (let col = 0; col < columns; col++) {
                             let tile = this.gs.board[row][col];
                             if (tile && tile.falling) {
-                                fallingArray.push(tile);
                                 tile.y += tile.fallVelocity;
                                 tile.fallVelocity += 0.1;
-                                if (tile.y >= row * tileWidth + boardOffsetY) {
-                                    tile.y = row * tileWidth + boardOffsetY;
-                                    tile.falling = false;
-                                    tile.fallVelocity = 0;
+                                // Collision detection: get the tile's new row  
+                                let newRow = Math.floor((tile.y - boardOffsetY) / tileWidth);
+                                console.log("ROWS: ", rows);
+                                // if the tile below the new row is not falling, or the row is the bottom, it has reached the bottom
+                                if (newRow >= rows-1 || (this.gs.board[newRow + 1] && this.gs.board[newRow + 1][col] && !this.gs.board[newRow + 1][col].falling)) {
+                                    console.log("Col:", col, "Row:", row, "newRow:", newRow);
+                                    // Set the board at the new row to the tile, and set the tile's y to the new row, then remove the tile from the old row
+                                    this.gs.board[newRow][col] = tile;
+                                    this.gs.board[newRow][col].y = newRow * tileWidth + boardOffsetY;
+                                    this.gs.board[row][col] = null;
+                                    this.gs.board[newRow][col].falling = false;
+                                    this.gs.board[newRow][col].fallVelocity = 0;
+                                    this.gs.board[newRow][col].name = tile.name;
+                                } else {
+                                    fallingArray.push(tile);
                                 }
                             }
                         }
                     }
-                    console.log("fallingArray:", fallingArray);
-                }
 
+                    if (fallingArray.length === 0) {
+                        if (this.gs.mode === "droppingFruits") {
+                            this.gs.mode = "replacingFruits";
+                        } else if (this.gs.mode === "replacingFruits") {
+                            this.gs.mode = "detectingClusters";
+                        }
+                    }
 
-                // Draw the board's falling tiles
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < columns; col++) {
-                        let tile = this.gs.board[row][col];
-                        if (tile && tile.falling) {
+                     // Draw the board's falling tiles
+                    for (let row = 0; row < rows; row++) {
+                        for (let col = 0; col < columns; col++) {
                             let tile = this.gs.board[row][col];
-                            this.hiddenCtx.fillStyle = tile.name;
-                            const offsetX = boardOffsetX;
-                            const offsetY = boardOffsetY;
-                            this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
+                            if (tile && tile.falling) {
+                                let tile = this.gs.board[row][col];
+                                // fill style is a darker version of the tile's color
+                                if (tile.name == 'red') {
+                                    this.hiddenCtx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                                } else if (tile.name == 'green') {
+                                    this.hiddenCtx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+                                } else if (tile.name == 'blue') {
+                                    this.hiddenCtx.fillStyle = 'rgba(0, 0, 255, 0.5)';
+                                } else if (tile.name == 'yellow') {
+                                    this.hiddenCtx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                                } else if (tile.name == 'orange') {
+                                    this.hiddenCtx.fillStyle = 'rgba(255, 165, 0, 0.5)';
+                                } else if (tile.name == 'purple') {
+                                    this.hiddenCtx.fillStyle = 'rgba(128, 0, 128, 0.5)';
+                                }
+                                this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
+                                // inside the tile, in tiny black letters, display the tile's row and column
+                                this.hiddenCtx.fillStyle = 'white';
+                                this.hiddenCtx.font = '15px Helvetica';
+                                let newRow = Math.floor((tile.y - boardOffsetY) / tileWidth);
+                                this.hiddenCtx.fillText(newRow, tile.x, tile.y + 15); 
+                            }
                         }
                     }
                 }
+
 
                 // Draw the timer and the score.  The timer is at the top middle and the score is at the top left.
                 this.hiddenCtx.fillStyle = 'white';
