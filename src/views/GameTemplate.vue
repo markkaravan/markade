@@ -35,6 +35,7 @@ import GameLevelQuest from '@/components/GameLevelQuest.vue'
 import GameGalaga from '@/components/GameGalaga.vue'
 import GameHellfire from '@/components/GameHellfire.vue'
 import GameGravity from '@/components/GameGravity.vue'
+import GameFruitFlip from '@/components/GameFruitFlip.vue'
 import GameSandBox from '@/components/GameSandbox.vue'
 
 const gameWidthDefault = 800;
@@ -46,7 +47,8 @@ export default {
     GameLevelQuest,
     GameGalaga,
     GameHellfire,
-    GameGravity
+    GameGravity,
+    GameFruitFlip,
   },
   computed: {
     gameComponent() {
@@ -59,6 +61,8 @@ export default {
         return 'GameHellfire'
       } else if (route === '/games/gravity') {
         return 'GameGravity'
+      } else if (route === '/games/fruitflip') {
+        return 'GameFruitFlip'
       } else if (route === '/games/sandbox') {
         return 'GameSandBox'
       } else {

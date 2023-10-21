@@ -52,5 +52,15 @@
       "gameWidth": 1200,
       "gameHeight": 600,
       "dateCreated": "2023-10-17  12:00:00"
+    },
+    {
+      "title": "FruitFlip",
+      "pathName": "fruitflip",
+      "image": "images/thumbnail-fruitflip.png",
+      "instructions": "",
+      "description": "",
+      "gameWidth": 1200,
+      "gameHeight": 600,
+      "dateCreated": "2023-10-21  12:00:00"
     }
   ]
