@@ -15,6 +15,11 @@
     <img ref="playerRightForwardB" :src="'/src/assets/images/gravity_player_right_forward_B.png'" :style="{ display: 'none' }">
     <img ref="playerRightBackwardA" :src="'/src/assets/images/gravity_player_right_backward_A.png'" :style="{ display: 'none' }">
     <img ref="playerRightBackwardB" :src="'/src/assets/images/gravity_player_right_backward_B.png'" :style="{ display: 'none' }">
+    <img ref="doorUp" :src="'/src/assets/images/gravity_portal_up.png'" :style="{ display: 'none' }">
+    <img ref="doorDown" :src="'/src/assets/images/gravity_portal_down.png'" :style="{ display: 'none' }">
+    <img ref="doorLeft" :src="'/src/assets/images/gravity_portal_left.png'" :style="{ display: 'none' }">
+    <img ref="doorRight" :src="'/src/assets/images/gravity_portal_right.png'" :style="{ display: 'none' }">
+
     <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
@@ -23,7 +28,7 @@
 const gameWidthDefault = 800;
 const gameHeightDefault = 333;
 const portalWidth = 50;
-const portalHeight = 70;
+const portalHeight = 100;
 const renderPlayerEdges = false;
 const walkTimerDelay = 50;
 const playerHeight = 82;
@@ -47,6 +52,7 @@ const player = {
         walkTimer: null,
         walkPlayerState: 'A',
         image: null,
+        groundedObject: null,
     };
 
 const screens = [
@@ -116,13 +122,13 @@ const screens = [
         ],
 
         portals: [
-        //     {
-        //     id: "1-2",
-        //     x: 700,
-        //     y: 300,
-        //     destination: 2,
-        //     color: "green",
-        // }
+            {
+            id: "1-2",
+            x: 700,
+            y: 300,
+            destination: 2,
+            color: "green",
+        }
     ],
 
         items: [
@@ -157,8 +163,8 @@ const screens = [
             // There are two additional obstacles which cover the ground of the level.
             // Between them is a pit.
             {
-                pos: { x: 0, y: 600 },
-                width: 1200 / 2,
+                pos: { x: 0, y: 550 },
+                width: 800,
                 height: 50
             },
             {
@@ -178,7 +184,7 @@ const screens = [
         {
             id: "2-3",
             x: 700,
-            y: 500,
+            y: 450,
             destination: 3,
             color: "purple",
         }
@@ -648,6 +654,7 @@ export default {
         updateGameState() {
 
             let player = this.gs.player;
+            let gravity = this.gs.gravity;
             // Update player's walk animation
             if (player.walkTimer && (Date.now() - player.walkTimer) > walkTimerDelay) {
                 player.walkTimer = Date.now();
@@ -696,6 +703,9 @@ export default {
                     if ( this.detectEncapsulation(player.edges[0], obstacle)) {
                         player.touchingCeiling = true;
                         player.edges[0].color = 'darkred';
+                        if (gravity.x === 0 && gravity.y < 0) {
+                            player.groundedObject = obstacle;
+                        }
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.y < obstacle.pos.y + obstacle.height) {
                             edgeCorrection.y = obstacle.pos.y + obstacle.height;
@@ -706,8 +716,10 @@ export default {
                     // If the player's left edge is fully encapsulated within the obstacle, he is touching the left.  Set the edge color to dark red.
                     if (this.detectEncapsulation(player.edges[1], obstacle)) {
                         player.touchingLeftWall = true;
-                    console.log("TOUCHING LEFT");
                         player.edges[1].color = 'darkred';
+                        if (gravity.x < 0 && gravity.y === 0) {
+                            player.groundedObject = obstacle;
+                        }
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.x < obstacle.pos.x + obstacle.width) {
                             edgeCorrection.x = obstacle.pos.x + obstacle.width;
@@ -718,6 +730,9 @@ export default {
                     if (this.detectEncapsulation(player.edges[2], obstacle)) {
                         player.touchingRightWall = true;
                         player.edges[2].color = 'darkred';
+                        if (gravity.x > 0 && gravity.y === 0) {
+                            player.groundedObject = obstacle;
+                        }
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.x > obstacle.pos.x - player.width) {
                             edgeCorrection.x = obstacle.pos.x - player.width;
@@ -727,8 +742,10 @@ export default {
                     // If the player's bottom edge is fully encapsulated within the obstacle, he is touching the bottom.  Set the edge color to dark red.
                     if (this.detectEncapsulation(player.edges[3], obstacle)) {
                         player.touchingGround = true;
-                    console.log("TOUCHING GROUND");
                         player.edges[3].color = 'darkred';
+                        if (gravity.x === 0 && gravity.y > 0) {
+                            player.groundedObject = obstacle;
+                        }
                         // Correct the player's position so that he is not inside the obstacle
                         if (player.pos.y > obstacle.pos.y - player.height) {
                             edgeCorrection.y = obstacle.pos.y - player.height;
@@ -762,22 +779,7 @@ export default {
                 }
             });
 
-            // Initialize movement with gravity
-            // if (this.gs.gravity.y > 0) {
-            //     player.movingDown = true;
-            // }
 
-            // if (this.gs.gravity.y < 0) {
-            //     player.movingUp = true;
-            // }
-
-            // if (this.gs.gravity.x > 0) {
-            //     player.movingRight = true;
-            // }
-
-            // if (this.gs.gravity.x < 0) {
-            //     player.movingLeft = true;
-            // }
 
             // Stop player movement with object collision
             if (player.touchingLeftWall) {
@@ -855,13 +857,9 @@ export default {
              * 
              * ************************************************************/
 
-            // if (player.jumping) {
-            //     console.log("PLAYER IS JUMPING!");
-            // }
             //  GRAVITY MOVEMENT
             //
             // Player's vertical velocity if gravity is normal 
-            let gravity = this.gs.gravity;
             if (gravity.x === 0 && gravity.y > 0) {
                 if (player.jumping) {
                     player.vel.y = -jumpVelocity;
@@ -987,6 +985,9 @@ export default {
                     portalHeight
                 );
             });
+
+            // this.hiddenCtx.drawImage(player.image, player.pos.x, player.pos.y, player.width, player.height);
+
 
             // Items
             // Each item is a 50x50 purple square.  There are four kinds: gravity-up, gravity-down, gravity-left and gravity-right.
