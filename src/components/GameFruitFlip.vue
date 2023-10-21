@@ -182,11 +182,23 @@
                         }
                         let cluster = this.findCluster(row, col, fruitType, visitedTiles);
                         if (cluster.length >= 3) {
-                            console.log(cluster);
                             this.removeCluster(cluster);
                         }
                     }
                 }
+            },
+
+            findClusterAndRemoveCluster(row, col, fruitType, visitedTiles) {
+                let cluster = this.findCluster(row, col, fruitType, visitedTiles);
+                if (cluster.length >= 3) {
+                    this.removeCluster(cluster);
+                }
+                // Return all affected columns
+                let affectedCols = new Set();
+                for (let tile of cluster) {
+                    affectedCols.add(tile.col);
+                }
+                return affectedCols;
             },
 
             findCluster(row, col, fruitType, visitedTiles) {
@@ -221,6 +233,43 @@
                 console.log("this.gs.board:", this.gs.board);
             },
 
+            dropFruit(affectedCols) {
+                // Drop the fruit down
+                for (let col of affectedCols) {
+                    let row = rows - 1;
+                    while (row >= 0) {
+                        if (this.gs.board[row][col] === null) {
+                            // Find the next fruit above this one
+                            let nextFruitRow = row - 1;
+                            while (nextFruitRow >= 0) {
+                                if (this.gs.board[nextFruitRow][col] !== null) {
+                                    // Swap the fruit
+                                    this.gs.board[row][col] = this.gs.board[nextFruitRow][col];
+                                    this.gs.board[nextFruitRow][col] = null;
+                                    break;
+                                }
+                                nextFruitRow--;
+                            }
+                        }
+                        row--;
+                    }
+                }
+            },
+
+            dropNewFruits(affectedCols) {
+                // Drop new, randomly generated fruits from the top
+                for (let col of affectedCols) {
+                    let row = 0;
+                    while (row < rows) {
+                        if (this.gs.board[row][col] === null) {
+                            let randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+                            this.gs.board[row][col] = randomFruitType;
+                        }
+                        row++;
+                    }
+                }
+            },
+
             handleClick(event) {
                 // Calculate the row and column of the clicked square
                 const rect = this.$refs.canvas.getBoundingClientRect();
@@ -233,8 +282,14 @@
                 this.gs.board[row][col] = this.gs.currentFruitType;
                 this.gs.mode = "detectingClusters";
 
-                // Detect clusters
-                this.detectClusters();
+                // Detect clusters and remove them
+                let affectedCols = this.findClusterAndRemoveCluster(row, col, this.gs.currentFruitType, new Set());
+
+                // Drop the fruit down
+                this.dropFruit(affectedCols);
+
+                // Drop new, randomly generated fruits from the top
+                this.dropNewFruits(affectedCols);
 
                 // Set a new current fruit
                 this.gs.currentFruitType = this.selectRandomFruitType();
