@@ -1,9 +1,9 @@
 <template>
     <img ref="fruitCherry" :src="'/src/assets/images/fruit_cherry.png'" :style="{ display: 'none' }">
     <img ref="fruitGrapes" :src="'/src/assets/images/fruit_grapes.png'" :style="{ display: 'none' }">
-    <img ref="fruitGreenApple" :src="'/src/assets/images/fruit_green_apple.png'" :style="{ display: 'none' }">
-    <img ref="fruitKiwi" :src="'/src/assets/images/fruit_kiwi.png'" :style="{ display: 'none' }">
-    <img ref="fruitYellow" :src="'/src/assets/images/fruit_yellow.png'" :style="{ display: 'none' }">
+    <img ref="fruitGreenApple" :src="'/src/assets/images/fruit_kiwi.png'" :style="{ display: 'none' }">
+    <img ref="fruitBlueberry" :src="'/src/assets/images/fruit_blueberry.png'" :style="{ display: 'none' }">
+    <img ref="fruitYellow" :src="'/src/assets/images/fruit_banana.png'" :style="{ display: 'none' }">
     <img ref="fruitOrange" :src="'/src/assets/images/fruit_orange.png'" :style="{ display: 'none' }">
 
     <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="dataGameWidth" :height="dataGameHeight"></canvas>
@@ -24,7 +24,7 @@
         { name: "orange", fruit: "orange", imgRef: "fruitOrange" },
         { name: "yellow", fruit: "banana", imgRef:  "fruitYellow" },
         { name: "green", fruit: "pear", imgRef: "fruitGreenApple"  },
-        { name: "blue", fruit: "blueberry", imgRef: "fruitKiwi" },
+        { name: "blue", fruit: "blueberry", imgRef: "fruitBlueberry" },
         { name: "purple", fruit: "grape", imgRef:  "fruitGrapes"  }
     ];
 
@@ -379,7 +379,7 @@
                     if (!lowestRowForCol.has(tile.col)) {
                         lowestRowForCol.set(tile.col, tile.row);
                     } else {
-                        if (tile.row < lowestRowForCol.get(tile.col)) {
+                        if (tile.row > lowestRowForCol.get(tile.col)) {
                             lowestRowForCol.set(tile.col, tile.row);
                         }
                     }
@@ -419,12 +419,12 @@
                             this.hiddenCtx.drawImage(tile.image, tile.x, tile.y, tileWidth, tileWidth);
                             // this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
                             // There is a tiny black background behind the tile's row and column
-                            this.hiddenCtx.fillStyle = 'black';
-                            this.hiddenCtx.fillRect(tile.x, tile.y, 20, 20);
-                            // inside the tile, in tiny black letters, display the tile's row and column
-                            this.hiddenCtx.fillStyle = 'white';
-                            this.hiddenCtx.font = '15px Helvetica';
-                            this.hiddenCtx.fillText(row, tile.x, tile.y + 15);
+                            // this.hiddenCtx.fillStyle = 'black';
+                            // this.hiddenCtx.fillRect(tile.x, tile.y, 20, 20);
+                            // // inside the tile, in tiny black letters, display the tile's row and column
+                            // this.hiddenCtx.fillStyle = 'white';
+                            // this.hiddenCtx.font = '15px Helvetica';
+                            // this.hiddenCtx.fillText(row, tile.x, tile.y + 15);
                         }
                     }
                 }
@@ -467,32 +467,33 @@
                         }
                     }
 
-                     // Draw the board's falling tiles
+                    //  // Draw the board's falling tiles
                     for (let row = 0; row < rows; row++) {
                         for (let col = 0; col < columns; col++) {
                             let tile = this.gs.board[row][col];
                             if (tile && tile.falling) {
                                 let tile = this.gs.board[row][col];
+                                this.hiddenCtx.drawImage(tile.image, tile.x, tile.y, tileWidth, tileWidth);
                                 // fill style is a darker version of the tile's color
-                                if (tile.name == 'red') {
-                                    this.hiddenCtx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-                                } else if (tile.name == 'green') {
-                                    this.hiddenCtx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-                                } else if (tile.name == 'blue') {
-                                    this.hiddenCtx.fillStyle = 'rgba(0, 0, 255, 0.5)';
-                                } else if (tile.name == 'yellow') {
-                                    this.hiddenCtx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-                                } else if (tile.name == 'orange') {
-                                    this.hiddenCtx.fillStyle = 'rgba(255, 165, 0, 0.5)';
-                                } else if (tile.name == 'purple') {
-                                    this.hiddenCtx.fillStyle = 'rgba(128, 0, 128, 0.5)';
-                                }
-                                this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
-                                // inside the tile, in tiny black letters, display the tile's row and column
-                                this.hiddenCtx.fillStyle = 'white';
-                                this.hiddenCtx.font = '15px Helvetica';
-                                let newRow = Math.floor((tile.y - boardOffsetY) / tileWidth);
-                                this.hiddenCtx.fillText(newRow, tile.x, tile.y + 15); 
+                                // if (tile.name == 'red') {
+                                //     this.hiddenCtx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+                                // } else if (tile.name == 'green') {
+                                //     this.hiddenCtx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+                                // } else if (tile.name == 'blue') {
+                                //     this.hiddenCtx.fillStyle = 'rgba(0, 0, 255, 0.5)';
+                                // } else if (tile.name == 'yellow') {
+                                //     this.hiddenCtx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                                // } else if (tile.name == 'orange') {
+                                //     this.hiddenCtx.fillStyle = 'rgba(255, 165, 0, 0.5)';
+                                // } else if (tile.name == 'purple') {
+                                //     this.hiddenCtx.fillStyle = 'rgba(128, 0, 128, 0.5)';
+                                // }
+                                // this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
+                                // // inside the tile, in tiny black letters, display the tile's row and column
+                                // this.hiddenCtx.fillStyle = 'white';
+                                // this.hiddenCtx.font = '15px Helvetica';
+                                // let newRow = Math.floor((tile.y - boardOffsetY) / tileWidth);
+                                // this.hiddenCtx.fillText(newRow, tile.x, tile.y + 15); 
                             }
                         }
                     }
@@ -513,7 +514,9 @@
                 this.hiddenCtx.font = '24px Helvetica';
                 this.hiddenCtx.fillText('Current Fruit', this.dataGameWidth - 200, this.dataGameHeight / 2 - 50);
                 // Display the fruit as a colored square
-                this.hiddenCtx.fillRect(this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
+                // this.hiddenCtx.fillRect(this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
+                // Display the fruit as an image
+                this.hiddenCtx.drawImage(this.$refs[this.gs.currentFruitType.imgRef], this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
 
                 // If the game is paused, display "PAUSED" in the center of the screen in big letters
                 if (this.gs.isPaused) {
