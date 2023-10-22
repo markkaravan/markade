@@ -1,4 +1,11 @@
 <template>
+    <img ref="fruitCherry" :src="'/src/assets/images/fruit_cherry.png'" :style="{ display: 'none' }">
+    <img ref="fruitGrapes" :src="'/src/assets/images/fruit_grapes.png'" :style="{ display: 'none' }">
+    <img ref="fruitGreenApple" :src="'/src/assets/images/fruit_green_apple.png'" :style="{ display: 'none' }">
+    <img ref="fruitKiwi" :src="'/src/assets/images/fruit_kiwi.png'" :style="{ display: 'none' }">
+    <img ref="fruitYellow" :src="'/src/assets/images/fruit_yellow.png'" :style="{ display: 'none' }">
+    <img ref="fruitOrange" :src="'/src/assets/images/fruit_orange.png'" :style="{ display: 'none' }">
+
     <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
 </template>
@@ -13,12 +20,12 @@
     const tileWidth = 50;
     const levelSeconds = 60;
     const fruitTypes = [
-        { name: "red", fruit: "strawberry" },
-        { name: "orange", fruit: "orange" },
-        { name: "yellow", fruit: "banana" },
-        { name: "green", fruit: "pear" },
-        { name: "blue", fruit: "blueberry" },
-        { name: "purple", fruit: "grape" }
+        { name: "red", fruit: "strawberry", imgRef: "fruitCherry" },
+        { name: "orange", fruit: "orange", imgRef: "fruitOrange" },
+        { name: "yellow", fruit: "banana", imgRef:  "fruitYellow" },
+        { name: "green", fruit: "pear", imgRef: "fruitGreenApple"  },
+        { name: "blue", fruit: "blueberry", imgRef: "fruitKiwi" },
+        { name: "purple", fruit: "grape", imgRef:  "fruitGrapes"  }
     ];
 
     const screens = [
@@ -110,7 +117,7 @@
                         this.gs.board[row] = [];
                         for (let col = 0; col < columns; col++) {
                             let randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
-                            this.gs.board[row][col] = this.generateFruit(randomFruitType.name, randomFruitType.fruit, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
+                            this.gs.board[row][col] = this.generateFruit(randomFruitType, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
                         }
                     }
                     this.gs.timerStart = Date.now();
@@ -120,10 +127,11 @@
                 }
             },
         
-            generateFruit(name, fruit, x, y, falling = false) {
+            generateFruit(fruitType, x, y, falling = false) {
                 return {
-                    name: name,
-                    fruit: fruit,
+                    name: fruitType.name,
+                    fruit: fruitType.fruit,
+                    image: this.$refs[fruitType.imgRef],
                     x: x,
                     y: y,
                     falling: falling,
@@ -209,42 +217,42 @@
                 }
             },
 
-            findClusterAndRemoveCluster(row, col, fruitTypeName, visitedTiles) {
-                let cluster = this.findCluster(row, col, fruitTypeName, visitedTiles);
-                if (cluster.length >= 3) {
-                    this.removeCluster(cluster);
-                }
+            // findClusterAndRemoveCluster(row, col, fruitTypeName, visitedTiles) {
+            //     let cluster = this.findCluster(row, col, fruitTypeName, visitedTiles);
+            //     if (cluster.length >= 3) {
+            //         this.removeCluster(cluster);
+            //     }
 
-                // Find each tile in the cluster that has the lowest row value for each column
-                let lowestRowForCol = new Map();
-                let affectedCols = new Set();
-                for (let tile of cluster) {
-                    affectedCols.add(tile.col);
-                    if (!lowestRowForCol.has(tile.col)) {
-                        lowestRowForCol.set(tile.col, tile.row);
-                    } else {
-                        if (tile.row < lowestRowForCol.get(tile.col)) {
-                            lowestRowForCol.set(tile.col, tile.row);
-                        }
-                    }
-                }
+            //     // Find each tile in the cluster that has the lowest row value for each column
+            //     let lowestRowForCol = new Map();
+            //     let affectedCols = new Set();
+            //     for (let tile of cluster) {
+            //         affectedCols.add(tile.col);
+            //         if (!lowestRowForCol.has(tile.col)) {
+            //             lowestRowForCol.set(tile.col, tile.row);
+            //         } else {
+            //             if (tile.row < lowestRowForCol.get(tile.col)) {
+            //                 lowestRowForCol.set(tile.col, tile.row);
+            //             }
+            //         }
+            //     }
 
-                // Mark the tiles above as falling
-                for (let [col, row] of lowestRowForCol) {
-                    for (let r = row-1; r >= 0; r--) {
-                        if (this.gs.board[r][col]) {
-                            this.gs.board[r][col].falling = true;
-                            console.log(r, col);
-                        }
-                    }
-                }
-                this.gs.mode = "droppingFruits";
+            //     // Mark the tiles above as falling
+            //     for (let [col, row] of lowestRowForCol) {
+            //         for (let r = row-1; r >= 0; r--) {
+            //             if (this.gs.board[r][col]) {
+            //                 this.gs.board[r][col].falling = true;
+            //                 console.log(r, col);
+            //             }
+            //         }
+            //     }
+            //     this.gs.mode = "droppingFruits";
 
-                console.log(this.gs.board);
+            //     console.log(this.gs.board);
 
-                // Return all affected columns
-                return affectedCols;
-            },
+            //     // Return all affected columns
+            //     return affectedCols;
+            // },
 
             findCluster(row, col, fruitTypeName, visitedTiles) {
                 let cluster = [];
@@ -257,6 +265,9 @@
                     return;
                 }
                 if (visitedTiles.has(`${row},${col}`)) {
+                    return;
+                }
+                if (!this.gs.board[row] || !this.gs.board[row][col]) {
                     return;
                 }
                 if (this.gs.board[row][col].name !== fruitTypeName) {
@@ -343,7 +354,7 @@
                 }
 
                 // Replace the fruit at the clicked square with the current fruit
-                this.gs.board[row][col] = this.generateFruit(this.gs.currentFruitType.name, this.gs.currentFruitType.fruit, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
+                this.gs.board[row][col] = this.generateFruit(this.gs.currentFruitType, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
                 
                 // Look for clusters
                 this.gs.mode = "detectingClusters";
@@ -404,7 +415,16 @@
                             this.hiddenCtx.fillStyle = tile.name;
                             const offsetX = boardOffsetX;
                             const offsetY = boardOffsetY;
-                            this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
+                            // Draw the tile's image
+                            this.hiddenCtx.drawImage(tile.image, tile.x, tile.y, tileWidth, tileWidth);
+                            // this.hiddenCtx.fillRect(tile.x, tile.y, tileWidth, tileWidth);
+                            // There is a tiny black background behind the tile's row and column
+                            this.hiddenCtx.fillStyle = 'black';
+                            this.hiddenCtx.fillRect(tile.x, tile.y, 20, 20);
+                            // inside the tile, in tiny black letters, display the tile's row and column
+                            this.hiddenCtx.fillStyle = 'white';
+                            this.hiddenCtx.font = '15px Helvetica';
+                            this.hiddenCtx.fillText(row, tile.x, tile.y + 15);
                         }
                     }
                 }
@@ -423,10 +443,8 @@
                                 tile.fallVelocity += 0.1;
                                 // Collision detection: get the tile's new row  
                                 let newRow = Math.floor((tile.y - boardOffsetY) / tileWidth);
-                                console.log("ROWS: ", rows);
                                 // if the tile below the new row is not falling, or the row is the bottom, it has reached the bottom
                                 if (newRow >= rows-1 || (this.gs.board[newRow + 1] && this.gs.board[newRow + 1][col] && !this.gs.board[newRow + 1][col].falling)) {
-                                    console.log("Col:", col, "Row:", row, "newRow:", newRow);
                                     // Set the board at the new row to the tile, and set the tile's y to the new row, then remove the tile from the old row
                                     this.gs.board[newRow][col] = tile;
                                     this.gs.board[newRow][col].y = newRow * tileWidth + boardOffsetY;
@@ -503,7 +521,6 @@
                     this.hiddenCtx.font = '100px Helvetica';
                     this.hiddenCtx.fillText('PAUSED', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
                 }
-
 
                 // Draw to main canvas
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
