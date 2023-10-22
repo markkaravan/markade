@@ -59,7 +59,7 @@
                     isPaused: false,
                     currentFruitType: null,
                     inspectMode: false,
-                    mode: "playing", // "playing", "detectingClusters", "droppingFruits", "replacingFruits"
+                    mode: "playing", // "filling", "playing", "detectingClusters", "droppingFruits", "replacingFruits"
                     // blinkTimer: Date.now(),
                     // showText: true,
                 },
@@ -110,16 +110,16 @@
                     let currentScreen = screens.find(screen => screen.name === screenName);
                     this.gs.name = currentScreen.name;
                     this.gs.score = 0;
-                    this.gs.mode = "playing";
-                    // initialize this.gs.board with a 2D array of random fruitTypes
+                    this.gs.mode = "filling";
+                    // initialize this.gs.board with a 2D array of nulls
                     this.gs.board = [];
                     for (let row = 0; row < rows; row++) {
                         this.gs.board[row] = [];
                         for (let col = 0; col < columns; col++) {
-                            let randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
-                            this.gs.board[row][col] = this.generateFruit(randomFruitType, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
+                            this.gs.board[row][col] = null;
                         }
                     }
+                    this.replaceEmptyTiles();
                     this.gs.timerStart = Date.now();
                     this.gs.currentFruitType = this.selectRandomFruitType();
                 } else if (screenName === "Level End") {
@@ -198,6 +198,60 @@
                     }
                 }
             },
+
+            // replaceEmptyTiles() finds all empty tiles.
+            // It does this by looping through rows from the highest value to lowest value, then looping through the columns from left to right.
+            // It generates an array called emptyTiles that contains the row and column of each empty tile, sorted by row and then column.
+            // It then loops through the emptyTiles array and replaces each empty tile with a random fruit.
+            // Before replacing the empty tile, it checks the tile to the left (if any), right (if any) and below (if any) to see if it is the same fruit.
+            // It selects a random fruit that is NOT in the adjacent tiles, and replaces the empty tile with that fruit.
+            // If there are no fruits that are not in the adjacent tiles, it selects a random fruit.
+            replaceEmptyTiles() {
+                this.gs.mode = "filling";
+                let emptyTiles = [];
+                for (let row = rows-1; row >= 0; row--) {
+                    for (let col = 0; col < columns; col++) {
+                        if (this.gs.board[row][col] === null) {
+                            emptyTiles.push({ row, col });
+                        }
+                    }
+                }
+                emptyTiles.sort((a, b) => {
+                    if (a.row < b.row) {
+                        return 1;
+                    } else if (a.row > b.row) {
+                        return -1;
+                    } else {
+                        if (a.col < b.col) {
+                            return -1;
+                        } else if (a.col > b.col) {
+                            return 1;
+                        } else {
+                            return 0;
+                        }
+                    }
+                });
+                for (let tile of emptyTiles) {
+                    let adjacentFruits = [];
+                    if (tile.col > 0 && this.gs.board[tile.row][tile.col - 1]) {
+                        adjacentFruits.push(this.gs.board[tile.row][tile.col - 1].name);
+                    }
+                    if (tile.col < columns - 1 && this.gs.board[tile.row][tile.col + 1]) {
+                        adjacentFruits.push(this.gs.board[tile.row][tile.col + 1].name);
+                    }
+                    if (tile.row < rows - 1 && this.gs.board[tile.row + 1][tile.col]) {
+                        adjacentFruits.push(this.gs.board[tile.row + 1][tile.col].name);
+                    }
+                    let randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+                    // TODO fix this, it works but it's gay
+                    while (adjacentFruits.includes(randomFruitType.name)) {
+                        randomFruitType = fruitTypes[Math.floor(Math.random() * fruitTypes.length)];
+                    }
+                    this.gs.board[tile.row][tile.col] = this.generateFruit(randomFruitType, tile.col * tileWidth + boardOffsetX, tile.row * tileWidth + boardOffsetY);
+                }
+                this.gs.mode = "playing";
+            },
+
 
             detectClusters() {
                 let visitedTiles = new Set();
@@ -356,6 +410,7 @@
                 // Replace the fruit at the clicked square with the current fruit
                 this.gs.board[row][col] = this.generateFruit(this.gs.currentFruitType, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
                 
+
                 // Look for clusters
                 this.gs.mode = "detectingClusters";
                 let cluster = this.findCluster(row, col, this.gs.currentFruitType.name, new Set());
