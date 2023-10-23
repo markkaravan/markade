@@ -37,6 +37,23 @@
     const buttonOffsetY = 100;
     const buttonFont = '20px Arial';
     const buttonTextColor = 'black';
+
+    const sudokuPuzzles = [
+        {   name: "Easy1",
+            board:
+                [
+                    [5, 0, 3, 9, 0, 0, 0, 7, 0],
+                    [8, 0, 2, 6, 1, 0, 5, 0, 9],
+                    [6, 0, 0, 0, 5, 7, 8, 0, 1],
+                    [0, 2, 6, 0, 7, 0, 4, 1, 0],
+                    [0, 5, 0, 0, 2, 0, 7, 0, 3],
+                    [3, 0, 7, 0, 6, 0, 0, 0, 8],
+                    [0, 0, 0, 7, 0, 0, 0, 9, 0],
+                    [0, 6, 9, 0, 0, 2, 0, 5, 7],
+                    [0, 0, 5, 0, 0, 6, 0, 0, 4]
+                ]
+        }
+    ];
     
 
     export default {
@@ -58,8 +75,10 @@
                 dataGameHeight: gameHeightDefault,
                 board: [],
                 isPaused: false,
+                inspectMode: true,
             }
         },
+
         mounted() {
             // This is the canvas context
             this.ctx = this.$refs.canvas.getContext('2d');
@@ -74,6 +93,7 @@
 
             this.gameLoop();
         },
+
         beforeDestroy() {
             window.removeEventListener('keydown', this.handleKeyDown);
         },
@@ -104,15 +124,17 @@
 
             handleKeyDown(event) {
                 if (event.code === 'KeyE') {
-                    this.generateEasyPuzzle();
+                    this.generatePuzzle("Easy1");
                 } else if (event.code === "KeyM") {
-                    this.generateMediumPuzzle();
+                    this.generatePuzzle("")
                 } else if (event.code === "KeyH") {
-                    this.generateHardPuzzle();
+                    this.generatePuzzle("")
                 } else if (event.code === "KeyC") {
                     this.clearBoard();
                 } else if (event.code === "KeyS") {
                     this.solvePuzzle();
+                } else if (event.code === "KeyI") {
+                    this.inspectMode = !this.inspectMode;
                 } else if (event.code === "KeyP") {
                     console.log("Toggle pause, isPaused: ", this.isPaused);
                     this.isPaused = !this.isPaused;
@@ -139,6 +161,8 @@
                     this.changeNumber(8);
                 } else if (event.code === "Digit9") {
                     this.changeNumber(9);
+                } else if (event.code === "Digit0") {
+                    this.changeNumber(0);
                 }
             },
 
@@ -189,8 +213,12 @@
             changeNumber(number) {
                 console.log("Changing number...");
                 let activeTile = this.findActiveTile();
-                if (activeTile !== null) {
+                if (activeTile !== null && number >= 0 && number <= 9) {
                     activeTile.value = number;
+                    activeTile.possibleValues = [];
+                } else if (activeTile !== null && number === 0) {
+                    activeTile.value = null;
+                    activeTile.possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                 }
             },
 
@@ -213,8 +241,28 @@
                 console.log("Initialized board: ", this.board);
             },
 
-            generateEasyPuzzle() {
-                console.log("Generating easy puzzle...");
+            generatePuzzle(puzzleName) {
+                const puzzle = sudokuPuzzles.find(p => p.name === puzzleName);
+                if (!puzzle) {
+                    console.log("Puzzle not found: ", puzzleName);
+                    return;
+                }
+                // Initialize the board.  Then loop through the puzzle and set the values
+                this.initializeBoard();
+                for (let row = 0; row < puzzle.board.length; row++) {
+                    for (let col = 0; col < puzzle.board[row].length; col++) {
+                        // if this is a value between 1 and 9, set the value, otherwise, set it to null
+                        const value = puzzle.board[row][col];
+                        if (value >= 1 && value <= 9) {
+                            this.board[row][col].value = value;
+                            this.board[row][col].possibleValues = []
+                        } else {
+                            this.board[row][col].value = null;
+                            this.board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        }
+                        
+                    }
+                }
             },
 
             generateMediumPuzzle() {
@@ -268,6 +316,18 @@
                             this.hiddenCtx.font = '30px Arial';
                             this.hiddenCtx.fillText(tile.value, x + 15, y + 35);
                         }
+                        // If a tile is in inspect mode, render the possible values
+                        // The values are rendered in tiny font within the tile, 3 x 3 according to their position in the possibleValues array
+                        if (this.inspectMode && tile.value === null) {
+                            this.hiddenCtx.fillStyle = 'gray';
+                            this.hiddenCtx.font = '10px Arial';
+                            for (let i = 0; i < tile.possibleValues.length; i++) {
+                                const value = tile.possibleValues[i];
+                                const valueCol = i % 3;
+                                const valueRow = Math.floor(i / 3);
+                                this.hiddenCtx.fillText(value, x + 5 + valueCol * 15, y + 10 + valueRow * 15);
+                            }
+                        }
                     }
                 }
 
@@ -294,7 +354,7 @@
                  ***************************************/
 
                 // If the game is paused, render a big blue text in the middle that says "PAUSED"
-                if (this.isPaused === true) {
+                if (this.isPaused) {
                     this.hiddenCtx.fillStyle = 'blue';
                     this.hiddenCtx.font = '80px Arial';
                     this.hiddenCtx.fillText('PAUSED', 100, 300);
