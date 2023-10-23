@@ -62,5 +62,16 @@
       "gameWidth": 1200,
       "gameHeight": 600,
       "dateCreated": "2023-10-21  12:00:00"
+    },
+
+    {
+      "title": "Sudoku",
+      "pathName": "sudoku",
+      "image": "images/thumbnail_sudoku.png",
+      "instructions": "",
+      "description": "",
+      "gameWidth": 1200,
+      "gameHeight": 600,
+      "dateCreated": "2023-10-23  12:00:00"
     }
   ]
