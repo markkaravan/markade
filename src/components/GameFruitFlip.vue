@@ -283,44 +283,45 @@
             },
 
 
-            checkAndRemove() {
-                let visitedTiles = new Set();
-                // A cluster is a series of adjacent tiles of the same fruit type
-                // Iterate through the board and find clusters
-                let clusterToRemove = null;
-                let abort = false;
-                for (let row = 0; row < rows && !abort; row++) {
-                    for (let col = 0; col < columns && !abort; col++) {
-                        let fruitType = this.gs.board[row][col];
-                        if (visitedTiles.has(`${row},${col}`)) {
-                            continue;
-                        }
-                        let cluster = this.findCluster(row, col, fruitType, visitedTiles);
-                        if (cluster.length >= 3) {
-                            clusterToRemove = cluster;
-                            //this.removeCluster(cluster);
-                            abort = true;
-                        }
-                    }
-                }
-                if (clusterToRemove) {
-                    this.removeCluster(clusterToRemove);
-                    this.changeMode("droppingFruits");
-                } else {
-                    // If there are no clusters, see if the board is full
-                    if (this.boardIsFull()) {
-                        this.changeMode("playing");
-                    } else {
-                        this.replaceEmptyTiles();
-                    }
+            // checkAndRemove() {
+            //     let visitedTiles = new Set();
+            //     // A cluster is a series of adjacent tiles of the same fruit type
+            //     // Iterate through the board and find clusters
+            //     let clusterToRemove = null;
+            //     let abort = false;
+            //     for (let row = 0; row < rows && !abort; row++) {
+            //         for (let col = 0; col < columns && !abort; col++) {
+            //             let fruitType = this.gs.board[row][col];
+            //             if (visitedTiles.has(`${row},${col}`)) {
+            //                 continue;
+            //             }
+            //             let cluster = this.findCluster(row, col, fruitType, visitedTiles);
+            //             if (cluster.length >= 3) {
+            //                 clusterToRemove = cluster;
+            //                 //this.removeCluster(cluster);
+            //                 abort = true;
+            //             }
+            //         }
+            //     }
+            //     if (clusterToRemove) {
+            //         this.removeCluster(clusterToRemove);
+            //         this.changeMode("droppingFruits");
+            //     } else {
+            //         // If there are no clusters, see if the board is full
+            //         if (this.boardIsFull()) {
+            //             this.changeMode("playing");
+            //         } else {
+            //             this.replaceEmptyTiles();
+            //         }
 
-                }
+            //     }
 
-            },
+            // },
 
             findCluster(row, col, fruitTypeName, visitedTiles) {
                 let cluster = [];
                 this.findClusterHelper(row, col, fruitTypeName, visitedTiles, cluster);
+                // console.log("Visited tiles: ", visitedTiles);
                 return cluster;
             },
 
@@ -422,44 +423,44 @@
                 
 
                 // Look for clusters
-                this.changeMode("detectingClusters");
-                let cluster = this.findCluster(row, col, this.gs.currentFruitType.name, new Set());
+                this.changeMode("checkAndRemove");
+                // let cluster = this.findCluster(row, col, this.gs.currentFruitType.name, new Set());
 
-                // If there are no clusters, revert the fruit back to the original fruit
-                if (cluster.length < 3) {
-                    this.gs.currentFruitType = this.selectRandomFruitType();
-                    this.changeMode("playing");
-                    return;
-                }
+                // // If there are no clusters, revert the fruit back to the original fruit
+                // if (cluster.length < 3) {
+                //     this.gs.currentFruitType = this.selectRandomFruitType();
+                //     this.changeMode("playing");
+                //     return;
+                // }
 
-                // Remove the cluster
-                this.removeCluster(cluster);
+                // // Remove the cluster
+                // this.removeCluster(cluster);
 
-                // Find each tile in the cluster that has the lowest row value for each column
-                // Mark the tiles above as falling
-                let lowestRowForCol = new Map();
-                let affectedCols = new Set();
-                for (let tile of cluster) {
-                    affectedCols.add(tile.col);
-                    if (!lowestRowForCol.has(tile.col)) {
-                        lowestRowForCol.set(tile.col, tile.row);
-                    } else {
-                        if (tile.row > lowestRowForCol.get(tile.col)) {
-                            lowestRowForCol.set(tile.col, tile.row);
-                        }
-                    }
-                }
-                for (let [col, row] of lowestRowForCol) {
-                    for (let r = row-1; r >= 0; r--) {
-                        if (this.gs.board[r][col]) {
-                            this.gs.board[r][col].falling = true;
-                        }
-                    }
-                }
-                // Change the mode to droppingFruits
-                this.changeMode("droppingFruits");
+                // // Find each tile in the cluster that has the lowest row value for each column
+                // // Mark the tiles above as falling
+                // let lowestRowForCol = new Map();
+                // let affectedCols = new Set();
+                // for (let tile of cluster) {
+                //     affectedCols.add(tile.col);
+                //     if (!lowestRowForCol.has(tile.col)) {
+                //         lowestRowForCol.set(tile.col, tile.row);
+                //     } else {
+                //         if (tile.row > lowestRowForCol.get(tile.col)) {
+                //             lowestRowForCol.set(tile.col, tile.row);
+                //         }
+                //     }
+                // }
+                // for (let [col, row] of lowestRowForCol) {
+                //     for (let r = row-1; r >= 0; r--) {
+                //         if (this.gs.board[r][col]) {
+                //             this.gs.board[r][col].falling = true;
+                //         }
+                //     }
+                // }
+                // // Change the mode to droppingFruits
+                // this.changeMode("droppingFruits");
 
-                this.gs.currentFruitType = this.selectRandomFruitType();
+                // this.gs.currentFruitType = this.selectRandomFruitType();
             },
 
             selectRandomFruitType() {
@@ -486,7 +487,96 @@
                     }
                 }
 
-                // Update the position of the falling tiles
+                /**************************************************************** 
+                 * 
+                 *              MODE: checkAndRemove 
+                 * 
+                 ***************************************************************/
+
+                 if (this.gs.mode === "checkAndRemove") {
+                    console.log("CHECK AND REMOVE PENIS");
+                    // let visitedTiles = new Set();
+                    // A cluster is a series of adjacent tiles of the same fruit type
+                    // Iterate through the board and find clusters
+                    let clusterToRemove = null;
+                    let abort = false;
+                    for (let row = 0; row < rows && !abort; row++) {
+                        // console.log("Row: ", row);
+                        for (let col = 0; col < columns && !abort; col++) {
+                            // console.log("Col: ", col);
+                            let fruitType = this.gs.board[row][col];
+                            if (fruitType === null) {
+                                continue;
+                            }
+                            // if (visitedTiles.has(`${row},${col}`)) {
+                            //     continue;
+                            // }
+                            // let clusterVisitedTiles = new Set();
+                            let cluster = this.findCluster(row, col, fruitType.name, new Set());
+                            // if (cluster.length > 2) {
+                            //     console.log("*** Cluster: ", cluster, cluster.length);  
+                            // }             
+                            
+                            // Add clusterVisitedTiles to visitedTiles
+                            // for (let tile of clusterVisitedTiles) {
+                            //     visitedTiles.add(`${tile.row},${tile.col}`);
+                            // }
+                            if (cluster.length >= 3) {
+                                console.log("FOUND CLUSTER: ", cluster);
+                                clusterToRemove = cluster;
+                                //this.removeCluster(cluster);
+                                abort = true;
+                            }
+                        }
+                    }
+                    console.log("Cluster to remove: ", clusterToRemove);
+                    if (clusterToRemove) {
+                        console.log("THERE'S A CLUSTER TO REMOVE");
+                        this.removeCluster(clusterToRemove);
+
+                        // Find each tile in the cluster that has the lowest row value for each column
+                        // Mark the tiles above as falling
+                        let lowestRowForCol = new Map();
+                        let affectedCols = new Set();
+                        for (let tile of clusterToRemove) {
+                            affectedCols.add(tile.col);
+                            if (!lowestRowForCol.has(tile.col)) {
+                                lowestRowForCol.set(tile.col, tile.row);
+                            } else {
+                                if (tile.row > lowestRowForCol.get(tile.col)) {
+                                    lowestRowForCol.set(tile.col, tile.row);
+                                }
+                            }
+                        }
+                        for (let [col, row] of lowestRowForCol) {
+                            for (let r = row-1; r >= 0; r--) {
+                                if (this.gs.board[r][col]) {
+                                    this.gs.board[r][col].falling = true;
+                                }
+                            }
+                        }
+
+
+                        this.changeMode("droppingFruits");
+                    } else {
+                        // If there are no clusters, see if the board is full
+                        console.log("NO CLUSTER TO REMOVE, CHECKING IF BOARD IS FULL",  this.boardIsFull());
+                        if (this.boardIsFull()) {
+                            this.changeMode("playing");
+                        } else {
+                            this.replaceEmptyTiles();
+                        }
+
+                    }
+                }
+
+
+
+                /**************************************************************** 
+                 * 
+                 *              MODE: droppingFruits 
+                 * 
+                 ***************************************************************/
                 if (this.gs.mode === "droppingFruits") {
 
                     // Update the falling fruit position
@@ -515,88 +605,23 @@
                             }
                         }
                     }
-                    // fallingArray.length === 0 means  we are no longer in mode: droppingFruits
-                    // Now we go to checkAndRemove
                     if (fallingArray.length === 0) {
                         this.changeMode("checkAndRemove");
-                        // let visitedTiles = new Set();
-                        // // A cluster is a series of adjacent tiles of the same fruit type
-                        // // Iterate through the board and find clusters
-                        // let clusterToRemove = null;
-                        // let abort = false;
-                        // for (let row = 0; row < rows && !abort; row++) {
-                        //     for (let col = 0; col < columns && !abort; col++) {
-                        //         let fruitType = this.gs.board[row][col];
-                        //         if (visitedTiles.has(`${row},${col}`)) {
-                        //             continue;
-                        //         }
-                        //         let cluster = this.findCluster(row, col, fruitType, visitedTiles);
-                        //         if (cluster.length >= 3) {
-                        //             clusterToRemove = cluster;
-                        //             //this.removeCluster(cluster);
-                        //             abort = true;
-                        //         }
-                        //     }
-                        // }
-                        // if (clusterToRemove) {
-                        //     this.removeCluster(clusterToRemove);
-                        //     this.gs.mode = "droppingFruits";
-                        // } else {
-                        //     // If there are no clusters, see if the board is full
-                        //     if (this.boardIsFull()) {
-                        //         this.gs.mode = "playing";
-                        //     } else {
-                        //         this.replaceEmptyTiles();
-                        //     }
-
-                        // }
-                    }
-
-                    //  // Draw the board's falling tiles
-                    for (let row = 0; row < rows; row++) {
-                        for (let col = 0; col < columns; col++) {
-                            let tile = this.gs.board[row][col];
-                            if (tile && tile.falling) {
-                                let tile = this.gs.board[row][col];
-                                this.hiddenCtx.drawImage(tile.image, tile.x, tile.y, tileWidth, tileWidth);
-                            }
-                        }
-                    }
-                }
-
-                if (this.gs.mode === "checkAndRemove") {
-                    let visitedTiles = new Set();
-                    // A cluster is a series of adjacent tiles of the same fruit type
-                    // Iterate through the board and find clusters
-                    let clusterToRemove = null;
-                    let abort = false;
-                    for (let row = 0; row < rows && !abort; row++) {
-                        for (let col = 0; col < columns && !abort; col++) {
-                            let fruitType = this.gs.board[row][col];
-                            if (visitedTiles.has(`${row},${col}`)) {
-                                continue;
-                            }
-                            let cluster = this.findCluster(row, col, fruitType, visitedTiles);
-                            if (cluster.length >= 3) {
-                                clusterToRemove = cluster;
-                                //this.removeCluster(cluster);
-                                abort = true;
-                            }
-                        }
-                    }
-                    if (clusterToRemove) {
-                        this.removeCluster(clusterToRemove);
-                        this.changeMode("droppingFruits");
                     } else {
-                        // If there are no clusters, see if the board is full
-                        if (this.boardIsFull()) {
-                            this.changeMode("playing");
-                        } else {
-                            this.replaceEmptyTiles();
+                        // Draw the board's falling tiles
+                        for (let row = 0; row < rows; row++) {
+                            for (let col = 0; col < columns; col++) {
+                                let tile = this.gs.board[row][col];
+                                if (tile && tile.falling) {
+                                    let tile = this.gs.board[row][col];
+                                    this.hiddenCtx.drawImage(tile.image, tile.x, tile.y, tileWidth, tileWidth);
+                                }
+                            }
                         }
-
                     }
                 }
+
+
 
                 // Draw the timer and the score.  The timer is at the top middle and the score is at the top left.
                 this.hiddenCtx.fillStyle = 'white';
