@@ -624,7 +624,7 @@
                             let tile = this.gs.board[row][col];
                             if (tile && tile.falling) {
                                 tile.y += tile.fallVelocity;
-                                tile.fallVelocity += 0.1;
+                                tile.fallVelocity += (0.1 * this.gs.cascadeNumber);
                                 // Collision detection: get the tile's new row  
                                 let newRow = Math.floor((tile.y - boardOffsetY) / tileWidth);
                                 // if the tile below the new row is not falling, or the row is the bottom, it has reached the bottom
