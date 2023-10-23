@@ -19,6 +19,8 @@
     const columns = 10;
     const tileWidth = 50;
     const levelSeconds = 60;
+    const scorePositionX = 50;
+    const scorePositionY = 50;
     const fruitTypes = [
         { name: "red", fruit: "strawberry", imgRef: "fruitCherry" },
         { name: "orange", fruit: "orange", imgRef: "fruitOrange" },
@@ -27,6 +29,18 @@
         { name: "blue", fruit: "blueberry", imgRef: "fruitBlueberry" },
         { name: "purple", fruit: "grape", imgRef:  "fruitGrapes"  }
     ];
+    const pointColors = [ 
+        { cn: 1,  color: 'white' },
+        { cn: 2,  color: 'yellow' },
+        { cn: 3,  color: 'orange' },
+        { cn: 4,  color: 'red' },
+        { cn: 5,  color: 'purple' },
+        { cn: 6,  color: 'blue' },
+        { cn: 7,  color: 'green' },
+        { cn: 8,  color: 'pink' },
+        { cn: 9,  color: 'brown' },
+        { cn: 10, color: 'black' },
+    ]
 
     const screens = [
         { name: "Opening"},
@@ -60,6 +74,7 @@
                     currentFruitType: null,
                     inspectMode: false,
                     pointsDisplayArray: [],
+                    cascadeNumber: 0,
                     mode: "playing", // "filling", "playing", "detectingClusters", "droppingFruits", "replacingFruits"
                     // blinkTimer: Date.now(),
                     // showText: true,
@@ -155,6 +170,7 @@
             changeMode(newMode) {
                 if (newMode === "playing") {
                     this.gs.mode = "playing";
+                    this.gs.cascadeNumber = 0;
                     console.log("Changing mode: playing")
                 } else if (newMode === "checkAndRemove") {
                     this.gs.mode = "checkAndRemove";
@@ -348,28 +364,31 @@
             },
 
             removeCluster(cluster) {
+                this.gs.cascadeNumber++;
+                let cn = this.gs.cascadeNumber;
+                
                 for (let tile of cluster) {
                     // direction is an x, y velocity that is found by getting the difference between the tile's position and the score display's position
                     let x = tile.col * tileWidth + boardOffsetX;
                     let y = tile.row * tileWidth + boardOffsetY;
                     let id = Math.floor(Math.random() * 100000000);
-                    console.log("ID:", id );
+
 
                     this.gs.pointsDisplayArray.push({
                         id: id,
                         x: x,
                         y: y,
-                        points: 100,
+                        points: 100 * cn,
                         direction: {
                             x: - (x / 1000),
                             y: - (y / 1000),
                         },
-                        speed: 1,
+                        fontSize: 24 + (cn * 2),
+                        fontColor: (cn <= 10)? pointColors.find(pc => pc.cn === cn).color : 'white',
+                        speed: cn,
                     });
                     this.gs.board[tile.row][tile.col] = null;
                 }
-                this.gs.score += cluster.length;
-                //this.replaceEmptyTiles();
             },
 
             dropFruit(affectedCols) {
@@ -645,7 +664,7 @@
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.font = '24px Helvetica';
                 this.hiddenCtx.fillText('Timer', this.dataGameWidth / 2 - 150, 50);
-                this.hiddenCtx.fillText('Score', 50, 50);
+                this.hiddenCtx.fillText('Score', scorePositionX, scorePositionY);
                 let timerDisplay = levelSeconds - Math.floor((Date.now() - this.gs.timerStart) / 1000);
                 this.hiddenCtx.fillText(timerDisplay, this.dataGameWidth / 2 - 150, 80);
                 this.hiddenCtx.fillText(this.gs.score, 50, 80);
@@ -665,8 +684,8 @@
                     pointsDisplay.x += pointsDisplay.direction.x * pointsDisplay.speed;
                     pointsDisplay.y += pointsDisplay.direction.y * pointsDisplay.speed;
                     pointsDisplay.speed += 0.4;
-                    this.hiddenCtx.fillStyle = 'white';
-                    this.hiddenCtx.font = '24px Helvetica';
+                    this.hiddenCtx.fillStyle = pointsDisplay.fontColor || white;
+                    this.hiddenCtx.font = pointsDisplay.fontSize + 'px Helvetica';
                     this.hiddenCtx.fillText(pointsDisplay.points, pointsDisplay.x, pointsDisplay.y);
                     if (pointsDisplay.y < 0) {
                         this.gs.score += pointsDisplay.points;
@@ -675,10 +694,10 @@
                 let tempPointsDisplayArray = [];
                 for (let i = 0; i < this.gs.pointsDisplayArray.length; i++) {
                     let pointsDisplay = this.gs.pointsDisplayArray[i];
-                    if (pointsDisplay.y > 0) {
+                    if (pointsDisplay.y > scorePositionY) {
                         tempPointsDisplayArray.push(pointsDisplay);
                     } else {
-                        this.gs.score += pointsDisplay.points;
+                        this.gs.score += pointsDisplay.points * this.gs.cascadeNumber;
                     }
                 }
                 this.gs.pointsDisplayArray = tempPointsDisplayArray;
