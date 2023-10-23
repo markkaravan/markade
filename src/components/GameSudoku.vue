@@ -89,9 +89,14 @@
             return {
                 dataGameWidth: gameWidthDefault,
                 dataGameHeight: gameHeightDefault,
-                board: [],
                 inspectMode: true,
                 previousSolvedState: null,
+                solutionObj: {
+                    id: Math.floor(Math.random() * 100000000),
+                    boardOld: null,
+                    boardNew: null,
+                    children: []
+                }
             }
         },
 
@@ -108,7 +113,7 @@
             this.initializeBoard();
 
             // generate an easy puzzle
-            this.generatePuzzle("Medium1");
+            this.generatePuzzle("Easy1");
 
             this.renderBoard();
         },
@@ -148,11 +153,14 @@
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
                 } else if (event.code === "KeyV") {
-                    this.boardIsValid();
+                    this.boardIsValid(this.solutionObj.boardNew);
                 } else if (event.code === "KeyF") {
-                    this.boardIsFull();
+                    this.boardIsFull(this.solutionObj.boardNew);
                 } else if (event.code === "KeyP") {
-                    this.prunePossibleValues();
+                    let board = this.copy(this.solutionObj.boardNew);
+                    this.solutionObj.boardOld = this.copy(board);
+                    let newBoard = this.prunePossibleValues(board);
+                    this.solutionObj.boardNew = this.copy(newBoard);
                 
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
@@ -192,32 +200,34 @@
             },
 
             handleClick(event) {
+                let board = this.solutionObj.boardNew;
                 // Calculate the row and column of the clicked square
                 const rect = this.$refs.canvas.getBoundingClientRect();
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
                 const col = Math.floor((x - boardOffsetX) / tileWidth);
                 const row = Math.floor((y - boardOffsetY) / tileWidth);
-                this.board[row][col].mode = "active";
+                board[row][col].mode = "active";
                 // All other tiles are set to normal mode
-                for (let r = 0; r < this.board.length; r++) {
-                    for (let c = 0; c < this.board[r].length; c++) {
+                for (let r = 0; r < board.length; r++) {
+                    for (let c = 0; c < board[r].length; c++) {
                         if (r !== row || c !== col) {
-                            this.board[r][c].mode = "normal";
+                            board[r][c].mode = "normal";
                         }
                     }
                 }
-                console.log("Clicked: ", this.board[row][col]);
-                console.log(this.board);
+                console.log("Clicked: ", board[row][col]);
+                console.log(board);
                 this.renderBoard();
             },
 
             findActiveTile() {
+                let board = this.solutionObj.boardNew;
                 let activeTile = null;
-                for (let row = 0; row < this.board.length; row++) {
-                    for (let col = 0; col < this.board[row].length; col++) {
-                        if (this.board[row][col].mode === "active") {
-                            activeTile = this.board[row][col];
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        if (board[row][col].mode === "active") {
+                            activeTile = board[row][col];
                         }
                     }
                 }
@@ -240,10 +250,11 @@
                 const rows = 8;
                 const cols = 8;
                 // Initialize the board with empty tiles
+                let board = []
                 for (let row = 0; row <= rows; row++) {
-                    this.board[row] = [];
+                    board[row] = [];
                     for (let col = 0; col <= cols; col++) {
-                        this.board[row][col] = {
+                        board[row][col] = {
                             row,
                             col,
                             value: null,
@@ -252,8 +263,10 @@
                         };
                     }
                 }
-                this.previousSolvedState = this.copy(this.board);
-                console.log("Initialized board: ", this.board);
+                this.previousSolvedState = this.copy(board);
+                // Solution obj
+                this.solutionObj.boardNew = this.copy(board);
+                console.log("Initialized board: ", this.solutionObj.boardNew);
             },
 
             generatePuzzle(puzzleName) {
@@ -264,59 +277,34 @@
                 }
                 // Initialize the board.  Then loop through the puzzle and set the values
                 this.initializeBoard();
+                let board = this.copy(this.solutionObj.boardNew);
                 for (let row = 0; row < puzzle.board.length; row++) {
                     for (let col = 0; col < puzzle.board[row].length; col++) {
                         // if this is a value between 1 and 9, set the value, otherwise, set it to null
                         const value = puzzle.board[row][col];
                         if (value >= 1 && value <= 9) {
-                            this.board[row][col].value = value;
-                            this.board[row][col].possibleValues = []
+                            board[row][col].value = value;
+                            board[row][col].possibleValues = []
                         } else {
-                            this.board[row][col].value = null;
-                            this.board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                            board[row][col].value = null;
+                            board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                         }
-                        
                     }
                 }
+                this.solutionObj.boardNew = this.copy(board);
             },
 
-            generateMediumPuzzle() {
-                console.log("Generating medium puzzle...");
-            },
-
-            generateHardPuzzle() {
-                console.log("Generating hard puzzle...");
-            },
 
             clearBoard() {
                 // clear the board
                 this.initializeBoard();
             },
 
-            solvePuzzle() {
+            solvePuzzle(solutionObj) {
                 console.log("Solving puzzle...");
-                let board = this.copy(this.board);
+                let board = this.copy(solutionObj.boardNew);
                 let newBoard = this.prunePossibleValues(board);
-                this.board = newBoard;
-
-                // Check if the board is solved
-                if (this.boardIsFull(this.copy(this.board))) {
-                    if (this.boardIsValid(this.copy(this.board))) {
-                        console.log("Board is solved!");
-                        return;
-                    } else {
-                        console.log("Board is invalid!");
-                        return;
-                    }
-                    return;
-                } else {
-                    if (this.boardsAreEqual(this.previousSolvedState, this.board)) {
-                        console.log("No progress made.  Exiting...");
-                        return;
-                    }
-                    this.previousSolvedState = this.copy(this.board);
-                    this.solvePuzzle();  
-                }
+                this.solutionObj.boardNew = this.copy(newBoard);
             }, 
 
             prunePossibleValues(board) {
@@ -413,8 +401,8 @@
                 console.log("Checking if board is valid...");
                 const rowIsValid = (row) => {
                     let values = [];
-                    for (let col = 0; col < this.board[row].length; col++) {
-                        const value = this.board[row][col].value;
+                    for (let col = 0; col < board[row].length; col++) {
+                        const value = board[row][col].value;
                         if (value !== null) {
                             if (values.includes(value)) {
                                 return false;
@@ -428,8 +416,8 @@
 
                 const colIsValid = (col) => {
                     const values = [];
-                    for (let row = 0; row < this.board.length; row++) {
-                        const value = this.board[row][col].value;
+                    for (let row = 0; row < board.length; row++) {
+                        const value = board[row][col].value;
                         if (value !== null) {
                             if (values.includes(value)) {
                                 return false;
@@ -447,7 +435,7 @@
                     const neighborhoodCol = Math.floor(col / 3);
                     for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
                         for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
-                            const value = this.board[r][c].value;
+                            const value = board[r][c].value;
                             if (value !== null) {
                                 if (values.includes(value)) {
                                     return false;
@@ -461,20 +449,20 @@
                 };
                 
                 // loop through board and check if each row, col, and neighborhood is valid
-                for (let row = 0; row < this.board.length; row++) {
+                for (let row = 0; row < board.length; row++) {
                     if (!rowIsValid(row)) {
                         console.log("Row fail: ", row);
                         return false;
                     }
                 }
-                for (let col = 0; col < this.board[0].length; col++) {
+                for (let col = 0; col < board[0].length; col++) {
                     if (!colIsValid(col)) {
                         console.log("Col fail: ", col);
                         return false;
                     }
                 }
-                for (let row = 0; row < this.board.length; row += 3) {
-                    for (let col = 0; col < this.board[0].length; col += 3) {
+                for (let row = 0; row < board.length; row += 3) {
+                    for (let col = 0; col < board[0].length; col += 3) {
                         if (!neighborhoodIsValid(row, col)) {
                             console.log("Neighborhood fail: ", row, col);
                             return false;
@@ -515,10 +503,11 @@
                  *      Render the board
                  * 
                  ***************************************/
+                let board = this.solutionObj.boardNew;
 
-                for (let row = 0; row < this.board.length; row++) {
-                    for (let col = 0; col < this.board[row].length; col++) {
-                        const tile = this.board[row][col];
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        const tile = board[row][col];
                         // Each tile is a white square with a 1px black border
                         let x = boardOffsetX + tile.col * tileWidth;
                         let y = boardOffsetY + tile.row * tileWidth;
@@ -556,8 +545,8 @@
                 // Render a thick border around each 3x3 square
                 this.hiddenCtx.lineWidth = 3;
                 this.hiddenCtx.strokeStyle = 'black';
-                for (let row = 0; row < this.board.length; row += 3) {
-                    for (let col = 0; col < this.board[row].length; col += 3) {
+                for (let row = 0; row < board.length; row += 3) {
+                    for (let col = 0; col < board[row].length; col += 3) {
                         const x = boardOffsetX + col * tileWidth;
                         const y = boardOffsetY + row * tileWidth;
                         this.hiddenCtx.strokeRect(x, y, tileWidth * 3, tileWidth * 3);
