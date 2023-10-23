@@ -52,7 +52,23 @@
                     [0, 6, 9, 0, 0, 2, 0, 5, 7],
                     [0, 0, 5, 0, 0, 6, 0, 0, 4]
                 ]
-        }
+        },
+
+        {   name: "Medium1",
+            board:
+                [
+                    [0, 0, 0, 4, 5, 3, 6, 7, 8],
+                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
+                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
+                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
+                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
+                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
+                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
+                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
+                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
+                ]
+        },
+
     ];
     
 
@@ -92,7 +108,7 @@
             this.initializeBoard();
 
             // generate an easy puzzle
-            this.generatePuzzle("Easy1");
+            this.generatePuzzle("Medium1");
 
             this.renderBoard();
         },
@@ -122,7 +138,7 @@
                 if (event.code === 'KeyE') {
                     this.generatePuzzle("Easy1");
                 } else if (event.code === "KeyM") {
-                    this.generatePuzzle("")
+                    this.generatePuzzle("Medium1")
                 } else if (event.code === "KeyH") {
                     this.generatePuzzle("")
                 } else if (event.code === "KeyC") {
@@ -135,6 +151,8 @@
                     this.boardIsValid();
                 } else if (event.code === "KeyF") {
                     this.boardIsFull();
+                } else if (event.code === "KeyP") {
+                    this.prunePossibleValues();
                 
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
@@ -234,6 +252,7 @@
                         };
                     }
                 }
+                this.previousSolvedState = this.copy(this.board);
                 console.log("Initialized board: ", this.board);
             },
 
@@ -276,70 +295,12 @@
 
             solvePuzzle() {
                 console.log("Solving puzzle...");
-                this.prunePossibleValues();
-            }, 
-
-            prunePossibleValues() {
-                const prunePossibleRowValuesForTile = (row, col) => {
-                    // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
-                    let tile = this.board[row][col];
-                    for (let c = 0; c < this.board[row].length; c++) {
-                        if (c !== col && this.board[row][c].value !== null) {
-                            const value = this.board[row][c].value;
-                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
-                        }
-                    }
-                };
-
-                const prunePossibleColValuesForTile = (row, col) => {
-                    // Find all tiles in the same col that have a value, and remove that value from the possible values of the tile
-                    let tile = this.board[row][col];
-                    for (let r = 0; r < this.board.length; r++) {
-                        if (r !== row && this.board[r][col].value !== null) {
-                            const value = this.board[r][col].value;
-                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
-                        }
-                    }
-                };
-
-                const prunePossibleNeighborhoodValuesForTile = (row, col) => {
-                    // Find all tiles in the same 3x3 neighborhood that have a value, and remove that value from the possible values of the tile
-                    let tile = this.board[row][col];
-                    const neighborhoodRow = Math.floor(row / 3);
-                    const neighborhoodCol = Math.floor(col / 3);
-                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
-                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
-                            if (r !== row && c !== col && this.board[r][c].value !== null) {
-                                const value = this.board[r][c].value;
-                                tile.possibleValues = tile.possibleValues.filter(v => v !== value);
-                            }
-                        }
-                    }
-                };
-
-                // Loop through the board and call prunePossibleValuesForTile for each tile
-                for (let row = 0; row < this.board.length; row++) {
-                    for (let col = 0; col < this.board[row].length; col++) {
-                        if (this.board[row][col].value === null) {
-                            prunePossibleRowValuesForTile(row, col);
-                            prunePossibleColValuesForTile(row, col);
-                            prunePossibleNeighborhoodValuesForTile(row, col);
-                        }
-                    }
-                }
-
-                // Loop through the board and set the value of any tile that has only one possible value
-                for (let row = 0; row < this.board.length; row++) {
-                    for (let col = 0; col < this.board[row].length; col++) {
-                        if (this.board[row][col].value === null && this.board[row][col].possibleValues.length === 1) {
-                            this.board[row][col].value = this.board[row][col].possibleValues[0];
-                            this.board[row][col].possibleValues = [];
-                        }
-                    }
-                }
+                let board = this.copy(this.board);
+                let newBoard = this.prunePossibleValues(board);
+                this.board = newBoard;
 
                 // Check if the board is solved
-                if (this.boardIsFull()) {
+                if (this.boardIsFull(this.copy(this.board))) {
                     if (this.boardIsValid(this.copy(this.board))) {
                         console.log("Board is solved!");
                         return;
@@ -349,13 +310,74 @@
                     }
                     return;
                 } else {
-                    if (this.previousSolvedState === this.board) {
+                    if (this.boardsAreEqual(this.previousSolvedState, this.board)) {
                         console.log("No progress made.  Exiting...");
                         return;
                     }
                     this.previousSolvedState = this.copy(this.board);
-                    this.prunePossibleValues();  
+                    this.solvePuzzle();  
                 }
+            }, 
+
+            prunePossibleValues(board) {
+                const prunePossibleRowValuesForTile = (row, col) => {
+                    // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
+                    let tile = board[row][col];
+                    for (let c = 0; c < board[row].length; c++) {
+                        if (c !== col && board[row][c].value !== null) {
+                            const value = board[row][c].value;
+                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                        }
+                    }
+                };
+
+                const prunePossibleColValuesForTile = (row, col) => {
+                    // Find all tiles in the same col that have a value, and remove that value from the possible values of the tile
+                    let tile = board[row][col];
+                    for (let r = 0; r < board.length; r++) {
+                        if (r !== row && board[r][col].value !== null) {
+                            const value = board[r][col].value;
+                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                        }
+                    }
+                };
+
+                const prunePossibleNeighborhoodValuesForTile = (row, col) => {
+                    // Find all tiles in the same 3x3 neighborhood that have a value, and remove that value from the possible values of the tile
+                    let tile = board[row][col];
+                    const neighborhoodRow = Math.floor(row / 3);
+                    const neighborhoodCol = Math.floor(col / 3);
+                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
+                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
+                            if (r !== row && c !== col && board[r][c].value !== null) {
+                                const value = board[r][c].value;
+                                tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                            }
+                        }
+                    }
+                };
+
+                // Loop through the board and call prunePossibleValuesForTile for each tile
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        if (board[row][col].value === null) {
+                            prunePossibleRowValuesForTile(row, col);
+                            prunePossibleColValuesForTile(row, col);
+                            prunePossibleNeighborhoodValuesForTile(row, col);
+                        }
+                    }
+                }
+
+                // Loop through the board and set the value of any tile that has only one possible value
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        if (board[row][col].value === null && board[row][col].possibleValues.length === 1) {
+                            board[row][col].value = board[row][col].possibleValues[0];
+                            board[row][col].possibleValues = [];
+                        }
+                    }
+                }
+                return board;
             },
 
             arraysAreEqual(arr1, arr2) {
@@ -365,6 +387,23 @@
                 for (let i = 0; i < arr1.length; i++) {
                     if (arr1[i] !== arr2[i]) {
                         return false;
+                    }
+                }
+                return true;
+            },
+
+            boardsAreEqual(board1, board2) {
+                if (board1.length !== board2.length) {
+                    return false;
+                }
+                for (let row = 0; row < board1.length; row++) {
+                    if (board1[row].length !== board2[row].length) {
+                        return false;
+                    }
+                    for (let col = 0; col < board1[row].length; col++) {
+                        if (board1[row][col].value !== board2[row][col].value) {
+                            return false;
+                        }
                     }
                 }
                 return true;
@@ -446,11 +485,11 @@
                 return true;
             },
 
-            boardIsFull() {
+            boardIsFull(board) {
                 let full = true;
-                for (let row = 0; row < this.board.length; row++) {
-                    for (let col = 0; col < this.board[row].length; col++) {
-                        let tile = this.board[row][col];
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        let tile = board[row][col];
                         if (tile.value === null) {
                             full = false;
                         }
