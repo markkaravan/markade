@@ -74,8 +74,8 @@
                 dataGameWidth: gameWidthDefault,
                 dataGameHeight: gameHeightDefault,
                 board: [],
-                isPaused: false,
                 inspectMode: true,
+                previousSolvedState: null,
             }
         },
 
@@ -93,7 +93,7 @@
 
             // generate an easy puzzle
             this.generatePuzzle("Easy1");
-            
+
             this.renderBoard();
         },
 
@@ -114,13 +114,6 @@
 
         methods: {
 
-            // gameLoop(){
-            //     this.renderBoard();
-            //     // if (!this.isPaused) {
-            //     //     requestAnimationFrame(this.gameLoop);
-            //     // }
-            // },
-
             copy (obj) {
                 return JSON.parse(JSON.stringify(obj));
             },
@@ -138,15 +131,9 @@
                     this.solvePuzzle();
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
-                } else if (event.code === "KeyP") {
-                    // console.log("Toggle pause, isPaused: ", this.isPaused);
-                    this.isPaused = !this.isPaused;
-                    // if (!this.isPaused) {
-                    //     this.gameLoop();
-                    // }
-                }
+                
                 // produce if statements for 0-9 keys
-                else if (event.code === "Digit1") {
+                } else if (event.code === "Digit1") {
                     this.changeNumber(1);
                 } else if (event.code === "Digit2") {
                     this.changeNumber(2);
@@ -285,7 +272,94 @@
 
             solvePuzzle() {
                 console.log("Solving puzzle...");
+                this.prunePossibleValues();
             }, 
+
+            prunePossibleValues() {
+                const prunePossibleRowValuesForTile = (row, col) => {
+                    // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
+                    let tile = this.board[row][col];
+                    for (let c = 0; c < this.board[row].length; c++) {
+                        if (c !== col && this.board[row][c].value !== null) {
+                            const value = this.board[row][c].value;
+                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                        }
+                    }
+                };
+
+                const prunePossibleColValuesForTile = (row, col) => {
+                    // Find all tiles in the same col that have a value, and remove that value from the possible values of the tile
+                    let tile = this.board[row][col];
+                    for (let r = 0; r < this.board.length; r++) {
+                        if (r !== row && this.board[r][col].value !== null) {
+                            const value = this.board[r][col].value;
+                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                        }
+                    }
+                };
+
+                const prunePossibleNeighborhoodValuesForTile = (row, col) => {
+                    // Find all tiles in the same 3x3 neighborhood that have a value, and remove that value from the possible values of the tile
+                    let tile = this.board[row][col];
+                    const neighborhoodRow = Math.floor(row / 3);
+                    const neighborhoodCol = Math.floor(col / 3);
+                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
+                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
+                            if (r !== row && c !== col && this.board[r][c].value !== null) {
+                                const value = this.board[r][c].value;
+                                tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                            }
+                        }
+                    }
+                };
+
+                // Loop through the board and call prunePossibleValuesForTile for each tile
+                for (let row = 0; row < this.board.length; row++) {
+                    for (let col = 0; col < this.board[row].length; col++) {
+                        if (this.board[row][col].value === null) {
+                            prunePossibleRowValuesForTile(row, col);
+                            prunePossibleColValuesForTile(row, col);
+                            prunePossibleNeighborhoodValuesForTile(row, col);
+                        }
+                    }
+                }
+
+                // Loop through the board and set the value of any tile that has only one possible value
+                for (let row = 0; row < this.board.length; row++) {
+                    for (let col = 0; col < this.board[row].length; col++) {
+                        if (this.board[row][col].value === null && this.board[row][col].possibleValues.length === 1) {
+                            this.board[row][col].value = this.board[row][col].possibleValues[0];
+                            this.board[row][col].possibleValues = [];
+                        }
+                    }
+                }
+
+                // Check if the board is solved
+                if (this.boardIsFull()) {
+                    console.log("Board is full!");
+                    return;
+                } else {
+                    if (this.previousSolvedState === this.board) {
+                        console.log("No progress made.  Exiting...");
+                        return;
+                    }
+                    this.previousSolvedState = this.copy(this.board);
+                    this.prunePossibleValues();  
+                }
+            },
+
+            boardIsFull() {
+                let full = true;
+                for (let row = 0; row < this.board.length; row++) {
+                    for (let col = 0; col < this.board[row].length; col++) {
+                        let tile = this.board[row][col];
+                        if (tile.value === null) {
+                            full = false;
+                        }
+                    }
+                }
+                return full;
+            },
 
             renderBoard() {
                 // Draw black background to hidden context
@@ -358,13 +432,6 @@
                  * 
                  ***************************************/
 
-                // If the game is paused, render a big blue text in the middle that says "PAUSED"
-                if (this.isPaused) {
-                    this.hiddenCtx.fillStyle = 'blue';
-                    this.hiddenCtx.font = '80px Arial';
-                    this.hiddenCtx.fillText('PAUSED', 100, 300);
-                }
-                console.log("YO");
 
                 // Draw to main canvas
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
