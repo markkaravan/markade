@@ -91,7 +91,10 @@
 
             this.initializeBoard();
 
-            this.gameLoop();
+            // generate an easy puzzle
+            this.generatePuzzle("Easy1");
+            
+            this.renderBoard();
         },
 
         beforeDestroy() {
@@ -111,12 +114,12 @@
 
         methods: {
 
-            gameLoop(){
-                this.renderBoard();
-                if (!this.isPaused) {
-                    requestAnimationFrame(this.gameLoop);
-                }
-            },
+            // gameLoop(){
+            //     this.renderBoard();
+            //     // if (!this.isPaused) {
+            //     //     requestAnimationFrame(this.gameLoop);
+            //     // }
+            // },
 
             copy (obj) {
                 return JSON.parse(JSON.stringify(obj));
@@ -136,11 +139,11 @@
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
                 } else if (event.code === "KeyP") {
-                    console.log("Toggle pause, isPaused: ", this.isPaused);
+                    // console.log("Toggle pause, isPaused: ", this.isPaused);
                     this.isPaused = !this.isPaused;
-                    if (!this.isPaused) {
-                        this.gameLoop();
-                    }
+                    // if (!this.isPaused) {
+                    //     this.gameLoop();
+                    // }
                 }
                 // produce if statements for 0-9 keys
                 else if (event.code === "Digit1") {
@@ -164,6 +167,7 @@
                 } else if (event.code === "Digit0") {
                     this.changeNumber(0);
                 }
+                this.renderBoard();
             },
 
             // mouse hover event where it shows the current row and tile in console.log 
@@ -196,6 +200,7 @@
                 }
                 console.log("Clicked: ", this.board[row][col]);
                 console.log(this.board);
+                this.renderBoard();
             },
 
             findActiveTile() {
