@@ -4,7 +4,7 @@
     <img ref="fruitGreenApple" :src="'/src/assets/images/fruit_kiwi.png'" :style="{ display: 'none' }">
     <img ref="fruitBlueberry" :src="'/src/assets/images/fruit_blueberry.png'" :style="{ display: 'none' }">
     <img ref="fruitYellow" :src="'/src/assets/images/fruit_banana.png'" :style="{ display: 'none' }">
-    <img ref="fruitOrange" :src="'/src/assets/images/fruit_orange.png'" :style="{ display: 'none' }">
+    <img ref="fruitOrange" :src="'/src/assets/images/fruit_orange_full.png'" :style="{ display: 'none' }">
 
     <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
@@ -59,6 +59,7 @@
                     isPaused: false,
                     currentFruitType: null,
                     inspectMode: false,
+                    pointsDisplayArray: [],
                     mode: "playing", // "filling", "playing", "detectingClusters", "droppingFruits", "replacingFruits"
                     // blinkTimer: Date.now(),
                     // showText: true,
@@ -348,6 +349,23 @@
 
             removeCluster(cluster) {
                 for (let tile of cluster) {
+                    // direction is an x, y velocity that is found by getting the difference between the tile's position and the score display's position
+                    let x = tile.col * tileWidth + boardOffsetX;
+                    let y = tile.row * tileWidth + boardOffsetY;
+                    let id = Math.floor(Math.random() * 100000000);
+                    console.log("ID:", id );
+
+                    this.gs.pointsDisplayArray.push({
+                        id: id,
+                        x: x,
+                        y: y,
+                        points: 100,
+                        direction: {
+                            x: - (x / 1000),
+                            y: - (y / 1000),
+                        },
+                        speed: 1,
+                    });
                     this.gs.board[tile.row][tile.col] = null;
                 }
                 this.gs.score += cluster.length;
@@ -555,9 +573,9 @@
                                 }
                             }
                         }
-
-
                         this.changeMode("droppingFruits");
+                        this.gs.currentFruitType = this.selectRandomFruitType();
+
                     } else {
                         // If there are no clusters, see if the board is full
                         console.log("NO CLUSTER TO REMOVE, CHECKING IF BOARD IS FULL",  this.boardIsFull());
@@ -640,6 +658,30 @@
                 // this.hiddenCtx.fillRect(this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
                 // Display the fruit as an image
                 this.hiddenCtx.drawImage(this.$refs[this.gs.currentFruitType.imgRef], this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
+
+                // Draw the board's points display
+                for (let i = 0; i < this.gs.pointsDisplayArray.length; i++) {
+                    let pointsDisplay = this.gs.pointsDisplayArray[i];
+                    pointsDisplay.x += pointsDisplay.direction.x * pointsDisplay.speed;
+                    pointsDisplay.y += pointsDisplay.direction.y * pointsDisplay.speed;
+                    pointsDisplay.speed += 0.4;
+                    this.hiddenCtx.fillStyle = 'white';
+                    this.hiddenCtx.font = '24px Helvetica';
+                    this.hiddenCtx.fillText(pointsDisplay.points, pointsDisplay.x, pointsDisplay.y);
+                    if (pointsDisplay.y < 0) {
+                        this.gs.score += pointsDisplay.points;
+                    }
+                }
+                let tempPointsDisplayArray = [];
+                for (let i = 0; i < this.gs.pointsDisplayArray.length; i++) {
+                    let pointsDisplay = this.gs.pointsDisplayArray[i];
+                    if (pointsDisplay.y > 0) {
+                        tempPointsDisplayArray.push(pointsDisplay);
+                    } else {
+                        this.gs.score += pointsDisplay.points;
+                    }
+                }
+                this.gs.pointsDisplayArray = tempPointsDisplayArray;
 
                 // If the game is paused, display "PAUSED" in the center of the screen in big letters
                 if (this.gs.isPaused) {
