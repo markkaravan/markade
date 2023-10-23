@@ -131,6 +131,10 @@
                     this.solvePuzzle();
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
+                } else if (event.code === "KeyV") {
+                    this.boardIsValid();
+                } else if (event.code === "KeyF") {
+                    this.boardIsFull();
                 
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
@@ -336,7 +340,13 @@
 
                 // Check if the board is solved
                 if (this.boardIsFull()) {
-                    console.log("Board is full!");
+                    if (this.boardIsValid(this.copy(this.board))) {
+                        console.log("Board is solved!");
+                        return;
+                    } else {
+                        console.log("Board is invalid!");
+                        return;
+                    }
                     return;
                 } else {
                     if (this.previousSolvedState === this.board) {
@@ -346,6 +356,94 @@
                     this.previousSolvedState = this.copy(this.board);
                     this.prunePossibleValues();  
                 }
+            },
+
+            arraysAreEqual(arr1, arr2) {
+                if (arr1.length !== arr2.length) {
+                    return false;
+                }
+                for (let i = 0; i < arr1.length; i++) {
+                    if (arr1[i] !== arr2[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+
+            boardIsValid(board) {
+                console.log("Checking if board is valid...");
+                const rowIsValid = (row) => {
+                    let values = [];
+                    for (let col = 0; col < this.board[row].length; col++) {
+                        const value = this.board[row][col].value;
+                        if (value !== null) {
+                            if (values.includes(value)) {
+                                return false;
+                            } else {
+                                values.push(value);
+                            }
+                        }
+                    }                    
+                    return this.arraysAreEqual(values.sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                };
+
+                const colIsValid = (col) => {
+                    const values = [];
+                    for (let row = 0; row < this.board.length; row++) {
+                        const value = this.board[row][col].value;
+                        if (value !== null) {
+                            if (values.includes(value)) {
+                                return false;
+                            } else {
+                                values.push(value);
+                            }
+                        }
+                    }
+                    return this.arraysAreEqual(values.sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                };
+
+                const neighborhoodIsValid = (row, col) => {
+                    const values = [];
+                    const neighborhoodRow = Math.floor(row / 3);
+                    const neighborhoodCol = Math.floor(col / 3);
+                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
+                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
+                            const value = this.board[r][c].value;
+                            if (value !== null) {
+                                if (values.includes(value)) {
+                                    return false;
+                                } else {
+                                    values.push(value);
+                                }
+                            }
+                        }
+                    }
+                    return this.arraysAreEqual(values.sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                };
+                
+                // loop through board and check if each row, col, and neighborhood is valid
+                for (let row = 0; row < this.board.length; row++) {
+                    if (!rowIsValid(row)) {
+                        console.log("Row fail: ", row);
+                        return false;
+                    }
+                }
+                for (let col = 0; col < this.board[0].length; col++) {
+                    if (!colIsValid(col)) {
+                        console.log("Col fail: ", col);
+                        return false;
+                    }
+                }
+                for (let row = 0; row < this.board.length; row += 3) {
+                    for (let col = 0; col < this.board[0].length; col += 3) {
+                        if (!neighborhoodIsValid(row, col)) {
+                            console.log("Neighborhood fail: ", row, col);
+                            return false;
+                        }
+                    }
+                }
+                console.log("Survival of the fittest!");
+                return true;
             },
 
             boardIsFull() {
@@ -358,6 +456,7 @@
                         }
                     }
                 }
+                console.log("Board is full: ", full);
                 return full;
             },
 
