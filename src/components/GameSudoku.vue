@@ -294,6 +294,21 @@
                     [0, 0, 0, 8, 0, 9, 2, 5, 6]
                 ]
         },
+        //=====================================
+        {   name: "Hard1",
+            board:
+                [
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [1, 5, 0, 0, 0, 9, 0, 0, 0],
+                    [6, 2, 9, 0, 0, 0, 5, 0, 0],
+                    [8, 6, 5, 4, 2, 0, 3, 0, 0],
+                    [0, 0, 0, 9, 0, 0, 7, 8, 0],
+                    [0, 0, 0, 0, 0, 3, 0, 0, 0],
+                    [9, 0, 0, 7, 0, 0, 8, 0, 5],
+                    [0, 3, 0, 5, 0, 0, 2, 0, 0],
+                    [5, 0, 0, 0, 0, 0, 0, 7, 4]
+                ]
+        },
 
     ];
     
@@ -318,8 +333,8 @@
                 inspectMode: false,
                 solutionObj: {
                     id: Math.floor(Math.random() * 100000000),
-                    boardOld: null,
-                    boardNew: null,
+                    depth: 0,
+                    board: null,
                     children: []
                 }
             }
@@ -338,7 +353,7 @@
             this.initializeBoard();
 
             // generate an easy puzzle
-            this.generatePuzzle("Empty");
+            this.generatePuzzle("Hard1");
 
             this.renderBoard();
         },
@@ -379,18 +394,17 @@
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
                 } else if (event.code === "KeyV") {
-                    console.log(this.boardIsValid(this.solutionObj.boardNew));
+                    console.log(this.boardIsValid(this.solutionObj.board));
                 } else if (event.code === "KeyC") {
-                    console.log(this.boardIsCorrect(this.solutionObj.boardNew));
+                    console.log(this.boardIsCorrect(this.solutionObj.board));
                 } else if (event.code === "KeyF") {
-                    this.boardIsFull(this.solutionObj.boardNew);
+                    this.boardIsFull(this.solutionObj.board);
                 } else if (event.code === "KeyL") {
                     this.splitSolutionObject(this.solutionObj);
                 } else if (event.code === "KeyP") {
-                    let board = this.copy(this.solutionObj.boardNew);
-                    this.solutionObj.boardOld = this.copy(board);
+                    let board = this.copy(this.solutionObj.board);
                     let newBoard = this.prunePossibleValues(board);
-                    this.solutionObj.boardNew = this.copy(newBoard);
+                    this.solutionObj.board = this.copy(newBoard);
                 
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
@@ -430,7 +444,7 @@
             },
 
             handleClick(event) {
-                let board = this.solutionObj.boardNew;
+                let board = this.solutionObj.board;
                 // Calculate the row and column of the clicked square
                 const rect = this.$refs.canvas.getBoundingClientRect();
                 const x = event.clientX - rect.left;
@@ -452,7 +466,7 @@
             },
 
             findActiveTile() {
-                let board = this.solutionObj.boardNew;
+                let board = this.solutionObj.board;
                 let activeTile = null;
                 for (let row = 0; row < board.length; row++) {
                     for (let col = 0; col < board[row].length; col++) {
@@ -467,7 +481,7 @@
             changeNumber(number) {
                 console.log("Changing number...");
                 let activeTile = this.findActiveTile();
-                if (activeTile !== null && number >= 0 && number <= 9) {
+                if (activeTile !== null && number >= 1 && number <= 9) {
                     activeTile.value = number;
                     activeTile.possibleValues = [];
                 } else if (activeTile !== null && number === 0) {
@@ -493,8 +507,8 @@
                         };
                     }
                 }
-                this.solutionObj.boardNew = this.copy(board);
-                console.log("Initialized board: ", this.solutionObj.boardNew);
+                this.solutionObj.board = this.copy(board);
+                console.log("Initialized board: ", this.solutionObj.board);
             },
 
             generatePuzzle(puzzleName) {
@@ -505,7 +519,7 @@
                 }
                 // Initialize the board.  Then loop through the puzzle and set the values
                 this.initializeBoard();
-                let board = this.copy(this.solutionObj.boardNew);
+                let board = this.copy(this.solutionObj.board);
                 for (let row = 0; row < puzzle.board.length; row++) {
                     for (let col = 0; col < puzzle.board[row].length; col++) {
                         // if this is a value between 1 and 9, set the value, otherwise, set it to null
@@ -519,7 +533,7 @@
                         }
                     }
                 }
-                this.solutionObj.boardNew = this.copy(board);
+                this.solutionObj.board = this.copy(board);
             },
 
 
@@ -530,7 +544,7 @@
 
             // solvePuzzle returns a solved puzzle in a solutionObj or null if it can't be solved
             solvePuzzle(solutionObj) {
-                console.log("Solving puzzle...", solutionObj);
+                console.log("Solving puzzle with depth: ", solutionObj.depth, solutionObj);
                 // If solutionObj has children, iterate through the children and return the first solved puzzle
                 if (solutionObj.children.length > 0) {
                     for (let i = 0; i < solutionObj.children.length; i++) {
@@ -546,13 +560,13 @@
                     }
                     return null;
                 }
-                let oldBoard = this.copy(solutionObj.boardNew);
-                let prunedBoard = this.prunePossibleValues(solutionObj.boardNew);
+                let oldBoard = this.copy(solutionObj.board);
+                let prunedBoard = this.prunePossibleValues(solutionObj.board);
 
                 if (this.boardIsCorrect(prunedBoard)) {
                     console.log("*** BoardisCorrect: ", prunedBoard);
                     let newSolutionObj = this.copy(solutionObj);
-                    newSolutionObj.boardNew = this.copy(prunedBoard);
+                    newSolutionObj.board = this.copy(prunedBoard);
                     return newSolutionObj;
                 }
 
@@ -569,7 +583,7 @@
                 }
 
                 let newSolutionObj = this.copy(solutionObj);
-                newSolutionObj.boardNew = this.copy(prunedBoard);
+                newSolutionObj.board = this.copy(prunedBoard);
                 return this.solvePuzzle(newSolutionObj);
             }, 
 
@@ -834,8 +848,8 @@
             },
 
             splitSolutionObject(solutionObj) {
-                // Loop through the boardNew and find the tile with value:null that has the fewest possible values
-                let board = this.copy(solutionObj.boardNew);
+                // Loop through the board and find the tile with value:null that has the fewest possible values
+                let board = this.copy(solutionObj.board);
                 let minPossibleValues = 10;
                 let minPossibleValuesTile = null;
                 for (let row = 0; row < board.length; row++) {
@@ -853,12 +867,12 @@
                     const value = minPossibleValuesTile.possibleValues[i];
                     let newSolutionObj = {
                         id: Math.floor(Math.random() * 100000000),
-                        boardOld: null,
-                        boardNew: this.copy(board),
+                        depth: solutionObj.depth + 1,
+                        board: this.copy(board),
                         children: []
                     };
-                    newSolutionObj.boardNew[minPossibleValuesTile.row][minPossibleValuesTile.col].value = value;
-                    newSolutionObj.boardNew[minPossibleValuesTile.row][minPossibleValuesTile.col].possibleValues = [];
+                    newSolutionObj.board[minPossibleValuesTile.row][minPossibleValuesTile.col].value = value;
+                    newSolutionObj.board[minPossibleValuesTile.row][minPossibleValuesTile.col].possibleValues = [];
                     // Add the new solution object to the children of the current solution object
                     solutionObj.children.push(newSolutionObj);
                 }
@@ -882,7 +896,7 @@
                  *      Render the board
                  * 
                  ***************************************/
-                let board = this.solutionObj.boardNew;
+                let board = this.solutionObj.board;
 
                 for (let row = 0; row < board.length; row++) {
                     for (let col = 0; col < board[row].length; col++) {
