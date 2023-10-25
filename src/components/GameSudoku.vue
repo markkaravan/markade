@@ -309,6 +309,35 @@
                     [5, 0, 0, 0, 0, 0, 0, 7, 4]
                 ]
         },
+        {   name: "Hard2",
+            board:
+                [
+                    [0, 8, 0, 0, 2, 0, 5, 6, 0],
+                    [0, 0, 0, 1, 0, 0, 0, 0, 7],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 5, 0, 0, 9, 0, 4, 0, 8],
+                    [0, 0, 7, 8, 0, 0, 0, 0, 3],
+                    [0, 9, 0, 0, 1, 0, 0, 5, 0],
+                    [2, 0, 4, 0, 0, 0, 8, 0, 0],
+                    [0, 6, 0, 0, 8, 5, 0, 0, 0],
+                    [0, 0, 0, 2, 0, 0, 1, 0, 0],
+                ]
+        },
+        //=====================================
+        {   name: "Expert1",
+            board:
+                [
+                    [5, 3, 0, 0, 7, 2, 0, 0, 8],
+                    [6, 0, 9, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [0, 5, 0, 0, 0, 0, 1, 6, 0],
+                    [2, 0, 0, 3, 9, 0, 0, 0, 0],
+                    [4, 0, 0, 1, 0, 0, 8, 0, 0],
+                    [0, 0, 0, 0, 6, 0, 4, 9, 0],
+                    [0, 0, 0, 0, 0, 5, 0, 0, 0],
+                    [0, 7, 4, 0, 0, 0, 0, 0, 0]
+                ]
+        },
 
     ];
     
@@ -353,7 +382,7 @@
             this.initializeBoard();
 
             // generate an easy puzzle
-            this.generatePuzzle("Hard1");
+            this.generatePuzzle("Expert1");
 
             this.renderBoard();
         },
@@ -562,12 +591,24 @@
                 }
                 let oldBoard = this.copy(solutionObj.board);
                 let prunedBoard = this.prunePossibleValues(solutionObj.board);
+                // let uniqueRows = this.pruneUniqueRows(prunedBoard);
 
                 if (this.boardIsCorrect(prunedBoard)) {
                     console.log("*** BoardisCorrect: ", prunedBoard);
                     let newSolutionObj = this.copy(solutionObj);
                     newSolutionObj.board = this.copy(prunedBoard);
                     return newSolutionObj;
+                }
+
+                // Before splitting, let's do a unique rows check
+                if (this.boardsAreEqual(oldBoard, prunedBoard)) {
+                    let uniqueRows = this.pruneUniqueRows(this.copy(prunedBoard));
+                    if (!this.boardsAreEqual(prunedBoard, uniqueRows)) {
+                        console.log("*** UniqueRows: ", uniqueRows);
+                        let newSolutionObj = this.copy(solutionObj);
+                        newSolutionObj.board = this.copy(uniqueRows);
+                        return this.solvePuzzle(newSolutionObj);
+                    }
                 }
 
                 if (this.boardsAreEqual(oldBoard, prunedBoard)) {
@@ -610,13 +651,13 @@
                     }
                 };
 
-                const prunePossibleNeighborhoodValuesForTile = (row, col) => {
-                    // Find all tiles in the same 3x3 neighborhood that have a value, and remove that value from the possible values of the tile
+                const prunePossibleBlockValuesForTile = (row, col) => {
+                    // Find all tiles in the same 3x3 block that have a value, and remove that value from the possible values of the tile
                     let tile = board[row][col];
-                    const neighborhoodRow = Math.floor(row / 3);
-                    const neighborhoodCol = Math.floor(col / 3);
-                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
-                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
+                    const blockRow = Math.floor(row / 3);
+                    const blockCol = Math.floor(col / 3);
+                    for (let r = blockRow * 3; r < blockRow * 3 + 3; r++) {
+                        for (let c = blockCol * 3; c < blockCol * 3 + 3; c++) {
                             if (r !== row && c !== col && board[r][c].value !== null) {
                                 const value = board[r][c].value;
                                 tile.possibleValues = tile.possibleValues.filter(v => v !== value);
@@ -631,7 +672,7 @@
                         if (board[row][col].value === null) {
                             prunePossibleRowValuesForTile(row, col);
                             prunePossibleColValuesForTile(row, col);
-                            prunePossibleNeighborhoodValuesForTile(row, col);
+                            prunePossibleBlockValuesForTile(row, col);
                         }
                     }
                 }
@@ -644,6 +685,89 @@
                             board[row][col].possibleValues = [];
                         }
                     }
+                }
+
+                return board;
+            },
+
+            pruneUniqueRows(board) {
+                // Go through each row, iterate through numbers 1-9, and see if there is only one tile in that row that has that possible value
+                // If so, set the value of the tile in the board to that value and set possibleValues to []
+                // Stop the ENTIRE loop if you find a tile with only one possible value
+                let abort = false;
+                let transformations = [];
+                for (let row = 0; !abort && row < board.length; row++) {
+                    for (let num = 1; !abort && num <= 9; num++) {
+                        let tilesWithNum = [];
+                        for (let col = 0; !abort && col < board[row].length; col++) {
+                            if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                                tilesWithNum.push(this.copy(board[row][col]));
+                            }
+                        }
+                        if (tilesWithNum.length === 1) {
+                            transformations.push({
+                                row: tilesWithNum[0].row,
+                                col: tilesWithNum[0].col,
+                                value: num
+                            });
+                            abort = true;
+                        }
+                    }
+                }
+                // Go through each col, iterate through numbers 1-9, and see if there is only one tile in that col that has that possible value
+                // If so, set the value of the tile in the board to that value and set possibleValues to []
+                for (let col = 0; !abort && col < board[0].length; col++) {
+                    for (let num = 1; !abort && num <= 9; num++) {
+                        let tilesWithNum = [];
+                        for (let row = 0; !abort && row < board.length; row++) {
+                            if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                                tilesWithNum.push(this.copy(board[row][col]));
+                            }
+                        }
+                        if (tilesWithNum.length === 1) {
+                            transformations.push({
+                                row: tilesWithNum[0].row,
+                                col: tilesWithNum[0].col,
+                                value: num
+                            });
+                            abort = true;
+                        }
+                    }
+                }
+                // Go through each block, iterate through numbers 1-9, and see if there is only one tile in that block that has that possible value
+                // If so, set the value of the tile in the board to that value and set possibleValues to []
+                for (let blockRow = 0; !abort && blockRow < 3; blockRow++) {
+                    for (let blockCol = 0; !abort && blockCol < 3; blockCol++) {
+                        for (let num = 1; !abort && num <= 9; num++) {
+                            let tilesWithNum = [];
+                            for (let row = blockRow * 3; !abort && row < blockRow * 3 + 3; row++) {
+                                for (let col = blockCol * 3; !abort && col < blockCol * 3 + 3; col++) {
+                                    if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                                        tilesWithNum.push(this.copy(board[row][col]));
+                                    }
+                                }
+                            }
+                            if (tilesWithNum.length === 1) {
+                                transformations.push({
+                                    row: tilesWithNum[0].row,
+                                    col: tilesWithNum[0].col,
+                                    value: num
+                                });
+                                abort = true;
+                            }
+                        }
+                    }
+                }
+
+                console.log("BEFORE: ", board);
+                console.log("Transformations: ", transformations);
+                // If there are transformations, only apply the first one.  Then return the board
+                if (transformations.length > 0) {
+                    const row = transformations[0].row;
+                    const col = transformations[0].col;
+                    const value = transformations[0].value;
+                    board[row][col].value = value;
+                    board[row][col].possibleValues = [];
                 }
                 return board;
             },
@@ -717,12 +841,12 @@
                     return this.hasNoMultipleValues(values);
                 };
 
-                const neighborhoodIsValid = (row, col) => {
+                const blockIsValid = (row, col) => {
                     const values = [];
-                    const neighborhoodRow = Math.floor(row / 3);
-                    const neighborhoodCol = Math.floor(col / 3);
-                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
-                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
+                    const blockRow = Math.floor(row / 3);
+                    const blockCol = Math.floor(col / 3);
+                    for (let r = blockRow * 3; r < blockRow * 3 + 3; r++) {
+                        for (let c = blockCol * 3; c < blockCol * 3 + 3; c++) {
                             const value = board[r][c].value;
                             if (value !== null) {
                                 values.push(value);
@@ -732,7 +856,7 @@
                     return this.hasNoMultipleValues(values);
                 };
                 
-                // loop through board and check if each row, col, and neighborhood is valid
+                // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsValid(row)) {
                         console.log("Row fail: ", row);
@@ -747,8 +871,8 @@
                 }
                 for (let row = 0; row < board.length; row += 3) {
                     for (let col = 0; col < board[0].length; col += 3) {
-                        if (!neighborhoodIsValid(row, col)) {
-                            console.log("Neighborhood fail: ", row, col);
+                        if (!blockIsValid(row, col)) {
+                            console.log("block fail: ", row, col);
                             return false;
                         }
                     }
@@ -789,12 +913,12 @@
                     return this.hasNoMultipleValues(values);
                 };
 
-                const neighborhoodIsCorrect = (row, col) => {
+                const blockIsCorrect = (row, col) => {
                     const values = [];
-                    const neighborhoodRow = Math.floor(row / 3);
-                    const neighborhoodCol = Math.floor(col / 3);
-                    for (let r = neighborhoodRow * 3; r < neighborhoodRow * 3 + 3; r++) {
-                        for (let c = neighborhoodCol * 3; c < neighborhoodCol * 3 + 3; c++) {
+                    const blockRow = Math.floor(row / 3);
+                    const blockCol = Math.floor(col / 3);
+                    for (let r = blockRow * 3; r < blockRow * 3 + 3; r++) {
+                        for (let c = blockCol * 3; c < blockCol * 3 + 3; c++) {
                             const value = board[r][c].value;
                             if (value !== null) {
                                 if (values.includes(value)) {
@@ -808,7 +932,7 @@
                     return this.arraysAreEqual(values.sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
                 };
 
-                // loop through board and check if each row, col, and neighborhood is valid
+                // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsCorrect(row)) {
                         console.log("(x) Row fail: ", row, board);
@@ -823,8 +947,8 @@
                 }
                 for (let row = 0; row < board.length; row += 3) {
                     for (let col = 0; col < board[0].length; col += 3) {
-                        if (!neighborhoodIsCorrect(row, col)) {
-                            console.log("(x) Neighborhood fail: ", row, col, board);
+                        if (!blockIsCorrect(row, col)) {
+                            console.log("(x) Block fail: ", row, col, board);
                             return false;
                         }
                     }
