@@ -338,6 +338,20 @@
                     [0, 7, 4, 0, 0, 0, 0, 0, 0]
                 ]
         },
+        {   name: "Expert2",
+            board:
+                [
+                    [9, 0, 0, 0, 0, 8, 4, 0, 0],
+                    [4, 0, 3, 0, 0, 0, 0, 5, 0],
+                    [0, 0, 0, 0, 7, 9, 2, 0, 0],
+                    [0, 5, 0, 0, 0, 0, 0, 4, 0],
+                    [0, 0, 0, 6, 0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [3, 0, 7, 0, 0, 0, 0, 2, 0],
+                    [1, 0, 0, 0, 0, 6, 0, 0, 0],
+                    [0, 0, 2, 0, 4, 5, 0, 8, 0]
+                ]
+        },
 
     ];
     
@@ -433,6 +447,10 @@
                 } else if (event.code === "KeyP") {
                     let board = this.copy(this.solutionObj.board);
                     let newBoard = this.prunePossibleValues(board);
+                    this.solutionObj.board = this.copy(newBoard);
+                } else if (event.code === "KeyU") {
+                    let board = this.copy(this.solutionObj.board);
+                    let newBoard = this.findUniqueValues(board);
                     this.solutionObj.board = this.copy(newBoard);
                 
                 // produce if statements for 0-9 keys
@@ -591,7 +609,6 @@
                 }
                 let oldBoard = this.copy(solutionObj.board);
                 let prunedBoard = this.prunePossibleValues(solutionObj.board);
-                // let uniqueRows = this.pruneUniqueRows(prunedBoard);
 
                 if (this.boardIsCorrect(prunedBoard)) {
                     console.log("*** BoardisCorrect: ", prunedBoard);
@@ -602,7 +619,7 @@
 
                 // Before splitting, let's do a unique rows check
                 if (this.boardsAreEqual(oldBoard, prunedBoard)) {
-                    let uniqueRows = this.pruneUniqueRows(this.copy(prunedBoard));
+                    let uniqueRows = this.findUniqueValues(this.copy(prunedBoard));
                     if (!this.boardsAreEqual(prunedBoard, uniqueRows)) {
                         console.log("*** UniqueRows: ", uniqueRows);
                         let newSolutionObj = this.copy(solutionObj);
@@ -690,7 +707,10 @@
                 return board;
             },
 
-            pruneUniqueRows(board) {
+            // Use this for more heuristics:
+            // https://www.youtube.com/watch?v=b123EURtu3I
+
+            findUniqueValues(board) {
                 // Go through each row, iterate through numbers 1-9, and see if there is only one tile in that row that has that possible value
                 // If so, set the value of the tile in the board to that value and set possibleValues to []
                 // Stop the ENTIRE loop if you find a tile with only one possible value
