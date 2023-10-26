@@ -375,6 +375,7 @@
                 dataGameHeight: gameHeightDefault,
                 inspectMode: false,
                 displayBoard: null,
+                solveCallCount: 0,
                 solutionObj: {
                     id: Math.floor(Math.random() * 100000000),
                     depth: 0,
@@ -448,8 +449,6 @@
                     this.generatePuzzle("Easy1");
                 } else if (event.code === "KeyM") {
                     this.generatePuzzle("Medium1")
-                } else if (event.code === "KeyH") {
-                    this.generatePuzzle("")
                 } else if (event.code === "KeyS") {
                     let newSolutionObj = this.solvePuzzle(this.solutionObj);
                     if (newSolutionObj !== null) {
@@ -469,18 +468,27 @@
                     let board = this.copy(this.solutionObj.board);
                     let newBoard = this.prunePossibleValues(board);
                     this.solutionObj.board = this.copy(newBoard);
+                    this.displayBoard = this.solutionObj.board;
                 } else if (event.code === "KeyU") {
                     let board = this.copy(this.solutionObj.board);
                     let newBoard = this.findUniqueValues(board);
                     this.solutionObj.board = this.copy(newBoard);
+                    this.displayBoard = this.solutionObj.board;
                 } else if (event.code === "KeyN") {
                     let board = this.copy(this.solutionObj.board);
                     let newBoard = this.removeNakedPairs(board);
                     this.solutionObj.board = this.copy(newBoard);
+                    this.displayBoard = this.solutionObj.board;
                 } else if (event.code === "KeyG") {
                     let board = this.copy(this.solutionObj.board);
                     let newBoard = this.removeNakedSingles(board);
                     this.solutionObj.board = this.copy(newBoard);
+                    this.displayBoard = this.solutionObj.board;
+                } else if (event.code === "KeyH") {
+                    let board = this.copy(this.solutionObj.board);
+                    let newBoard = this.removeHiddenPairs(board);
+                    this.solutionObj.board = this.copy(newBoard);
+                    this.displayBoard = this.solutionObj.board;
                 
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
@@ -609,7 +617,9 @@
                         }
                     }
                 }
-                this.solutionObj.board = this.copy(board);
+                let prunedBoard = this.initialPruning(board);
+                this.solutionObj.board = this.copy(prunedBoard);
+                this.displayBoard = this.solutionObj.board;
             },
 
 
@@ -620,8 +630,16 @@
 
             // solvePuzzle returns a solved puzzle in a solutionObj or null if it can't be solved
             solvePuzzle(solutionObj) {
-                console.log("Solving puzzle with depth: ", solutionObj.depth, solutionObj);
                 this.displayBoard = solutionObj.board;
+
+
+                console.log("Solving puzzle with depth: ", solutionObj.depth, solutionObj);
+                this.solveCallCount++;
+                console.log("SolveCallCount: ", this.solveCallCount);
+                if (this.solveCallCount > 100) {
+                    console.log("SolveCallCount exceeded 1000");
+                    return null;
+                }
                 // If solutionObj has children, iterate through the children and return the first solved puzzle
                 if (solutionObj.children.length > 0) {
                     for (let i = 0; i < solutionObj.children.length; i++) {
@@ -640,6 +658,7 @@
                 let oldBoard = this.copy(solutionObj.board);
                 let prunedBoard = this.prunePossibleValues(solutionObj.board);
 
+                console.log("##### CHECKING FOR CORRECTNESS: ", prunedBoard);
                 if (this.boardIsCorrect(prunedBoard)) {
                     console.log("*** BoardisCorrect: ", prunedBoard);
                     let newSolutionObj = this.copy(solutionObj);
@@ -647,16 +666,16 @@
                     return newSolutionObj;
                 }
 
-                // Before splitting, let's do a unique rows check
-                if (this.boardsAreEqual(oldBoard, prunedBoard)) {
-                    let uniqueRows = this.findUniqueValues(this.copy(prunedBoard));
-                    if (!this.boardsAreEqual(prunedBoard, uniqueRows)) {
-                        console.log("*** UniqueRows: ", uniqueRows);
-                        let newSolutionObj = this.copy(solutionObj);
-                        newSolutionObj.board = this.copy(uniqueRows);
-                        return this.solvePuzzle(newSolutionObj);
-                    }
-                }
+                // // Before splitting, let's do a unique rows check
+                // if (this.boardsAreEqual(oldBoard, prunedBoard)) {
+                //     let uniqueRows = this.findUniqueValues(this.copy(prunedBoard));
+                //     if (!this.boardsAreEqual(prunedBoard, uniqueRows)) {
+                //         // console.log("*** UniqueRows: ", uniqueRows);
+                //         let newSolutionObj = this.copy(solutionObj);
+                //         newSolutionObj.board = this.copy(uniqueRows);
+                //         return this.solvePuzzle(newSolutionObj);
+                //     }
+                // }
 
                 if (this.boardsAreEqual(oldBoard, prunedBoard)) {
                     console.log("*** BoardsAreEqual: ", prunedBoard);
@@ -675,13 +694,20 @@
                 return this.solvePuzzle(newSolutionObj);
             }, 
 
-            prunePossibleValues(board) {
+
+
+            initialPruning(board) {
+                console.log("INITIAL PRUNIGN");
                 const prunePossibleRowValuesForTile = (row, col) => {
                     // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
+                    // console.log("ROW VALS: ", row, col, board[row][col].possibleValues);
                     let tile = board[row][col];
                     for (let c = 0; c < board[row].length; c++) {
                         if (c !== col && board[row][c].value !== null) {
                             const value = board[row][c].value;
+                            if (row==0 && tile.possibleValues.includes(value)) {
+                                // console.log("Value: ", value);
+                            }
                             tile.possibleValues = tile.possibleValues.filter(v => v !== value);
                         }
                     }
@@ -723,10 +749,81 @@
                         }
                     }
                 }
+                console.log("Priuned:", board);
 
-                // Call removeNakedSingles and findUniqueValues on the board until it no longer modifies the board.
+                return board;
+            },
+
+
+
+
+
+            prunePossibleValues(board) {
+                const prunePossibleRowValuesForTile = (row, col) => {
+                    // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
+                    // console.log("ROW VALS: ", row, col, board[row][col].possibleValues);
+                    let tile = board[row][col];
+                    for (let c = 0; c < board[row].length; c++) {
+                        if (c !== col && board[row][c].value !== null) {
+                            const value = board[row][c].value;
+                            if (row==0 && tile.possibleValues.includes(value)) {
+                                // console.log("Value: ", value);
+                            }
+                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                        }
+                    }
+                };
+
+                const prunePossibleColValuesForTile = (row, col) => {
+                    // Find all tiles in the same col that have a value, and remove that value from the possible values of the tile
+                    let tile = board[row][col];
+                    for (let r = 0; r < board.length; r++) {
+                        if (r !== row && board[r][col].value !== null) {
+                            const value = board[r][col].value;
+                            tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                        }
+                    }
+                };
+
+                const prunePossibleBlockValuesForTile = (row, col) => {
+                    // Find all tiles in the same 3x3 block that have a value, and remove that value from the possible values of the tile
+                    let tile = board[row][col];
+                    const blockRow = Math.floor(row / 3);
+                    const blockCol = Math.floor(col / 3);
+                    for (let r = blockRow * 3; r < blockRow * 3 + 3; r++) {
+                        for (let c = blockCol * 3; c < blockCol * 3 + 3; c++) {
+                            if (r !== row && c !== col && board[r][c].value !== null) {
+                                const value = board[r][c].value;
+                                tile.possibleValues = tile.possibleValues.filter(v => v !== value);
+                            }
+                        }
+                    }
+                };
+
                 let newBoard = this.copy(board);
                 let oldBoard = null;
+                do {
+                    oldBoard = this.copy(newBoard);
+                    newBoard = this.removeNakedSingles(newBoard);
+                    newBoard = this.findUniqueValues(newBoard);
+                } while (!this.boardsAreEqual(oldBoard, newBoard));
+                board = this.copy(newBoard);
+
+                // Loop through the board and call prunePossibleValuesForTile for each tile
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        if (board[row][col].value === null) {
+                            prunePossibleRowValuesForTile(row, col);
+                            prunePossibleColValuesForTile(row, col);
+                            prunePossibleBlockValuesForTile(row, col);
+                        }
+                    }
+                }
+                console.log("==== BASIC PRUNE", board[5][2].value, board[5][2].possibleValues);
+
+                // Call removeNakedSingles and findUniqueValues on the board until it no longer modifies the board.
+                newBoard = this.copy(board);
+                oldBoard = null;
                 do {
                     oldBoard = this.copy(newBoard);
                     newBoard = this.removeNakedSingles(newBoard);
@@ -741,7 +838,6 @@
                  *                Naked Pairs
                  * 
                  *****************************************/
-
                 // For each block on the board, look for two tiles that have only two possible values, and those values are the same.
                 // If so, remove those two possible values from all other tiles in the block
                 for (let blockRow = 0; blockRow < 3; blockRow++) {
@@ -756,7 +852,7 @@
                         }
                         // If there are two tiles in the block that have only two possible values, and those values are the same, remove those two possible values from all other tiles in the block
                         if (possiblePairs.length === 2 && this.arraysAreEqual(possiblePairs[0].possibleValues, possiblePairs[1].possibleValues)) {
-                            console.log("Found possible pairs at: ", blockRow, blockCol, possiblePairs);
+                            // console.log("Found possible pairs at: ", blockRow, blockCol, possiblePairs);
                             const value1 = possiblePairs[0].possibleValues[0];
                             const value2 = possiblePairs[0].possibleValues[1];
                             for (let row = blockRow * 3; row < blockRow * 3 + 3; row++) {
@@ -788,6 +884,15 @@
                         }
                     }
                 } 
+                newBoard = this.copy(board);
+                oldBoard = null;
+                do {
+                    oldBoard = this.copy(newBoard);
+                    newBoard = this.removeNakedSingles(newBoard);
+                    newBoard = this.findUniqueValues(newBoard);
+                } while (!this.boardsAreEqual(oldBoard, newBoard));
+                board = this.copy(newBoard);
+                console.log("==== NAKED PAIRS", board[5][2].value, board[5][2].possibleValues);
 
                 /*****************************************
                  * 
@@ -828,14 +933,106 @@
                         }
                     }
                 }
+                newBoard = this.copy(board);
+                oldBoard = null;
+                do {
+                    oldBoard = this.copy(newBoard);
+                    newBoard = this.removeNakedSingles(newBoard);
+                    newBoard = this.findUniqueValues(newBoard);
+                } while (!this.boardsAreEqual(oldBoard, newBoard));
+                board = this.copy(newBoard);
+                console.log("==== POINTING PAIRS", board[5][2].value, board[5][2].possibleValues);
 
                 /*****************************************
                  * 
                  *                Hidden Pairs
                  * 
                  *****************************************/
-                
+                 for (let blockRow = 0; blockRow < 3; blockRow++) {
+                    for (let blockCol = 0; blockCol < 3; blockCol++) {
+                        // Create a map of possible values to tiles
+                        let possibleValuesToTiles = {};
+                        for (let num = 1; num <= 9; num++) {
+                            possibleValuesToTiles[num] = [];
+                            // If the num is a possible value of a tile, add the tile to the array
+                            for (let row = blockRow * 3; row < blockRow * 3 + 3; row++) {
+                                for (let col = blockCol * 3; col < blockCol * 3 + 3; col++) {
+                                    if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                                        possibleValuesToTiles[num].push(board[row][col]);
+                                    }
+                                }
+                            }
+                        }
+                        // Get the elements in the map that have only two tiles
+                        let possibleValuesWithTwoTiles = Object.entries(possibleValuesToTiles).filter(([key, value]) => value.length === 2);
+                        // loop through the possibleValuesWithTwoTiles and see if any of them have the same two tiles
+                        // if so, remove all other possible values from those two tiles
+                        for (let i = 0; i < possibleValuesWithTwoTiles.length; i++) {
+                            for (let j = i + 1; j < possibleValuesWithTwoTiles.length; j++) {
+                                if (this.arraysAreEqual(possibleValuesWithTwoTiles[i][1], possibleValuesWithTwoTiles[j][1])) {
+                                    // console.log("Found a hidden pair: ", possibleValuesWithTwoTiles[i][0], possibleValuesWithTwoTiles[j][0], possibleValuesWithTwoTiles[i][1]);
+                                    const value1 = possibleValuesWithTwoTiles[i][0];
+                                    const value2 = possibleValuesWithTwoTiles[j][0];
+                                    const tile1 = possibleValuesWithTwoTiles[i][1][0];
+                                    const tile2 = possibleValuesWithTwoTiles[i][1][1];
+                                    // Remove all other possible values from tile1 and tile2
+                                    tile1.possibleValues = [parseInt(value1), parseInt(value2)];
+                                    tile2.possibleValues = [parseInt(value1), parseInt(value2)];
+                                }
+                            }
+                        }
+                    }
+                }
+                newBoard = this.copy(board);
+                oldBoard = null;
+                do {
+                    oldBoard = this.copy(newBoard);
+                    newBoard = this.removeNakedSingles(newBoard);
+                    newBoard = this.findUniqueValues(newBoard);
+                } while (!this.boardsAreEqual(oldBoard, newBoard));
+                board = this.copy(newBoard);
+                console.log("==== HIDDEN PAIRS", board[5][2].value, board[5][2].possibleValues);
+                return board;
+            },
 
+            removeHiddenPairs(board) {
+                // Go through each block, and for each number 1-9, log which tiles have that number as a possible value
+                // If there are two values that only exist in two tiles, then eliminate all other possibilites from those two tiles.
+                for (let blockRow = 0; blockRow < 3; blockRow++) {
+                    for (let blockCol = 0; blockCol < 3; blockCol++) {
+                        // Create a map of possible values to tiles
+                        let possibleValuesToTiles = {};
+                        for (let num = 1; num <= 9; num++) {
+                            possibleValuesToTiles[num] = [];
+                            // If the num is a possible value of a tile, add the tile to the array
+                            for (let row = blockRow * 3; row < blockRow * 3 + 3; row++) {
+                                for (let col = blockCol * 3; col < blockCol * 3 + 3; col++) {
+                                    if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                                        possibleValuesToTiles[num].push(board[row][col]);
+                                    }
+                                }
+                            }
+                        }
+                        // Get the elements in the map that have only two tiles
+                        let possibleValuesWithTwoTiles = Object.entries(possibleValuesToTiles).filter(([key, value]) => value.length === 2);
+                        // loop through the possibleValuesWithTwoTiles and see if any of them have the same two tiles
+                        // if so, remove all other possible values from those two tiles
+                        for (let i = 0; i < possibleValuesWithTwoTiles.length; i++) {
+                            for (let j = i + 1; j < possibleValuesWithTwoTiles.length; j++) {
+                                if (this.arraysAreEqual(possibleValuesWithTwoTiles[i][1], possibleValuesWithTwoTiles[j][1])) {
+                                    // console.log("Found a hidden pair: ", possibleValuesWithTwoTiles[i][0], possibleValuesWithTwoTiles[j][0], possibleValuesWithTwoTiles[i][1]);
+                                    const value1 = possibleValuesWithTwoTiles[i][0];
+                                    const value2 = possibleValuesWithTwoTiles[j][0];
+                                    const tile1 = possibleValuesWithTwoTiles[i][1][0];
+                                    const tile2 = possibleValuesWithTwoTiles[i][1][1];
+                                    // Remove all other possible values from tile1 and tile2
+                                    tile1.possibleValues = [value1, value2];
+                                    tile2.possibleValues = [value1, value2];
+                                }
+                            }
+                        }
+                    }
+                }
                 return board;
             },
 
@@ -976,8 +1173,8 @@
                     }
                 }
 
-                console.log("BEFORE: ", board);
-                console.log("Transformations: ", transformations);
+                // console.log("BEFORE: ", board);
+                // console.log("Transformations: ", transformations);
                 // If there are transformations, only apply the first one.  Then return the board
                 if (transformations.length > 0) {
                     const row = transformations[0].row;
@@ -1060,7 +1257,7 @@
             },
 
             boardIsValid(board) {
-                console.log("Checking if board is valid...");
+                // console.log("Checking if board is valid...");
                 const rowIsValid = (row) => {
                     let values = [];
                     for (let col = 0; col < board[row].length; col++) {
@@ -1101,30 +1298,30 @@
                 // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsValid(row)) {
-                        console.log("Row fail: ", row);
+                        // console.log("Row fail: ", row);
                         return false;
                     }
                 }
                 for (let col = 0; col < board[0].length; col++) {
                     if (!colIsValid(col)) {
-                        console.log("Col fail: ", col);
+                        // console.log("Col fail: ", col);
                         return false;
                     }
                 }
                 for (let row = 0; row < board.length; row += 3) {
                     for (let col = 0; col < board[0].length; col += 3) {
                         if (!blockIsValid(row, col)) {
-                            console.log("block fail: ", row, col);
+                            // console.log("block fail: ", row, col);
                             return false;
                         }
                     }
                 }
-                console.log("Survival of the fittest!");
+                // console.log("Survival of the fittest!");
                 return true;
             },
 
             boardIsCorrect(board) {
-                console.log("Checking if board is correct...");
+                // console.log("Checking if board is correct...");
                 const rowIsCorrect = (row) => {
                     let values = [];
                     for (let col = 0; col < board[row].length; col++) {
@@ -1177,25 +1374,25 @@
                 // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsCorrect(row)) {
-                        console.log("(x) Row fail: ", row, board);
+                        // console.log("(x) Row fail: ", row, board);
                         return false;
                     }
                 }
                 for (let col = 0; col < board[0].length; col++) {
                     if (!colIsCorrect(col)) {
-                        console.log("(x) Col fail: ", col, board);
+                        // console.log("(x) Col fail: ", col, board);
                         return false;
                     }
                 }
                 for (let row = 0; row < board.length; row += 3) {
                     for (let col = 0; col < board[0].length; col += 3) {
                         if (!blockIsCorrect(row, col)) {
-                            console.log("(x) Block fail: ", row, col, board);
+                            // console.log("(x) Block fail: ", row, col, board);
                             return false;
                         }
                     }
                 }
-                console.log("Survival of the fittest!");
+                // console.log("Survival of the fittest!");
                 return true;
             },
 
@@ -1214,6 +1411,7 @@
             },
 
             splitSolutionObject(solutionObj) {
+                console.log("calling SplitSolutionObject");
                 // Loop through the board and find the tile with value:null that has the fewest possible values
                 let board = this.copy(solutionObj.board);
                 let minPossibleValues = 10;
@@ -1227,7 +1425,8 @@
                         }
                     }
                 }
-                console.log("splitting on: ", minPossibleValuesTile);
+                console.log("*** MinPossibleValuesTile: ", minPossibleValuesTile);
+                console.log(board);
                 // Create a new solution object for each possible value of the tile
                 for (let i = 0; i < minPossibleValuesTile.possibleValues.length; i++) {
                     const value = minPossibleValuesTile.possibleValues[i];
@@ -1242,7 +1441,7 @@
                     // Add the new solution object to the children of the current solution object
                     solutionObj.children.push(newSolutionObj);
                 }
-                console.log("**** Split solution object: ", solutionObj);
+                // this.displayBoard = solutionObj.children[0].board;
                 return solutionObj;
             },
 
@@ -1262,6 +1461,7 @@
                  *      Render the board
                  * 
                  ***************************************/
+                // let board = this.displayBoard;
                 let board = this.solutionObj.board;
 
                 for (let row = 0; row < board.length; row++) {
