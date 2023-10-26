@@ -84,155 +84,7 @@
                     [0, 0, 7, 3, 0, 2, 1, 8, 0]
                 ]
         },
-        //-----------------------
-        {   name: "Medium1C1",
-            board:
-                [
-                    [0, 0, 0, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 1, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-        {   name: "Medium1C2",
-            board:
-                [
-                    [0, 0, 0, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 7, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-        {   name: "Medium1C3",
-            board:
-                [
-                    [0, 0, 0, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 8, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-        {   name: "Medium1C4",
-            board:
-                [
-                    [0, 0, 0, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 9, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
 
-        //-----------------------
-
-        {   name: "Medium1B1",
-            board:
-                [
-                    [0, 0, 1, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-
-        {   name: "Medium1B1B1",
-            board:
-                [
-                    [0, 0, 1, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 5],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-
-        {   name: "Medium1B1B2",
-            board:
-                [
-                    [0, 0, 1, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 7],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-
-        {   name: "Medium1B2",
-            board:
-                [
-                    [0, 0, 9, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
-                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-
-        {   name: "Medium1B2B1",
-            board:
-                [
-                    [0, 0, 9, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 1],
-                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
-
-        {   name: "Medium1B2B2",
-            board:
-                [
-                    [0, 0, 9, 4, 5, 3, 6, 7, 8],
-                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
-                    [8, 7, 0, 0, 0, 6, 0, 0, 5],
-                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
-                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
-                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
-                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
-                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
-                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
-                ]
-        },
         //----------------------------------
 
         {   name: "Medium2",
@@ -256,34 +108,6 @@
             board:
                 [
                     [0, 0, 0, 0, 0, 1, 4, 0, 0],
-                    [0, 2, 0, 0, 0, 0, 0, 0, 5],
-                    [0, 0, 0, 0, 0, 5, 6, 0, 3],
-                    [2, 0, 0, 0, 8, 0, 0, 6, 4],
-                    [7, 0, 3, 0, 0, 0, 5, 9, 8],
-                    [0, 5, 0, 4, 0, 0, 0, 0, 2],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [8, 1, 5, 0, 6, 0, 3, 0, 9],
-                    [0, 0, 0, 8, 0, 9, 2, 5, 6]
-                ]
-        },
-        {   name: "Medium3B1",
-            board:
-                [
-                    [0, 0, 6, 0, 0, 1, 4, 0, 0],
-                    [0, 2, 0, 0, 0, 0, 0, 0, 5],
-                    [0, 0, 0, 0, 0, 5, 6, 0, 3],
-                    [2, 0, 0, 0, 8, 0, 0, 6, 4],
-                    [7, 0, 3, 0, 0, 0, 5, 9, 8],
-                    [0, 5, 0, 4, 0, 0, 0, 0, 2],
-                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [8, 1, 5, 0, 6, 0, 3, 0, 9],
-                    [0, 0, 0, 8, 0, 9, 2, 5, 6]
-                ]
-        },
-        {   name: "Medium3B2",
-            board:
-                [
-                    [0, 0, 9, 0, 0, 1, 4, 0, 0],
                     [0, 2, 0, 0, 0, 0, 0, 0, 5],
                     [0, 0, 0, 0, 0, 5, 6, 0, 3],
                     [2, 0, 0, 0, 8, 0, 0, 6, 4],
@@ -519,22 +343,12 @@
                     let newBoard = this.findUniqueValues(board);
                     this.solutionObj.board = this.copy(newBoard);
                     this.displayBoard = this.solutionObj.board;
-                } else if (event.code === "KeyN") {
-                    let board = this.copy(this.solutionObj.board);
-                    let newBoard = this.removeNakedPairs(board);
-                    this.solutionObj.board = this.copy(newBoard);
-                    this.displayBoard = this.solutionObj.board;
                 } else if (event.code === "KeyG") {
                     let board = this.copy(this.solutionObj.board);
                     let newBoard = this.removeNakedSingles(board);
                     this.solutionObj.board = this.copy(newBoard);
                     this.displayBoard = this.solutionObj.board;
-                } else if (event.code === "KeyH") {
-                    let board = this.copy(this.solutionObj.board);
-                    let newBoard = this.removeHiddenPairs(board);
-                    this.solutionObj.board = this.copy(newBoard);
-                    this.displayBoard = this.solutionObj.board;
-                
+
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
                     this.changeNumber(1);
@@ -563,13 +377,7 @@
             // mouse hover event where it shows the current row and tile in console.log 
             // and shows the tile's image in the top right corner of the screen
             handleMouseMove(event) {
-                // Calculate the row and column of the clicked square
-                // const rect = this.$refs.canvas.getBoundingClientRect();
-                // const x = event.clientX - rect.left;
-                // const y = event.clientY - rect.top;
-                // const col = Math.floor((x - boardOffsetX) / tileWidth);
-                // const row = Math.floor((y - boardOffsetY) / tileWidth);
-                // console.log("Row: ", row, "Col: ", col);
+
             },
 
             handleClick(event) {
@@ -673,26 +481,21 @@
                 this.initializeBoard();
             },
 
-            // solvePuzzle returns a solved puzzle in a solutionObj or null if it can't be solved
             solvePuzzle(solutionObj) {
                 this.displayBoard = solutionObj.board;
                 this.renderBoard();
 
                 console.log("Solving puzzle with depth: ", solutionObj.depth, "/", this.maxDepth , ", a board id: ", solutionObj.id, solutionObj);
                 this.solveCallCount++;
-                console.log("SolveCallCount: ", this.solveCallCount);
                 if (this.solveTerminateFlag || this.solveCallCount > 5000) {
-                    // console.log("SolveCallCount exceeded 10");
                     return null;
                 }
 
                 if (!this.boardIsValid(solutionObj.board, solutionObj.id)) {
-                    // console.log("*** BoardIsNotValid: ", solutionObj.board);
                     return null;
                 }
 
                 if (this.boardIsCorrect(solutionObj.board)) {
-                    console.log("*** BoardisCorrect: ", solutionObj.board);
                     return solutionObj;
                 }
 
@@ -700,9 +503,7 @@
                 let prunedBoard = this.prunePossibleValues(this.copy(solutionObj.board));
                 prunedBoard = this.removeNakedSingles(this.copy(prunedBoard));
                 prunedBoard = this.prunePossibleValues(this.copy(prunedBoard));
-                prunedBoard = this.findUniqueValues(this.copy(prunedBoard));
-                // prunedBoard = this.prunePossibleValues(this.copy(prunedBoard));
-                
+                prunedBoard = this.findUniqueValues(this.copy(prunedBoard));                
 
 
                 if (!this.boardsAreEqual(oldBoard, prunedBoard)) {
@@ -712,7 +513,6 @@
                     let splitSolutionObject = this.splitSolutionObject(solutionObj);
                     console.log(">>>> splitSolutionObject: ", splitSolutionObject, ", depth: ", splitSolutionObject.depth, ", children: ", splitSolutionObject.children.length);
                     for (let i = 0; i < splitSolutionObject.children.length; i++) {
-                        // console.log(">>>>>>> Solving child ", i, " of ", splitSolutionObject.children.length, " at depth ", splitSolutionObject.children[i].depth);
                         const res = this.solvePuzzle(splitSolutionObject.children[i]);
                         if (res !== null) {
                             return this.solvePuzzle(res);
@@ -722,74 +522,6 @@
                     }
                     return null;
                 }
-
-                // if (this.boardIsCorrect(prunedBoard)) {
-                //     console.log("*** BoardisCorrect: ", prunedBoard);
-                //     let newSolutionObj = this.copy(solutionObj);
-                //     newSolutionObj.board = this.copy(prunedBoard);
-                //     return newSolutionObj;
-                // }
-
-                // If solutionObj has children, iterate through the children and return the first solved puzzle
-                // if (solutionObj.children.length > 0) {
-                //     console.log("&&&&&& Solving children...");
-                //     for (let i = 0; i < solutionObj.children.length; i++) {
-                //         const res = this.solvePuzzle(solutionObj.children[i]);
-                //         if (res == null) {
-                //             continue;
-                //         } else {
-                //             return res;
-                //         }
-                //         // if (res === null) {
-                //         //     console.log("^^^^^ Solution found in child ", i, solutionObj.children[i]);
-                //         //     return null;
-                //         // } else {
-
-                //         // }
-                //         // const res = this.solvePuzzle(solutionObj.children[i]);
-                //         // if (res !== null) {
-                //         //     console.log("^^^^^ Solution found in child ", i, solutionObj.children[i]);
-                //         //     return res;
-                //         // } else {
-                //         //     console.log("No solution found in child ", i, solutionObj.children[i]);
-                //         //     continue;
-                //         // }
-                //     }
-                //     return null;
-                // }
-                // let oldBoard = this.copy(solutionObj.board);
-                // let prunedBoard = this.prunePossibleValues(solutionObj.board);
-
-                // if (this.boardIsCorrect(prunedBoard)) {
-                //     console.log("*** BoardisCorrect: ", prunedBoard);
-                //     let newSolutionObj = this.copy(solutionObj);
-                //     newSolutionObj.board = this.copy(prunedBoard);
-                //     return newSolutionObj;
-                // }
-
-                // // Before splitting, let's do a unique rows check
-                // if (this.boardsAreEqual(oldBoard, prunedBoard)) {
-                //     let uniqueRows = this.findUniqueValues(this.copy(prunedBoard));
-                //     if (!this.boardsAreEqual(prunedBoard, uniqueRows)) {
-                //         // console.log("*** UniqueRows: ", uniqueRows);
-                //         let newSolutionObj = this.copy(solutionObj);
-                //         newSolutionObj.board = this.copy(uniqueRows);
-                //         return this.solvePuzzle(newSolutionObj);
-                //     }
-                // }
-
-                // if (this.boardsAreEqual(oldBoard, prunedBoard)) {
-                //     console.log("*** BoardsAreEqual: ", prunedBoard);
-                //     let splitSolutionObject = this.splitSolutionObject(solutionObj);
-                //     console.log("*** splitSolutionObject: ", splitSolutionObject);
-                //     return this.solvePuzzle(splitSolutionObject);
-                // }
-
-
-
-                // let newSolutionObj = this.copy(solutionObj);
-                // newSolutionObj.board = this.copy(prunedBoard);
-                // return this.solvePuzzle(newSolutionObj);
             }, 
 
 
@@ -857,14 +589,6 @@
 
 
             prunePossibleValues(board) {
-                // let newBoard = this.copy(board);
-                // let oldBoard = null;
-                // do {
-                //     oldBoard = this.copy(newBoard);
-                //     newBoard = this.removeNakedSingles(newBoard);
-                //     newBoard = this.findUniqueValues(newBoard);
-                // } while (!this.boardsAreEqual(oldBoard, newBoard));
-                // board = this.copy(newBoard);
 
                 let abort = false;
                 /*****************************************
@@ -911,18 +635,7 @@
                         }
                     }
                 }
-                // console.log("==== BASIC PRUNE", board[5][2].value, board[5][2].possibleValues);
 
-                // Call removeNakedSingles and findUniqueValues on the board until it no longer modifies the board.
-                // newBoard = this.copy(board);
-                // oldBoard = null;
-                // do {
-                //     oldBoard = this.copy(newBoard);
-                //     newBoard = this.removeNakedSingles(newBoard);
-                //     newBoard = this.findUniqueValues(newBoard);
-                // } while (!this.boardsAreEqual(oldBoard, newBoard));
-                // board = this.copy(newBoard);
-                
 
 
                 /*****************************************
@@ -930,7 +643,6 @@
                  *                Naked Pairs
                  * 
                  *****************************************/
-                //  console.log(">>>>> BEFORE NAKED PAIRS", board);
                 // For each block on the board, look for two tiles that have only two possible values, and those values are the same.
                 // If so, remove those two possible values from all other tiles in the block
                 for (let blockRow = 0; !abort && blockRow < 3; blockRow++) {
@@ -978,16 +690,6 @@
                         }
                     }
                 } 
-                // newBoard = this.copy(board);
-                // oldBoard = null;
-                // do {
-                //     oldBoard = this.copy(newBoard);
-                //     newBoard = this.removeNakedSingles(newBoard);
-                //     newBoard = this.findUniqueValues(newBoard);
-                // } while (!this.boardsAreEqual(oldBoard, newBoard));
-                // board = this.copy(newBoard);
-                // console.log(">>>>> AFTER NAKED PAIRS", board);
-                // console.log("==== NAKED PAIRS", board[5][2].value, board[5][2].possibleValues);
 
                 /*****************************************
                  * 
@@ -1029,15 +731,6 @@
                         }
                     }
                 }
-                // newBoard = this.copy(board);
-                // oldBoard = null;
-                // do {
-                //     oldBoard = this.copy(newBoard);
-                //     newBoard = this.removeNakedSingles(newBoard);
-                //     newBoard = this.findUniqueValues(newBoard);
-                // } while (!this.boardsAreEqual(oldBoard, newBoard));
-                // board = this.copy(newBoard);
-                // console.log("==== POINTING PAIRS", board[5][2].value, board[5][2].possibleValues);
 
                 /*****************************************
                  * 
@@ -1080,75 +773,8 @@
                         }
                     }
                 }
-                // let newBoard = this.copy(board);
-                // let oldBoard = null;
-                // do {
-                //     oldBoard = this.copy(newBoard);
-                //     newBoard = this.removeNakedSingles(newBoard);
-                //     // newBoard = this.findUniqueValues(newBoard); // <- something is wrong here
-                // } while (!this.boardsAreEqual(oldBoard, newBoard));
-                // board = this.removeNakedSingles(board);
-                // board = this.findUniqueValues(board);
-                // board = this.copy(newBoard);
                 return this.copy(board);
             },
-
-
-
-
-            /********
-             * 
-             * 
-             * 
-             * 
-             * *
-             * 
-             * 
-             * 
-             */
-
-            removeHiddenPairs(board) {
-                // Go through each block, and for each number 1-9, log which tiles have that number as a possible value
-                // If there are two values that only exist in two tiles, then eliminate all other possibilites from those two tiles.
-                for (let blockRow = 0; blockRow < 3; blockRow++) {
-                    for (let blockCol = 0; blockCol < 3; blockCol++) {
-                        // Create a map of possible values to tiles
-                        let possibleValuesToTiles = {};
-                        for (let num = 1; num <= 9; num++) {
-                            possibleValuesToTiles[num] = [];
-                            // If the num is a possible value of a tile, add the tile to the array
-                            for (let row = blockRow * 3; row < blockRow * 3 + 3; row++) {
-                                for (let col = blockCol * 3; col < blockCol * 3 + 3; col++) {
-                                    if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                                        possibleValuesToTiles[num].push(board[row][col]);
-                                    }
-                                }
-                            }
-                        }
-                        // Get the elements in the map that have only two tiles
-                        let possibleValuesWithTwoTiles = Object.entries(possibleValuesToTiles).filter(([key, value]) => value.length === 2);
-                        // loop through the possibleValuesWithTwoTiles and see if any of them have the same two tiles
-                        // if so, remove all other possible values from those two tiles
-                        for (let i = 0; i < possibleValuesWithTwoTiles.length; i++) {
-                            for (let j = i + 1; j < possibleValuesWithTwoTiles.length; j++) {
-                                if (this.arraysAreEqual(possibleValuesWithTwoTiles[i][1], possibleValuesWithTwoTiles[j][1])) {
-                                    // console.log("Found a hidden pair: ", possibleValuesWithTwoTiles[i][0], possibleValuesWithTwoTiles[j][0], possibleValuesWithTwoTiles[i][1]);
-                                    const value1 = possibleValuesWithTwoTiles[i][0];
-                                    const value2 = possibleValuesWithTwoTiles[j][0];
-                                    const tile1 = possibleValuesWithTwoTiles[i][1][0];
-                                    const tile2 = possibleValuesWithTwoTiles[i][1][1];
-                                    // Remove all other possible values from tile1 and tile2
-                                    tile1.possibleValues = [value1, value2];
-                                    tile2.possibleValues = [value1, value2];
-                                }
-                            }
-                        }
-                    }
-                }
-                return board;
-            },
-
-
 
             // Use this for more heuristics:
             // https://www.youtube.com/watch?v=b123EURtu3I
@@ -1241,12 +867,10 @@
                     }
                 }
                 if (transformations.length > 0) {
-                    console.log("PREtransform: ", board[transformations[0].row][transformations[0].col]);
                     const row = transformations[0].row;
                     const col = transformations[0].col;
                     const value = transformations[0].value;
                     board = this.promoteValueAndPrune(this.copy(board), row, col, value);
-                    console.log("POSTtransform: ", board[transformations[0].row][transformations[0].col]);
                 }
                 return this.copy(board);
             },
