@@ -419,8 +419,9 @@
                 displayBoard: null,
                 solveCallCount: 0,
                 solveTerminateFlag: false,
+                globalBoardId: 0,
                 solutionObj: {
-                    id: Math.floor(Math.random() * 100000000),
+                    id: 0,
                     depth: 0,
                     board: null,
                     children: []
@@ -676,7 +677,7 @@
                 this.displayBoard = solutionObj.board;
                 this.renderBoard();
 
-                console.log("Solving puzzle with depth: ", solutionObj.depth, solutionObj);
+                console.log("Solving puzzle with depth: ", solutionObj.depth, ", a board id: ", solutionObj.id, solutionObj);
                 this.solveCallCount++;
                 console.log("SolveCallCount: ", this.solveCallCount);
                 if (this.solveTerminateFlag || this.solveCallCount > 5000) {
@@ -684,7 +685,7 @@
                     return null;
                 }
 
-                if (!this.boardIsValid(solutionObj.board)) {
+                if (!this.boardIsValid(solutionObj.board, solutionObj.id)) {
                     // console.log("*** BoardIsNotValid: ", solutionObj.board);
                     return null;
                 }
@@ -695,10 +696,10 @@
                 }
 
                 let oldBoard = this.copy(solutionObj.board);
-                let prunedBoard = this.prunePossibleValues(solutionObj.board);
-                prunedBoard = this.removeNakedSingles(prunedBoard);
-                prunedBoard = this.prunePossibleValues(prunedBoard);
-                // prunedBoard = this.findUniqueValues(this.copy(prunedBoard));
+                let prunedBoard = this.prunePossibleValues(this.copy(solutionObj.board));
+                prunedBoard = this.removeNakedSingles(this.copy(prunedBoard));
+                prunedBoard = this.prunePossibleValues(this.copy(prunedBoard));
+                prunedBoard = this.findUniqueValues(this.copy(prunedBoard));
                 // prunedBoard = this.prunePossibleValues(this.copy(prunedBoard));
                 
 
@@ -1225,89 +1226,28 @@
                         let tilesWithNum = [];
                         for (let col = 0; !abort && col < board[row].length; col++) {
                             if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                                // console.log("******* FUCKING STOP");
-                                // console.log("Row: ", row, ", col: ", col, ", num: ", num, " board: ", board);
-                                // abort = true;
-                                // this.solveTerminateFlag = true;
                                 tilesWithNum.push(this.copy(board[row][col]));
                             }
                         }
                         if (tilesWithNum.length === 1) {
-                            console.log("XXXXXXXXX num: ", num, ", row: ", tilesWithNum[0].row, " , col: ",  tilesWithNum[0].col, ", board: ", board);
                             transformations.push({
                                 row: tilesWithNum[0].row,
                                 col: tilesWithNum[0].col,
                                 value: num
                             });
-                            // board[tilesWithNum[0].row][tilesWithNum[0].col].value = num;
-                            // board[tilesWithNum[0].row][tilesWithNum[0].col].possibleValues = [];
                             abort = true;
-                            // this.solveTerminateFlag = true;
                         }
                     }
                 }
                 if (transformations.length > 0) {
+                    console.log("PREtransform: ", board[transformations[0].row][transformations[0].col]);
                     const row = transformations[0].row;
                     const col = transformations[0].col;
                     const value = transformations[0].value;
                     board = this.promoteValueAndPrune(this.copy(board), row, col, value);
+                    console.log("POSTtransform: ", board[transformations[0].row][transformations[0].col]);
                 }
-                // // Go through each col, iterate through numbers 1-9, and see if there is only one tile in that col that has that possible value
-                // // If so, set the value of the tile in the board to that value and set possibleValues to []
-                // for (let col = 0; !abort && col < board[0].length; col++) {
-                //     for (let num = 1; !abort && num <= 9; num++) {
-                //         let tilesWithNum = [];
-                //         for (let row = 0; !abort && row < board.length; row++) {
-                //             if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                //                 tilesWithNum.push(this.copy(board[row][col]));
-                //             }
-                //         }
-                //         if (tilesWithNum.length === 1) {
-                //             transformations.push({
-                //                 row: tilesWithNum[0].row,
-                //                 col: tilesWithNum[0].col,
-                //                 value: num
-                //             });
-                //             abort = true;
-                //         }
-                //     }
-                // }
-                // // Go through each block, iterate through numbers 1-9, and see if there is only one tile in that block that has that possible value
-                // // If so, set the value of the tile in the board to that value and set possibleValues to []
-                // for (let blockRow = 0; !abort && blockRow < 3; blockRow++) {
-                //     for (let blockCol = 0; !abort && blockCol < 3; blockCol++) {
-                //         for (let num = 1; !abort && num <= 9; num++) {
-                //             let tilesWithNum = [];
-                //             for (let row = blockRow * 3; !abort && row < blockRow * 3 + 3; row++) {
-                //                 for (let col = blockCol * 3; !abort && col < blockCol * 3 + 3; col++) {
-                //                     if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                //                         tilesWithNum.push(this.copy(board[row][col]));
-                //                     }
-                //                 }
-                //             }
-                //             if (tilesWithNum.length === 1) {
-                //                 transformations.push({
-                //                     row: tilesWithNum[0].row,
-                //                     col: tilesWithNum[0].col,
-                //                     value: num
-                //                 });
-                //                 abort = true;
-                //             }
-                //         }
-                //     }
-                // }
-
-                // console.log("BEFORE: ", board);
-                // console.log("Transformations: ", transformations);
-                // If there are transformations, only apply the first one.  Then return the board
-                // if (transformations.length > 0) {
-                //     console.log("FOUND TRANSOFMRATIONS: ", transformations);
-                //     const row = transformations[0].row;
-                //     const col = transformations[0].col;
-                //     const value = transformations[0].value;
-                //     board = this.promoteValueAndPrune(this.copy(board), row, col, value);
-                // }
-                return board;
+                return this.copy(board);
             },
 
             promoteValueAndPrune(board, row, col, value) {
@@ -1333,7 +1273,7 @@
                         }
                     }
                 }
-                return board;
+                return this.copy(board);
             },
 
             arraysAreEqual(arr1, arr2) {
@@ -1386,7 +1326,7 @@
                 return true;
             },
 
-            boardIsValid(board) {
+            boardIsValid(board, id=null) {
                 // console.log("Checking if board is valid...");
                 const rowIsValid = (row) => {
                     let values = [];
@@ -1428,7 +1368,7 @@
                 // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsValid(row)) {
-                        console.log("(X) Row fail: ", row, board);
+                        console.log("(X) Row fail: ", row, " id: ", id, board);
                         return false;
                     }
                 }
@@ -1559,17 +1499,26 @@
                 // Create a new solution object for each possible value of the tile
                 for (let i = 0; i < minPossibleValuesTile.possibleValues.length; i++) {
                     const value = minPossibleValuesTile.possibleValues[i];
+                    this.globalBoardId++;
                     let newSolutionObj = {
-                        id: Math.floor(Math.random() * 100000000),
+                        id: this.globalBoardId,
                         depth: solutionObj.depth + 1,
-                        board: this.copy(board),
+                        board: null,
                         children: []
                     };
-                    newSolutionObj.board[minPossibleValuesTile.row][minPossibleValuesTile.col].value = value;
-                    newSolutionObj.board[minPossibleValuesTile.row][minPossibleValuesTile.col].possibleValues = [];
+                    let newBoard = this.promoteValueAndPrune(this.copy(board), minPossibleValuesTile.row, minPossibleValuesTile.col, value);
+                    newSolutionObj.board = newBoard;
+                    // newSolutionObj.board[minPossibleValuesTile.row][minPossibleValuesTile.col].value = value;
+                    // newSolutionObj.board[minPossibleValuesTile.row][minPossibleValuesTile.col].possibleValues = [];
                     // Add the new solution object to the children of the current solution object
                     solutionObj.children.push(newSolutionObj);
                 }
+                // give me an array of ids for the children solution objects using map()
+                let childIds = solutionObj.children.map(child => child.id);
+                console.log("!!!! Generated children: ", childIds, " at depth: ", solutionObj.depth+1);
+                console.log(minPossibleValuesTile);
+                console.log(solutionObj.children);
+            
                 return solutionObj;
             },
 
