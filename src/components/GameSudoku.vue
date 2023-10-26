@@ -680,12 +680,12 @@
                 this.solveCallCount++;
                 console.log("SolveCallCount: ", this.solveCallCount);
                 if (this.solveTerminateFlag || this.solveCallCount > 5000) {
-                    console.log("SolveCallCount exceeded 10");
+                    // console.log("SolveCallCount exceeded 10");
                     return null;
                 }
 
                 if (!this.boardIsValid(solutionObj.board)) {
-                    console.log("*** BoardIsNotValid: ", solutionObj.board);
+                    // console.log("*** BoardIsNotValid: ", solutionObj.board);
                     return null;
                 }
 
@@ -696,6 +696,12 @@
 
                 let oldBoard = this.copy(solutionObj.board);
                 let prunedBoard = this.prunePossibleValues(solutionObj.board);
+                prunedBoard = this.removeNakedSingles(prunedBoard);
+                prunedBoard = this.prunePossibleValues(prunedBoard);
+                // prunedBoard = this.findUniqueValues(this.copy(prunedBoard));
+                // prunedBoard = this.prunePossibleValues(this.copy(prunedBoard));
+                
+
 
                 if (!this.boardsAreEqual(oldBoard, prunedBoard)) {
                     solutionObj.board = this.copy(prunedBoard);
@@ -704,7 +710,7 @@
                     let splitSolutionObject = this.splitSolutionObject(solutionObj);
                     console.log(">>>> splitSolutionObject: ", splitSolutionObject, ", depth: ", splitSolutionObject.depth, ", children: ", splitSolutionObject.children.length);
                     for (let i = 0; i < splitSolutionObject.children.length; i++) {
-                        console.log(">>>>>>> Solving child ", i, " of ", splitSolutionObject.children.length, " at depth ", splitSolutionObject.children[i].depth);
+                        // console.log(">>>>>>> Solving child ", i, " of ", splitSolutionObject.children.length, " at depth ", splitSolutionObject.children[i].depth);
                         const res = this.solvePuzzle(splitSolutionObject.children[i]);
                         if (res !== null) {
                             return this.solvePuzzle(res);
@@ -839,7 +845,7 @@
                         }
                     }
                 }
-                console.log("Priuned:", board);
+                // console.log("Priuned:", board);
 
                 return board;
             },
@@ -922,7 +928,7 @@
                  *                Naked Pairs
                  * 
                  *****************************************/
-                 console.log(">>>>> BEFORE NAKED PAIRS", board);
+                //  console.log(">>>>> BEFORE NAKED PAIRS", board);
                 // For each block on the board, look for two tiles that have only two possible values, and those values are the same.
                 // If so, remove those two possible values from all other tiles in the block
                 for (let blockRow = 0; !abort && blockRow < 3; blockRow++) {
@@ -1072,15 +1078,17 @@
                 //         }
                 //     }
                 // }
-                let newBoard = this.copy(board);
-                let oldBoard = null;
-                do {
-                    oldBoard = this.copy(newBoard);
-                    newBoard = this.removeNakedSingles(newBoard);
-                    // newBoard = this.findUniqueValues(newBoard); <- something is wrong here
-                } while (!this.boardsAreEqual(oldBoard, newBoard));
-                board = this.copy(newBoard);
-                return board;
+                // let newBoard = this.copy(board);
+                // let oldBoard = null;
+                // do {
+                //     oldBoard = this.copy(newBoard);
+                //     newBoard = this.removeNakedSingles(newBoard);
+                //     // newBoard = this.findUniqueValues(newBoard); // <- something is wrong here
+                // } while (!this.boardsAreEqual(oldBoard, newBoard));
+                // board = this.removeNakedSingles(board);
+                // board = this.findUniqueValues(board);
+                // board = this.copy(newBoard);
+                return this.copy(board);
             },
 
 
@@ -1217,73 +1225,88 @@
                         let tilesWithNum = [];
                         for (let col = 0; !abort && col < board[row].length; col++) {
                             if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                                // console.log("******* FUCKING STOP");
+                                // console.log("Row: ", row, ", col: ", col, ", num: ", num, " board: ", board);
+                                // abort = true;
+                                // this.solveTerminateFlag = true;
                                 tilesWithNum.push(this.copy(board[row][col]));
                             }
                         }
                         if (tilesWithNum.length === 1) {
+                            console.log("XXXXXXXXX num: ", num, ", row: ", tilesWithNum[0].row, " , col: ",  tilesWithNum[0].col, ", board: ", board);
                             transformations.push({
                                 row: tilesWithNum[0].row,
                                 col: tilesWithNum[0].col,
                                 value: num
                             });
+                            // board[tilesWithNum[0].row][tilesWithNum[0].col].value = num;
+                            // board[tilesWithNum[0].row][tilesWithNum[0].col].possibleValues = [];
                             abort = true;
+                            // this.solveTerminateFlag = true;
                         }
                     }
                 }
-                // Go through each col, iterate through numbers 1-9, and see if there is only one tile in that col that has that possible value
-                // If so, set the value of the tile in the board to that value and set possibleValues to []
-                for (let col = 0; !abort && col < board[0].length; col++) {
-                    for (let num = 1; !abort && num <= 9; num++) {
-                        let tilesWithNum = [];
-                        for (let row = 0; !abort && row < board.length; row++) {
-                            if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                                tilesWithNum.push(this.copy(board[row][col]));
-                            }
-                        }
-                        if (tilesWithNum.length === 1) {
-                            transformations.push({
-                                row: tilesWithNum[0].row,
-                                col: tilesWithNum[0].col,
-                                value: num
-                            });
-                            abort = true;
-                        }
-                    }
-                }
-                // Go through each block, iterate through numbers 1-9, and see if there is only one tile in that block that has that possible value
-                // If so, set the value of the tile in the board to that value and set possibleValues to []
-                for (let blockRow = 0; !abort && blockRow < 3; blockRow++) {
-                    for (let blockCol = 0; !abort && blockCol < 3; blockCol++) {
-                        for (let num = 1; !abort && num <= 9; num++) {
-                            let tilesWithNum = [];
-                            for (let row = blockRow * 3; !abort && row < blockRow * 3 + 3; row++) {
-                                for (let col = blockCol * 3; !abort && col < blockCol * 3 + 3; col++) {
-                                    if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                                        tilesWithNum.push(this.copy(board[row][col]));
-                                    }
-                                }
-                            }
-                            if (tilesWithNum.length === 1) {
-                                transformations.push({
-                                    row: tilesWithNum[0].row,
-                                    col: tilesWithNum[0].col,
-                                    value: num
-                                });
-                                abort = true;
-                            }
-                        }
-                    }
-                }
-
-                // console.log("BEFORE: ", board);
-                // console.log("Transformations: ", transformations);
-                // If there are transformations, only apply the first one.  Then return the board
                 if (transformations.length > 0) {
                     const row = transformations[0].row;
                     const col = transformations[0].col;
                     const value = transformations[0].value;
                     board = this.promoteValueAndPrune(this.copy(board), row, col, value);
                 }
+                // // Go through each col, iterate through numbers 1-9, and see if there is only one tile in that col that has that possible value
+                // // If so, set the value of the tile in the board to that value and set possibleValues to []
+                // for (let col = 0; !abort && col < board[0].length; col++) {
+                //     for (let num = 1; !abort && num <= 9; num++) {
+                //         let tilesWithNum = [];
+                //         for (let row = 0; !abort && row < board.length; row++) {
+                //             if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                //                 tilesWithNum.push(this.copy(board[row][col]));
+                //             }
+                //         }
+                //         if (tilesWithNum.length === 1) {
+                //             transformations.push({
+                //                 row: tilesWithNum[0].row,
+                //                 col: tilesWithNum[0].col,
+                //                 value: num
+                //             });
+                //             abort = true;
+                //         }
+                //     }
+                // }
+                // // Go through each block, iterate through numbers 1-9, and see if there is only one tile in that block that has that possible value
+                // // If so, set the value of the tile in the board to that value and set possibleValues to []
+                // for (let blockRow = 0; !abort && blockRow < 3; blockRow++) {
+                //     for (let blockCol = 0; !abort && blockCol < 3; blockCol++) {
+                //         for (let num = 1; !abort && num <= 9; num++) {
+                //             let tilesWithNum = [];
+                //             for (let row = blockRow * 3; !abort && row < blockRow * 3 + 3; row++) {
+                //                 for (let col = blockCol * 3; !abort && col < blockCol * 3 + 3; col++) {
+                //                     if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
+                //                         tilesWithNum.push(this.copy(board[row][col]));
+                //                     }
+                //                 }
+                //             }
+                //             if (tilesWithNum.length === 1) {
+                //                 transformations.push({
+                //                     row: tilesWithNum[0].row,
+                //                     col: tilesWithNum[0].col,
+                //                     value: num
+                //                 });
+                //                 abort = true;
+                //             }
+                //         }
+                //     }
+                // }
+
+                // console.log("BEFORE: ", board);
+                // console.log("Transformations: ", transformations);
+                // If there are transformations, only apply the first one.  Then return the board
+                // if (transformations.length > 0) {
+                //     console.log("FOUND TRANSOFMRATIONS: ", transformations);
+                //     const row = transformations[0].row;
+                //     const col = transformations[0].col;
+                //     const value = transformations[0].value;
+                //     board = this.promoteValueAndPrune(this.copy(board), row, col, value);
+                // }
                 return board;
             },
 
@@ -1513,12 +1536,12 @@
                         }
                     }
                 }
-                console.log("Board is full: ", full);
+                // console.log("Board is full: ", full);
                 return full;
             },
 
             splitSolutionObject(solutionObj) {
-                console.log("////calling SplitSolutionObject");
+                // console.log("////calling SplitSolutionObject");
                 // Loop through the board and find the tile with value:null that has the fewest possible values
                 let board = this.copy(solutionObj.board);
                 let minPossibleValues = 10;
@@ -1532,7 +1555,7 @@
                         }
                     }
                 }
-                console.log("////minPossibleValuesTile: ", minPossibleValuesTile);
+                // console.log("////minPossibleValuesTile: ", minPossibleValuesTile);
                 // Create a new solution object for each possible value of the tile
                 for (let i = 0; i < minPossibleValuesTile.possibleValues.length; i++) {
                     const value = minPossibleValuesTile.possibleValues[i];
