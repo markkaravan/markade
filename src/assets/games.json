@@ -73,5 +73,16 @@
       "gameWidth": 1200,
       "gameHeight": 600,
       "dateCreated": "2023-10-23  12:00:00"
+    },
+
+    {
+      "title": "TicTacToe",
+      "pathName": "tictactoe",
+      "image": "images/thumbnail_tictactoe.png",
+      "instructions": "",
+      "description": "",
+      "gameWidth": 800,
+      "gameHeight": 600,
+      "dateCreated": "2023-10-27  12:00:00"
     }
   ]

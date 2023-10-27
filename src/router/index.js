@@ -59,6 +59,11 @@ const routes = [
             component: () => import('../views/GameTemplate.vue')
         },
         {
+            path: '/games/tictactoe',
+            name: 'tictactoe',
+            component: () => import('../views/GameTemplate.vue')
+        },
+        {
             path: '/games/sandbox',
             name: 'sandbox',
             component: () => import('../views/GameTemplate.vue')
