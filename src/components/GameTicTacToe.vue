@@ -38,7 +38,8 @@
                     [null, null, null],
                 ],
                 hoveredTile: null,
-                playersTurn: false,
+                playersTurn: true,
+                winStreak: null,
             }
         },
 
@@ -84,7 +85,10 @@
             },
 
             handleClick(event) {
-                // Calculate the row and column of the clicked square
+                if (!this.playersTurn) {
+                    return;
+                }
+
                 const rect = this.$refs.canvas.getBoundingClientRect();
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
@@ -99,8 +103,59 @@
                 }
                 console.log(this.board);
                 this.renderBoard();
+
+                this.processPlayerMove();
             },
 
+            processPlayerMove() {
+                // Check for win
+                if (this.checkForWin()) {
+                    console.log('Player wins!');
+                    this.renderBoard();
+                    return;
+                }
+
+                // // Check for tie
+                // if (this.checkForTie()) {
+                //     alert('Tie game!');
+                //     this.initializeBoard();
+                //     return;
+                // }
+
+                // Computer's turn
+                //this.playersTurn = false;
+                // this.computerMove();
+            },
+
+            checkForWin() {
+                // Check for horizontal win
+                for (let row = 0; row < 3; row++) {
+                    if (this.board[row][0] !== null && this.board[row][0] === this.board[row][1] && this.board[row][1] === this.board[row][2]) {
+                        this.winStreak = [[row, 0], [row, 1], [row, 2]];
+                        return true;
+                    }
+                }
+
+                // Check for vertical win
+                for (let col = 0; col < 3; col++) {
+                    if (this.board[0][col] !== null && this.board[0][col] === this.board[1][col] && this.board[1][col] === this.board[2][col]) {
+                        this.winStreak = [[0, col], [1, col], [2, col]];
+                        return true;
+                    }
+                }
+
+                // Check for diagonal win
+                if (this.board[0][0] !== null && this.board[0][0] === this.board[1][1] && this.board[1][1] === this.board[2][2]) {
+                    this.winStreak = [[0, 0], [1, 1], [2, 2]];
+                    return true;
+                }
+                if (this.board[0][2] !== null && this.board[0][2] === this.board[1][1] && this.board[1][1] === this.board[2][0]) {
+                    this.winStreak = [[2, 0], [1, 1], [0, 2]];
+                    return true;
+                }
+
+                return false;
+            },
 
             clearBoard() {
                 // clear the board
@@ -175,6 +230,34 @@
                             this.hiddenCtx.fillText('O', tileWidth * col + boardOffsetX + valueOffsetX, tileWidth * row + boardOffsetY + valueOffsetY);
                         }
                     }
+                }
+
+                // If the winStreak array is not null, draw a thick red line through the three winning tiles
+                if (this.winStreak !== null) {
+                    this.hiddenCtx.strokeStyle = 'red';
+                    this.hiddenCtx.lineWidth = 15;
+                    this.hiddenCtx.beginPath();
+                    // If the winSteak is horizontal, draw a line through the middle of the three tiles
+                    if (this.winStreak[0][0] === this.winStreak[1][0] && this.winStreak[1][0] === this.winStreak[2][0]) {
+                        this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY + valueOffsetY);
+                        this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * this.winStreak[2][0] + boardOffsetY + valueOffsetY);
+                    }
+                    // If the winStreak is vertical, draw a line through the middle of the three tiles
+                    else if (this.winStreak[0][1] === this.winStreak[1][1] && this.winStreak[1][1] === this.winStreak[2][1]) {
+                        this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX + valueOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY);
+                        this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + valueOffsetX, tileWidth * this.winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
+                    }
+                    // If the winStreak is diagonal from top left to bottom right, draw a line through the middle of the three tiles
+                    else if (this.arraysAreEqual(this.winStreak[0], [0,0]) && this.arraysAreEqual(this.winStreak[2], [2,2])) {
+                            this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY);
+                            this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * this.winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
+                    }
+                    // If the winStreak is diagonal from top right to bottom left, draw a line through the middle of the three tiles
+                    else if (this.arraysAreEqual(this.winStreak[0], [2,0]) && this.arraysAreEqual(this.winStreak[2], [0,2])) {
+                            this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY + (valueOffsetY * 2));
+                            this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * this.winStreak[2][0] + boardOffsetY);
+                    }
+                    this.hiddenCtx.stroke();
                 }
 
 
