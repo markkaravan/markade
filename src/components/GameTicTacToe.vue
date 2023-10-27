@@ -39,7 +39,7 @@
                 ],
                 hoveredTile: null,
                 playersTurn: true,
-                winStreak: null,
+                completionState: null,
             }
         },
 
@@ -78,6 +78,10 @@
             },
 
             handleKeyDown(event) {
+                // If you press spacebar and the game is over, reset the board
+                if (event.keyCode === 32 && this.completionState !== null) {
+                    this.initializeBoard();
+                }
             },
 
             handleMouseMove(event) {
@@ -110,10 +114,12 @@
             processPlayerMove() {
                 // Check for win
                 if (this.checkForWin()) {
-                    console.log('Player wins!');
                     this.renderBoard();
                     return;
                 }
+
+                this.playersTurn = false;
+                this.computerMove();
 
                 // // Check for tie
                 // if (this.checkForTie()) {
@@ -127,11 +133,43 @@
                 // this.computerMove();
             },
 
+            computerMove() {
+                // computer picks a random open tile
+                let row, col;
+                do {
+                    row = Math.floor(Math.random() * 3);
+                    col = Math.floor(Math.random() * 3);
+                } while (this.board[row][col] !== null);
+                this.board[row][col] = 'O';
+                this.playersTurn = true;
+                this.renderBoard();
+
+                // Check for win
+                if (this.checkForWin()) {
+                    this.renderBoard();
+                    return;
+                }
+            },
+
+            initializeBoard() {
+                this.board = [
+                    [null, null, null],
+                    [null, null, null],
+                    [null, null, null],
+                ];
+                this.completionState = null;
+                this.playersTurn = true;
+                this.renderBoard();
+            },
+
             checkForWin() {
                 // Check for horizontal win
                 for (let row = 0; row < 3; row++) {
                     if (this.board[row][0] !== null && this.board[row][0] === this.board[row][1] && this.board[row][1] === this.board[row][2]) {
-                        this.winStreak = [[row, 0], [row, 1], [row, 2]];
+                        this.completionState = {
+                            winner: this.board[row][0],
+                            winStreak: [[row, 0], [row, 1], [row, 2]]
+                        };
                         return true;
                     }
                 }
@@ -139,18 +177,29 @@
                 // Check for vertical win
                 for (let col = 0; col < 3; col++) {
                     if (this.board[0][col] !== null && this.board[0][col] === this.board[1][col] && this.board[1][col] === this.board[2][col]) {
-                        this.winStreak = [[0, col], [1, col], [2, col]];
+                        this.completionState = {
+                            winner: this.board[0][col],
+                            winStreak: [[0, col], [1, col], [2, col]]
+                        };
                         return true;
                     }
                 }
 
                 // Check for diagonal win
                 if (this.board[0][0] !== null && this.board[0][0] === this.board[1][1] && this.board[1][1] === this.board[2][2]) {
-                    this.winStreak = [[0, 0], [1, 1], [2, 2]];
+                    this.completionState = {
+                        winner: this.board[0][0],
+                        winStreak: [[0, 0], [1, 1], [2, 2]]
+                    };
                     return true;
                 }
+
                 if (this.board[0][2] !== null && this.board[0][2] === this.board[1][1] && this.board[1][1] === this.board[2][0]) {
-                    this.winStreak = [[2, 0], [1, 1], [0, 2]];
+                    this.completionState = {
+                        winner: this.board[0][2],
+                        winStreak: [[2, 0], [1, 1], [0, 2]]
+                    };
+                    console.log("LL TR disagonal", this.completionState);
                     return true;
                 }
 
@@ -179,21 +228,6 @@
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
 
-                // A black text that says "Tic Tac Toe" in the top middle of the screen
-                // this.hiddenCtx.textAlign = 'center';
-                this.hiddenCtx.font = '40px Arial';
-                this.hiddenCtx.fillStyle = 'black';
-                this.hiddenCtx.fillText('Tic Tac Toe', 20, 50);
-
-                // // Draw the board as a 3x3 grid.  Tiles are 100x100, white squares with black borders.  Do not draw any other lines, or X's or O's.
-                // this.hiddenCtx.strokeStyle = 'black';
-                // this.hiddenCtx.lineWidth = 2;
-                // for (let i = 0; i < 3; i++) {
-                //     for (let j = 0; j < 3; j++) {
-                //         this.hiddenCtx.strokeRect(tileWidth * i + boardOffsetX, tileWidth * j + boardOffsetY, tileWidth, tileWidth);
-                //     }
-                // }
-
                 // Draw thick black lines between the middle two columns and rows
                 this.hiddenCtx.lineWidth = 5;
                 this.hiddenCtx.beginPath();
@@ -214,7 +248,6 @@
                 this.hiddenCtx.lineTo(tileWidth * 3 + boardOffsetX, tileWidth * 2 + boardOffsetY);
                 this.hiddenCtx.stroke();
 
-
                 // Draw x's and o's, if any.  X's are red and O's are blue.
                 this.hiddenCtx.font = '100px Arial';
                 this.hiddenCtx.textAlign = 'center';
@@ -223,7 +256,7 @@
                     for (let col = 0; col < 3; col++) {
                         const tile = this.board[row][col];
                         if (tile === 'X') {
-                            this.hiddenCtx.fillStyle = 'red';
+                            this.hiddenCtx.fillStyle = 'green';
                             this.hiddenCtx.fillText('X', tileWidth * col + boardOffsetX + valueOffsetX, tileWidth * row + boardOffsetY + valueOffsetY);
                         } else if (tile === 'O') {
                             this.hiddenCtx.fillStyle = 'blue';
@@ -233,31 +266,55 @@
                 }
 
                 // If the winStreak array is not null, draw a thick red line through the three winning tiles
-                if (this.winStreak !== null) {
-                    this.hiddenCtx.strokeStyle = 'red';
+                if (this.completionState && this.completionState.winner !== null) {
+                    const strokeColor = this.completionState.winner === 'X' ? 'green' : 'blue';
+                    let winStreak = this.completionState.winStreak;
+                    this.hiddenCtx.strokeStyle = strokeColor;
                     this.hiddenCtx.lineWidth = 15;
                     this.hiddenCtx.beginPath();
-                    // If the winSteak is horizontal, draw a line through the middle of the three tiles
-                    if (this.winStreak[0][0] === this.winStreak[1][0] && this.winStreak[1][0] === this.winStreak[2][0]) {
-                        this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY + valueOffsetY);
-                        this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * this.winStreak[2][0] + boardOffsetY + valueOffsetY);
+                    // If the winStreak is horizontal, draw a line through the middle of the three tiles
+                    if (winStreak[0][0] === winStreak[1][0] && winStreak[1][0] === winStreak[2][0]) {
+                        this.hiddenCtx.moveTo(tileWidth * winStreak[0][1] + boardOffsetX, tileWidth * winStreak[0][0] + boardOffsetY + valueOffsetY);
+                        this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * winStreak[2][0] + boardOffsetY + valueOffsetY);
                     }
                     // If the winStreak is vertical, draw a line through the middle of the three tiles
-                    else if (this.winStreak[0][1] === this.winStreak[1][1] && this.winStreak[1][1] === this.winStreak[2][1]) {
-                        this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX + valueOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY);
-                        this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + valueOffsetX, tileWidth * this.winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
+                    else if (winStreak[0][1] === winStreak[1][1] && winStreak[1][1] === winStreak[2][1]) {
+                        this.hiddenCtx.moveTo(tileWidth * winStreak[0][1] + boardOffsetX + valueOffsetX, tileWidth * winStreak[0][0] + boardOffsetY);
+                        this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + valueOffsetX, tileWidth * winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
                     }
                     // If the winStreak is diagonal from top left to bottom right, draw a line through the middle of the three tiles
-                    else if (this.arraysAreEqual(this.winStreak[0], [0,0]) && this.arraysAreEqual(this.winStreak[2], [2,2])) {
-                            this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY);
-                            this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * this.winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
+                    else if (this.arraysAreEqual(winStreak[0], [0,0]) && this.arraysAreEqual(winStreak[2], [2,2])) {
+                            this.hiddenCtx.moveTo(tileWidth * winStreak[0][1] + boardOffsetX, tileWidth * winStreak[0][0] + boardOffsetY);
+                            this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
                     }
-                    // If the winStreak is diagonal from top right to bottom left, draw a line through the middle of the three tiles
-                    else if (this.arraysAreEqual(this.winStreak[0], [2,0]) && this.arraysAreEqual(this.winStreak[2], [0,2])) {
-                            this.hiddenCtx.moveTo(tileWidth * this.winStreak[0][1] + boardOffsetX, tileWidth * this.winStreak[0][0] + boardOffsetY + (valueOffsetY * 2));
-                            this.hiddenCtx.lineTo(tileWidth * this.winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * this.winStreak[2][0] + boardOffsetY);
+                    // If the winStreak is diagonal from bottom left to top right, draw a line through the middle of the three tiles
+                    else if (this.arraysAreEqual(winStreak[0], [2,0]) && this.arraysAreEqual(winStreak[2], [0,2])) {
+                            this.hiddenCtx.moveTo(tileWidth * winStreak[0][1] + boardOffsetX, tileWidth * winStreak[0][0] + boardOffsetY + (valueOffsetY * 2));
+                            this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * winStreak[2][0] + boardOffsetY);
                     }
                     this.hiddenCtx.stroke();
+
+
+            
+
+
+
+                    // Draw a rectangle with a white interior and a black border in the middle of the screen
+                    this.hiddenCtx.fillStyle = 'white';
+                    this.hiddenCtx.fillRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    this.hiddenCtx.strokeStyle = 'black';
+                    this.hiddenCtx.lineWidth = 5;
+                    this.hiddenCtx.strokeRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    
+
+                    this.hiddenCtx.font = '40px Arial';
+                    this.hiddenCtx.fillStyle = 'black';
+                    this.hiddenCtx.fillText(`${this.completionState.winner} wins!`, this.gameWidth / 2 - 125, 200);
+
+                    this.hiddenCtx.font = '20px Arial';
+                    this.hiddenCtx.fillStyle = 'black';
+                    this.hiddenCtx.fillText("Press spacebar to play again", this.gameWidth / 2 - 125, 250);
+
                 }
 
 
