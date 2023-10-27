@@ -79,9 +79,21 @@
 
             handleKeyDown(event) {
                 // If you press spacebar and the game is over, reset the board
-                if (event.keyCode === 32 && this.completionState !== null) {
+                if (event.code === "Space" && this.completionState !== null) {
                     this.initializeBoard();
                 }
+                // If you press the "m " key call the minimax function
+                else if (event.code === "KeyM") {
+                    let board = [
+                        ['X', 'X', 'O'],
+                        ['O', 'X', 'X'],
+                        [null, null, 'O']
+                    ];
+                    let player = 'X';
+                    const result = this.minimax(player, this.copy(board));
+                    console.log("*** RESULT: ", result);
+                }
+
             },
 
             handleMouseMove(event) {
@@ -98,17 +110,40 @@
                 const y = event.clientY - rect.top;
                 const col = Math.floor((x - boardOffsetX) / tileWidth);
                 const row = Math.floor((y - boardOffsetY) / tileWidth);
-                if (col < 0 || col > 2 || row < 0 || row > 2) {
+                if (col < 0 || col > 2 || row < 0 || row > 2 || this.board[row][col] !== null) {
                     return;
                 } else {
-                    if (this.board[row][col] === null) {
-                        this.board[row][col] = 'X';
-                    }
-                }
-                console.log(this.board);
-                this.renderBoard();
+                    this.board[row][col] = 'X';
+                    let foo = this.renderBoard();
+                    let res = this.checkForEnd(this.board);
 
-                this.processPlayerMove();
+                    // If the game has concluded
+                    if (res !== null) {
+                        let winStreak = null;
+                        if (res === -10 || res === 10) {
+                            winStreak = this.checkForEnd(this.board);
+                        }
+                        this.completionState = {
+                            winner: res === -10 ? 'X' : 'O',
+                            winStreak: winStreak
+                        };
+                        this.renderBoard();
+                        return;
+                    // If the game has not concluded
+                    } else {
+                        this.playersTurn = false;
+                        let move = this.minimax('O', this.copy(this.board));
+                        this.board[move.move[0]][move.move[1]] = 'O';
+                        this.renderBoard();
+                        this.playersTurn = true;
+
+                    }
+                    
+                }
+                // console.log(this.board);
+                // this.renderBoard();
+
+                //this.processPlayerMove();
             },
 
             processPlayerMove() {
@@ -119,7 +154,10 @@
                 }
 
                 this.playersTurn = false;
-                this.computerMove();
+                let move = this.minimax('O', this.copy(this.board));
+                this.board[move.move[0]][move.move[1]] = 'O';
+                this.renderBoard();
+                this.playersTurn = true;
 
                 // // Check for tie
                 // if (this.checkForTie()) {
@@ -132,6 +170,116 @@
                 //this.playersTurn = false;
                 // this.computerMove();
             },
+
+            minimax(player, board, move=null) {
+                console.log("minimax", player, board, move);
+                let gameScore = this.checkForEnd(board);
+                console.log("gameScore", gameScore);
+                if (gameScore !== null) {
+                    return {
+                        score: gameScore,
+                        move: move
+                    };
+                }
+                console.log("gameScore", gameScore);
+                if (player === 'X') {
+                    // console.log("player is X");
+                    let possibleMoves = this.generateMoves('X', board);
+                    // console.log("possibleMoves", possibleMoves);
+                    let lowestMoveScore = 100;
+                    let bestMove = null;
+                    for (let i = 0; i < possibleMoves.length; i++) {
+                        let move = possibleMoves[i];
+                        let result = this.minimax('O', move.board, move.move);
+                        if (result.score < lowestMoveScore) {
+                            lowestMoveScore = result.score;
+                            bestMove = move.move;
+                        }
+                    }
+                    return {
+                        score: lowestMoveScore,
+                        move: bestMove
+                    };  
+                } else if (player === 'O') {
+                    // console.log("player is O");
+                    let possibleMoves = this.generateMoves('O', board);
+                    // console.log("possibleMoves", possibleMoves);
+                    let highestMoveScore = -100;
+                    let bestMove = null;
+                    for (let i = 0; i < possibleMoves.length; i++) {
+                        let move = possibleMoves[i];
+                        let result = this.minimax('X', move.board, move.move);
+                        if (result.score > highestMoveScore) {
+                            highestMoveScore = result.score;
+                            bestMove = move.move;
+                        }
+                    }
+                    return {
+                        score: highestMoveScore,
+                        move: bestMove
+                    };  
+                }
+
+            },  
+            
+            checkForEnd(board) {
+                // Check for horizontal win
+                for (let row = 0; row < 3; row++) {
+                    if (board[row][0] !== null && board[row][0] === board[row][1] && board[row][1] === board[row][2]) {
+                        return board[row][0] === 'X' ? -10 : 10;
+                    }
+                }
+                // Check for vertical win
+                for (let col = 0; col < 3; col++) {
+                    if (board[0][col] !== null && board[0][col] === board[1][col] && board[1][col] === board[2][col]) {
+                        return board[0][col] === 'X' ? -10 : 10;
+                    }
+                }
+                // Check for diagonal win
+                if (board[0][0] !== null && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+                    return board[0][0] === 'X' ? -10 : 10;
+                }
+                if (board[0][2] !== null && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+                    return board[0][2] === 'X' ? -10 : 10;
+                }
+                // Check for game is still in progress
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 3; col++) {
+                        if (board[row][col] === null) {
+                            return null;
+                        }
+                    }
+                }
+
+                // Otherwise the game is a tie
+                return 0;
+            },
+
+            generateMoves(player, board) {
+                // Return a list of objects of moves ([row, col]) and boards that are the result of making that move
+                let moves = [];
+                for (let row = 0; row < 3; row++) {
+                    for (let col = 0; col < 3; col++) {
+                        if (board[row][col] === null) {
+                            let newBoard = this.copy(board);
+                            newBoard[row][col] = player;
+                            moves.push({
+                                move: [row, col],
+                                board: newBoard
+                            });
+                        }
+                    }
+                }
+                return moves;
+            },
+            
+            
+            /***********************
+             * 
+             * 
+             * 
+             * 
+             */
 
             computerMove() {
                 // computer picks a random open tile
@@ -161,6 +309,8 @@
                 this.playersTurn = true;
                 this.renderBoard();
             },
+
+            
 
             checkForWin() {
                 // Check for horizontal win
@@ -202,7 +352,6 @@
                     console.log("LL TR disagonal", this.completionState);
                     return true;
                 }
-
                 return false;
             },
 
@@ -295,17 +444,12 @@
                     this.hiddenCtx.stroke();
 
 
-            
-
-
-
                     // Draw a rectangle with a white interior and a black border in the middle of the screen
                     this.hiddenCtx.fillStyle = 'white';
                     this.hiddenCtx.fillRect(this.gameWidth / 2 - 275, 170, 300, 100);
                     this.hiddenCtx.strokeStyle = 'black';
                     this.hiddenCtx.lineWidth = 5;
                     this.hiddenCtx.strokeRect(this.gameWidth / 2 - 275, 170, 300, 100);
-                    
 
                     this.hiddenCtx.font = '40px Arial';
                     this.hiddenCtx.fillStyle = 'black';
@@ -315,17 +459,28 @@
                     this.hiddenCtx.fillStyle = 'black';
                     this.hiddenCtx.fillText("Press spacebar to play again", this.gameWidth / 2 - 125, 250);
 
+                } else if (this.completionState && this.completionState.winner === null) {
+                    // Draw a rectangle with a white interior and a black border in the middle of the screen
+                    this.hiddenCtx.fillStyle = 'white';
+                    this.hiddenCtx.fillRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    this.hiddenCtx.strokeStyle = 'black';
+                    this.hiddenCtx.lineWidth = 5;
+                    this.hiddenCtx.strokeRect(this.gameWidth / 2 - 275, 170, 300, 100);
+
+                    this.hiddenCtx.font = '40px Arial';
+                    this.hiddenCtx.fillStyle = 'black';
+                    this.hiddenCtx.fillText(`Tie game!`, this.gameWidth / 2 - 125, 200);
+
+                    this.hiddenCtx.font = '20px Arial';
+                    this.hiddenCtx.fillStyle = 'black';
+                    this.hiddenCtx.fillText("Press spacebar to play again", this.gameWidth / 2 - 125, 250);
                 }
-
-
-
-
-            
-
 
                 // Draw to main canvas
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
                 this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+
+                return true;
             },
 
         } // methods
