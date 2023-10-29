@@ -25,6 +25,8 @@
 </template>
 
 <script>
+import { Mixins } from '../mixins.js';
+
 const gameWidth = 800;
 const gameHeight = 333;
 
@@ -121,9 +123,6 @@ export default {
   },
 
   methods: {
-    copyObject(obj) {
-      return JSON.parse(JSON.stringify(obj));
-    },
     
     initializePlayer() {
       this.gs.player = {
@@ -159,7 +158,7 @@ export default {
     loadScreen(name, n = null) {
       /*****  Opening Screen *****/
       if (name === 'Opening') {
-        this.gs = this.copyObject(defaultGameState);
+        this.gs = Mixins.copy(defaultGameState);
       } /*****  End Opening Screen *****/
       
 

@@ -25,6 +25,9 @@
 </template>
 
 <script>
+
+import { Mixins } from '../mixins.js';
+
 const gameWidthDefault = 800;
 const gameHeightDefault = 333;
 const portalWidth = 50;
@@ -297,10 +300,6 @@ export default {
     },
 
     methods: {
-        copy (obj) {
-            return JSON.parse(JSON.stringify(obj));
-        },
-
         changePlayerImage() {
             let player = this.gs.player;
             // Gravity goes down
@@ -351,7 +350,7 @@ export default {
                     this.gs[prop] = currentScreen[prop];
                 }
                 this.gs.isPaused = false;
-                this.gs.player = this.copy(player);
+                this.gs.player = Mixins.copy(player);
                 this.gs.player.justSpawnedInPortal = "none";
                 this.gs.player.image = this.gs.player.facingForward? this.$refs.playerUpForwardA : this.$refs.playerUpBackwardA;
                 this.gs.player.image = this.$refs.playerUpForwardA;

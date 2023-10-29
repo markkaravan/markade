@@ -6,7 +6,6 @@
 </template>
 
 <script>
-    // import my mixin file
     import { Mixins } from '../mixins.js';
 
     const gameWidthDefault = 800;

@@ -25,6 +25,8 @@
 </template>
 
 <script>
+    import { Mixins } from '../mixins.js';
+
     const gameWidthDefault = 800;
     const gameHeightDefault = 600;
     const boardOffsetX = 50;
@@ -326,7 +328,7 @@
                         };
                     }
                 }
-                this.solutionObj.board = this.copy(board);
+                this.solutionObj.board = Mixins.copy(board);
                 this.displayBoard = this.solutionObj.board;
                 console.log("Initialized board: ", this.solutionObj.board);
 
@@ -352,11 +354,6 @@
         },
 
         methods: {
-
-            copy (obj) {
-                return JSON.parse(JSON.stringify(obj));
-            },
-
             handleKeyDown(event) {
                 if (event.code === 'KeyE') {
                     this.generatePuzzle("Easy1");
@@ -365,7 +362,7 @@
                 } else if (event.code === "KeyS") {
                     let newSolutionObj = this.solvePuzzle(this.solutionObj);
                     if (newSolutionObj !== null) {
-                        this.solutionObj = this.copy(newSolutionObj);
+                        this.solutionObj = Mixins.copy(newSolutionObj);
                     }
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
@@ -378,19 +375,19 @@
                 } else if (event.code === "KeyL") {
                     this.splitSolutionObject(this.solutionObj);
                 } else if (event.code === "KeyP") {
-                    let board = this.copy(this.solutionObj.board);
+                    let board = Mixins.copy(this.solutionObj.board);
                     let newBoard = this.prunePossibleValues(board);
-                    this.solutionObj.board = this.copy(newBoard);
+                    this.solutionObj.board = Mixins.copy(newBoard);
                     this.displayBoard = this.solutionObj.board;
                 } else if (event.code === "KeyU") {
-                    let board = this.copy(this.solutionObj.board);
+                    let board = Mixins.copy(this.solutionObj.board);
                     let newBoard = this.findUniqueValues(board);
-                    this.solutionObj.board = this.copy(newBoard);
+                    this.solutionObj.board = Mixins.copy(newBoard);
                     this.displayBoard = this.solutionObj.board;
                 } else if (event.code === "KeyG") {
-                    let board = this.copy(this.solutionObj.board);
+                    let board = Mixins.copy(this.solutionObj.board);
                     let newBoard = this.removeNakedSingles(board);
-                    this.solutionObj.board = this.copy(newBoard);
+                    this.solutionObj.board = Mixins.copy(newBoard);
                     this.displayBoard = this.solutionObj.board;
 
                 // produce if statements for 0-9 keys
@@ -488,7 +485,7 @@
                         };
                     }
                 }
-                this.solutionObj.board = this.copy(board);
+                this.solutionObj.board = Mixins.copy(board);
                 console.log("Initialized board: ", this.solutionObj.board);
             },
 
@@ -500,7 +497,7 @@
                 }
                 // Initialize the board.  Then loop through the puzzle and set the values
                 this.initializeBoard();
-                let board = this.copy(this.solutionObj.board);
+                let board = Mixins.copy(this.solutionObj.board);
                 for (let row = 0; row < puzzle.board.length; row++) {
                     for (let col = 0; col < puzzle.board[row].length; col++) {
                         // if this is a value between 1 and 9, set the value, otherwise, set it to null
@@ -515,7 +512,7 @@
                     }
                 }
                 let prunedBoard = this.initialPruning(board);
-                this.solutionObj.board = this.copy(prunedBoard);
+                this.solutionObj.board = Mixins.copy(prunedBoard);
                 this.displayBoard = this.solutionObj.board;
             },
 
@@ -543,15 +540,15 @@
                     return solutionObj;
                 }
 
-                let oldBoard = this.copy(solutionObj.board);
-                let prunedBoard = this.prunePossibleValues(this.copy(solutionObj.board));
-                prunedBoard = this.removeNakedSingles(this.copy(prunedBoard));
-                prunedBoard = this.prunePossibleValues(this.copy(prunedBoard));
-                prunedBoard = this.findUniqueValues(this.copy(prunedBoard));                
+                let oldBoard = Mixins.copy(solutionObj.board);
+                let prunedBoard = this.prunePossibleValues(Mixins.copy(solutionObj.board));
+                prunedBoard = this.removeNakedSingles(Mixins.copy(prunedBoard));
+                prunedBoard = this.prunePossibleValues(Mixins.copy(prunedBoard));
+                prunedBoard = this.findUniqueValues(Mixins.copy(prunedBoard));                
 
 
                 if (!this.boardsAreEqual(oldBoard, prunedBoard)) {
-                    solutionObj.board = this.copy(prunedBoard);
+                    solutionObj.board = Mixins.copy(prunedBoard);
                     return this.solvePuzzle(solutionObj);
                 } else {
                     let splitSolutionObject = this.splitSolutionObject(solutionObj);
@@ -700,7 +697,7 @@
                             }
                         }
                         // If there are two tiles in the block that have only two possible values, and those values are the same, remove those two possible values from all other tiles in the block
-                        if (possiblePairs.length === 2 && this.arraysAreEqual(possiblePairs[0].possibleValues, possiblePairs[1].possibleValues)) {
+                        if (possiblePairs.length === 2 && Mixins.arraysAreEqual(possiblePairs[0].possibleValues, possiblePairs[1].possibleValues)) {
                             // console.log("Found possible pairs at: ", blockRow, blockCol, possiblePairs);
                             const value1 = possiblePairs[0].possibleValues[0];
                             const value2 = possiblePairs[0].possibleValues[1];
@@ -802,7 +799,7 @@
                         // if so, remove all other possible values from those two tiles
                         for (let i = 0; i < possibleValuesWithTwoTiles.length; i++) {
                             for (let j = i + 1; j < possibleValuesWithTwoTiles.length; j++) {
-                                if (this.arraysAreEqual(possibleValuesWithTwoTiles[i][1], possibleValuesWithTwoTiles[j][1])) {
+                                if (Mixins.arraysAreEqual(possibleValuesWithTwoTiles[i][1], possibleValuesWithTwoTiles[j][1])) {
                                     // console.log("Found a hidden pair: ", possibleValuesWithTwoTiles[i][0], possibleValuesWithTwoTiles[j][0], possibleValuesWithTwoTiles[i][1]);
                                     const value1 = possibleValuesWithTwoTiles[i][0];
                                     const value2 = possibleValuesWithTwoTiles[j][0];
@@ -817,7 +814,7 @@
                         }
                     }
                 }
-                return this.copy(board);
+                return Mixins.copy(board);
             },
 
             // Use this for more heuristics:
@@ -880,7 +877,7 @@
                     const row = transformations[0].row;
                     const col = transformations[0].col;
                     const value = transformations[0].value;
-                    board = this.promoteValueAndPrune(this.copy(board), row, col, value);
+                    board = this.promoteValueAndPrune(Mixins.copy(board), row, col, value);
                 }
                 return board;
 
@@ -897,7 +894,7 @@
                         let tilesWithNum = [];
                         for (let col = 0; !abort && col < board[row].length; col++) {
                             if (board[row][col].value === null && board[row][col].possibleValues.includes(num)) {
-                                tilesWithNum.push(this.copy(board[row][col]));
+                                tilesWithNum.push(Mixins.copy(board[row][col]));
                             }
                         }
                         if (tilesWithNum.length === 1) {
@@ -914,9 +911,9 @@
                     const row = transformations[0].row;
                     const col = transformations[0].col;
                     const value = transformations[0].value;
-                    board = this.promoteValueAndPrune(this.copy(board), row, col, value);
+                    board = this.promoteValueAndPrune(Mixins.copy(board), row, col, value);
                 }
-                return this.copy(board);
+                return Mixins.copy(board);
             },
 
             promoteValueAndPrune(board, row, col, value) {
@@ -942,19 +939,7 @@
                         }
                     }
                 }
-                return this.copy(board);
-            },
-
-            arraysAreEqual(arr1, arr2) {
-                if (arr1.length !== arr2.length) {
-                    return false;
-                }
-                for (let i = 0; i < arr1.length; i++) {
-                    if (arr1[i] !== arr2[i]) {
-                        return false;
-                    }
-                }
-                return true;
+                return Mixins.copy(board);
             },
 
             boardsAreEqual(board1, board2) {
@@ -970,7 +955,7 @@
                             return false;
                         }
                         // Compare the possible values
-                        if (!this.arraysAreEqual(board1[row][col].possibleValues, board2[row][col].possibleValues)) {
+                        if (!Mixins.arraysAreEqual(board1[row][col].possibleValues, board2[row][col].possibleValues)) {
                             return false;
                         }
                     }
@@ -1107,7 +1092,7 @@
                             }
                         }
                     }
-                    return this.arraysAreEqual(values.sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                    return Mixins.arraysAreEqual(values.sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
                 };
 
                 // loop through board and check if each row, col, and block is valid
@@ -1149,7 +1134,7 @@
             },
 
             splitSolutionObject(solutionObj) {
-                let board = this.copy(solutionObj.board);
+                let board = Mixins.copy(solutionObj.board);
                 let minPossibleValues = 10;
                 let minPossibleValuesTile = null;
                 for (let row = 0; row < board.length; row++) {
@@ -1170,7 +1155,7 @@
                         board: null,
                         children: []
                     };
-                    let newBoard = this.promoteValueAndPrune(this.copy(board), minPossibleValuesTile.row, minPossibleValuesTile.col, value);
+                    let newBoard = this.promoteValueAndPrune(Mixins.copy(board), minPossibleValuesTile.row, minPossibleValuesTile.col, value);
                     newSolutionObj.board = newBoard;
                     solutionObj.children.push(newSolutionObj);
                 }

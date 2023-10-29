@@ -39,6 +39,8 @@
 </template>
 
 <script>
+import { Mixins } from '../mixins.js';
+
 const gameWidthDefault = 800;
 const gameHeightDefault = 333;
 
@@ -279,7 +281,7 @@ export default {
     loadScreen(name, n = null, lives = null) {
       /*****  Opening Screen *****/
       if (name === 'Opening') {
-        this.gs = this.copyObject(defaultGameState);
+        this.gs = Mixins.copy(defaultGameState);
       } /*****  End Opening Screen *****/
       
 

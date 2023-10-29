@@ -11,6 +11,8 @@
 </template>
 
 <script>
+    import { Mixins } from '../mixins.js';
+
     const gameWidthDefault = 800;
     const gameHeightDefault = 600;
     const boardOffsetX = 100;
@@ -111,9 +113,6 @@
         },
 
         methods: {
-            copy (obj) {
-                return JSON.parse(JSON.stringify(obj));
-            },
             loadScreen(screenName) {
                 if (screenName === "Opening") {
                     this.gs.name = "Opening";
