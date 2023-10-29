@@ -11,8 +11,8 @@
     const gameWidthDefault = 800;
     const gameHeightDefault = 600;
     const tileWidth = 150;
-    const boardOffsetX = 50;
-    const boardOffsetY = 100;
+    const boardOffsetX = 75;
+    const boardOffsetY = 75;
     const valueOffsetX = 75;
     const valueOffsetY = 75;
     const playerXColor = 'red';
@@ -418,35 +418,35 @@
 
                     // Draw a rectangle with a white interior and a black border in the middle of the screen
                     this.hiddenCtx.fillStyle = 'white';
-                    this.hiddenCtx.fillRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    this.hiddenCtx.fillRect(150, 170, 300, 100);
                     this.hiddenCtx.strokeStyle = 'black';
                     this.hiddenCtx.lineWidth = 5;
-                    this.hiddenCtx.strokeRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    this.hiddenCtx.strokeRect(150, 170, 300, 100);
 
                     this.hiddenCtx.font = '40px Arial';
                     this.hiddenCtx.fillStyle = 'black';
-                    this.hiddenCtx.fillText(`${this.completionState.winner} wins!`, this.gameWidth / 2 - 125, 200);
+                    this.hiddenCtx.fillText(`${this.completionState.winner} wins!`, 300, 200);
 
                     this.hiddenCtx.font = '20px Arial';
                     this.hiddenCtx.fillStyle = 'black';
-                    this.hiddenCtx.fillText("Press spacebar to play again", this.gameWidth / 2 - 125, 250);
+                    this.hiddenCtx.fillText("Press spacebar to play again", 300, 250);
 
                 } else if (this.completionState && this.completionState.winner === 0) {
                     console.log("Tie game!", this.completionState);
                     // Draw a rectangle with a white interior and a black border in the middle of the screen
                     this.hiddenCtx.fillStyle = 'white';
-                    this.hiddenCtx.fillRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    this.hiddenCtx.fillRect(150, 170, 300, 100);
                     this.hiddenCtx.strokeStyle = 'black';
                     this.hiddenCtx.lineWidth = 5;
-                    this.hiddenCtx.strokeRect(this.gameWidth / 2 - 275, 170, 300, 100);
+                    this.hiddenCtx.strokeRect(150, 170, 300, 100);
 
                     this.hiddenCtx.font = '40px Arial';
                     this.hiddenCtx.fillStyle = 'black';
-                    this.hiddenCtx.fillText(`Tie game!`, this.gameWidth / 2 - 125, 200);
+                    this.hiddenCtx.fillText(`Tie game!`, 300, 200);
 
                     this.hiddenCtx.font = '20px Arial';
                     this.hiddenCtx.fillStyle = 'black';
-                    this.hiddenCtx.fillText("Press spacebar to play again", this.gameWidth / 2 - 125, 250);
+                    this.hiddenCtx.fillText("Press spacebar to play again", 300, 250);
                 }
 
                 // Draw to main canvas

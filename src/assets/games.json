@@ -81,7 +81,7 @@
       "image": "images/thumbnail_tictactoe.png",
       "instructions": "",
       "description": "",
-      "gameWidth": 800,
+      "gameWidth": 600,
       "gameHeight": 600,
       "dateCreated": "2023-10-27  12:00:00"
     }
