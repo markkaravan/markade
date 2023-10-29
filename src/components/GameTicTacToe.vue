@@ -6,6 +6,9 @@
 </template>
 
 <script>
+    // import my mixin file
+    import { Mixins } from '../mixins.js';
+
     const gameWidthDefault = 800;
     const gameHeightDefault = 600;
     const tileWidth = 150;
@@ -55,6 +58,8 @@
 
             window.addEventListener('keydown', this.handleKeyDown);
 
+            console.log("Mixins: ", Mixins.mixinTest());
+
             this.renderBoard();
         },
 
@@ -75,10 +80,6 @@
 
         methods: {
 
-            copy (obj) {
-                return JSON.parse(JSON.stringify(obj));
-            },
-
             handleKeyDown(event) {
                 // If you press spacebar and the game is over, reset the board
                 if (event.code === "Space" && this.completionState !== null) {
@@ -92,7 +93,7 @@
                         [null, null, 'O']
                     ];
                     let player = 'X';
-                    const result = this.minimax(player, this.copy(board));
+                    const result = this.minimax(player, Mixins.copy(board));
                     console.log("*** RESULT: ", result);
                 }
 
@@ -126,7 +127,7 @@
                     // If the game has not concluded
                     } else {
                         this.playersTurn = false;
-                        let move = this.minimax('O', this.copy(this.board));
+                        let move = this.minimax('O', Mixins.copy(this.board));
                         this.board[move.move[0]][move.move[1]] = 'O';
                         // See if this ends the game
                         let res = this.checkForEnd(this.board);
@@ -230,7 +231,7 @@
                 for (let row = 0; row < 3; row++) {
                     for (let col = 0; col < 3; col++) {
                         if (board[row][col] === null) {
-                            let newBoard = this.copy(board);
+                            let newBoard = Mixins.copy(board);
                             newBoard[row][col] = player;
                             moves.push({
                                 move: [row, col],
@@ -343,18 +344,6 @@
                 this.initializeBoard();
             },
 
-            arraysAreEqual(arr1, arr2) {
-                if (arr1.length !== arr2.length) {
-                    return false;
-                }
-                for (let i = 0; i < arr1.length; i++) {
-                    if (arr1[i] !== arr2[i]) {
-                        return false;
-                    }
-                }
-                return true;
-            },
-
             renderBoard() {
                 // Draw white background to hidden context
                 this.hiddenCtx.fillStyle = 'white';
@@ -416,12 +405,12 @@
                         this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + valueOffsetX, tileWidth * winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
                     }
                     // If the winStreak is diagonal from top left to bottom right, draw a line through the middle of the three tiles
-                    else if (this.arraysAreEqual(winStreak[0], [0,0]) && this.arraysAreEqual(winStreak[2], [2,2])) {
+                    else if (Mixins.arraysAreEqual(winStreak[0], [0,0]) && Mixins.arraysAreEqual(winStreak[2], [2,2])) {
                             this.hiddenCtx.moveTo(tileWidth * winStreak[0][1] + boardOffsetX, tileWidth * winStreak[0][0] + boardOffsetY);
                             this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * winStreak[2][0] + boardOffsetY + (valueOffsetY * 2));
                     }
                     // If the winStreak is diagonal from bottom left to top right, draw a line through the middle of the three tiles
-                    else if (this.arraysAreEqual(winStreak[0], [2,0]) && this.arraysAreEqual(winStreak[2], [0,2])) {
+                    else if (Mixins.arraysAreEqual(winStreak[0], [2,0]) && Mixins.arraysAreEqual(winStreak[2], [0,2])) {
                             this.hiddenCtx.moveTo(tileWidth * winStreak[0][1] + boardOffsetX, tileWidth * winStreak[0][0] + boardOffsetY + (valueOffsetY * 2));
                             this.hiddenCtx.lineTo(tileWidth * winStreak[2][1] + boardOffsetX + (valueOffsetX * 2), tileWidth * winStreak[2][0] + boardOffsetY);
                     }
