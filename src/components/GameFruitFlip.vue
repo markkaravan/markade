@@ -20,7 +20,7 @@
     const rows = 10;
     const columns = 10;
     const tileWidth = 50;
-    const levelSeconds = 60;
+    const levelSeconds = 600;
     const scorePositionX = 50;
     const scorePositionY = 50;
     const fruitTypes = [
@@ -450,25 +450,22 @@
 
                 // If inspect mode is on, it shows the details of the tile and stops here
                 if (this.gs.inspectMode) {
-                    console.log("Inspecting: ", this.gs.board[row][col]);
                     return;
                 }
 
                 // Determine whether a tile was clicked
                 if (row < 0 || row >= rows || col < 0 || col >= columns) {
-                    console.log("nothing clicked");
                     return;
                 }
 
                 // If the clicked square is the same color as the current fruit, do nothing
                 if (this.gs.board[row][col] && this.gs.board[row][col].name === this.gs.currentFruitType.name) {
-                    console.log("same color");
                     return; 
                 }
 
                 // Replace the fruit at the clicked square with the current fruit
                 this.gs.board[row][col] = this.generateFruit(this.gs.currentFruitType, col * tileWidth + boardOffsetX, row * tileWidth + boardOffsetY);
-                
+                this.gs.currentFruitType = this.selectRandomFruitType();
 
                 // Look for clusters
                 this.changeMode("checkAndRemove");
@@ -614,26 +611,29 @@
                 // If the timer reaches 0, end the game
                 if (levelSeconds - Math.floor((Date.now() - this.gs.timerStart) / 1000) <= 0) {
                     this.changeMode("notPlaying");
-                
                     this.loadScreen('Level End');
                 }
 
                 // Draw the timer and the score.  The timer is at the top middle and the score is at the top left.
+                const timerOffsetX = this.dataGameWidth / 2 - 50;
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.font = '24px Helvetica';
-                this.hiddenCtx.fillText('Timer', this.dataGameWidth / 2 - 150, 50);
+                this.hiddenCtx.fillText('Timer', timerOffsetX, 50);
                 this.hiddenCtx.fillText('Score', scorePositionX, scorePositionY);
                 let timerDisplay = levelSeconds - Math.floor((Date.now() - this.gs.timerStart) / 1000);
-                this.hiddenCtx.fillText(timerDisplay, this.dataGameWidth / 2 - 150, 80);
+                this.hiddenCtx.fillText(timerDisplay, timerOffsetX, 80);
                 this.hiddenCtx.fillText(this.gs.score, 50, 80);
 
                 // Draw the current fruit type at the right middle of the screen
                 if (this.gs.mode === "playing") {
-                    this.hiddenCtx.fillStyle = this.gs.currentFruitType.name;
+                    const currentFruitOffsetX = 750;
+                    this.hiddenCtx.fillStyle = 'white';
                     this.hiddenCtx.font = '24px Helvetica';
-                    this.hiddenCtx.fillText('Current Fruit', this.dataGameWidth - 200, this.dataGameHeight / 2 - 50);
+                    // Make the text align centered
+                    this.hiddenCtx.textAlign = 'center';
+                    this.hiddenCtx.fillText('Current Fruit', currentFruitOffsetX, this.dataGameHeight / 2 - 50);
                     // Display the fruit as an image
-                    this.hiddenCtx.drawImage(this.$refs[this.gs.currentFruitType.imgRef], this.dataGameWidth - 200, this.dataGameHeight / 2, tileWidth, tileWidth);
+                    this.hiddenCtx.drawImage(this.$refs[this.gs.currentFruitType.imgRef], currentFruitOffsetX - 20, this.dataGameHeight / 2, tileWidth, tileWidth);
                 }
 
                 // Draw the board's points display
