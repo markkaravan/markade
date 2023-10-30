@@ -9,6 +9,7 @@
             <button class="btn" id="easyButton" @click="generateEasyPuzzle">Easy</button>
             <button class="btn" id="mediumButton" @click="generateMediumPuzzle">Medium</button>
             <button class="btn" id="hardButton" @click="generateHardPuzzle">Hard</button>
+            <button class="btn" id="impossibleButton" @click="generateImpossiblePuzzle">Impossible</button>
             <button class="btn" id="clearButton" @click="clearBoard">Clear</button>
             <button class="btn" id="solveButton" @click="solveBoard">Solve</button>
         </div>
@@ -39,6 +40,130 @@
     const buttonOffsetY = 100;
     const buttonFont = '20px Arial';
     const buttonTextColor = 'black';
+
+    const sudokuSeeds = [
+        {
+            difficulty: "Easy",
+            boards: [
+                [
+                    [5, 0, 3, 9, 0, 0, 0, 7, 0],
+                    [8, 0, 2, 6, 1, 0, 5, 0, 9],
+                    [6, 0, 0, 0, 5, 7, 8, 0, 1],
+                    [0, 2, 6, 0, 7, 0, 4, 1, 0],
+                    [0, 5, 0, 0, 2, 0, 7, 0, 3],
+                    [3, 0, 7, 0, 6, 0, 0, 0, 8],
+                    [0, 0, 0, 7, 0, 0, 0, 9, 0],
+                    [0, 6, 9, 0, 0, 2, 0, 5, 7],
+                    [0, 0, 5, 0, 0, 6, 0, 0, 4]
+                ],
+                [
+                    [0, 0, 0, 4, 5, 3, 6, 7, 8],
+                    [0, 0, 0, 0, 0, 8, 0, 0, 0],
+                    [8, 7, 0, 0, 0, 6, 0, 0, 0],
+                    [5, 0, 2, 0, 0, 0, 3, 0, 4],
+                    [0, 0, 0, 0, 3, 4, 0, 9, 2],
+                    [0, 0, 3, 2, 6, 0, 0, 0, 0],
+                    [0, 0, 8, 0, 0, 0, 0, 0, 9],
+                    [6, 0, 0, 0, 8, 0, 0, 5, 3],
+                    [0, 0, 7, 3, 0, 2, 1, 8, 0]
+                ]
+            ],
+        },
+        {
+            difficulty: "Medium",
+            boards: [
+                [
+                    [0, 7, 0, 0, 0, 2, 0, 6, 1],
+                    [9, 6, 0, 0, 0, 0, 0, 0, 8],
+                    [0, 0, 5, 0, 0, 6, 0, 0, 0],
+                    [0, 9, 6, 0, 1, 0, 0, 0, 0],
+                    [2, 1, 8, 0, 0, 0, 7, 0, 5],
+                    [0, 0, 0, 4, 2, 0, 0, 0, 6],
+                    [5, 0, 0, 0, 6, 7, 0, 8, 4],
+                    [0, 0, 0, 0, 0, 3, 2, 0, 0],
+                    [8, 0, 0, 0, 0, 0, 0, 1, 3]
+                ],
+                [
+                    [0, 0, 0, 0, 0, 1, 4, 0, 0],
+                    [0, 2, 0, 0, 0, 0, 0, 0, 5],
+                    [0, 0, 0, 0, 0, 5, 6, 0, 3],
+                    [2, 0, 0, 0, 8, 0, 0, 6, 4],
+                    [7, 0, 3, 0, 0, 0, 5, 9, 8],
+                    [0, 5, 0, 4, 0, 0, 0, 0, 2],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [8, 1, 5, 0, 6, 0, 3, 0, 9],
+                    [0, 0, 0, 8, 0, 9, 2, 5, 6]
+                ]
+            ],
+        },
+        {
+            difficulty: "Hard",
+            boards: [
+                [
+                    [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [1, 5, 0, 0, 0, 9, 0, 0, 0],
+                    [6, 2, 9, 0, 0, 0, 5, 0, 0],
+                    [8, 6, 5, 4, 2, 0, 3, 0, 0],
+                    [0, 0, 0, 9, 0, 0, 7, 8, 0],
+                    [0, 0, 0, 0, 0, 3, 0, 0, 0],
+                    [9, 0, 0, 7, 0, 0, 8, 0, 5],
+                    [0, 3, 0, 5, 0, 0, 2, 0, 0],
+                    [5, 0, 0, 0, 0, 0, 0, 7, 4]
+                ],
+                [
+                    [0, 8, 0, 0, 2, 0, 5, 6, 0],
+                    [0, 0, 0, 1, 0, 0, 0, 0, 7],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 5, 0, 0, 9, 0, 4, 0, 8],
+                    [0, 0, 7, 8, 0, 0, 0, 0, 3],
+                    [0, 9, 0, 0, 1, 0, 0, 5, 0],
+                    [2, 0, 4, 0, 0, 0, 8, 0, 0],
+                    [0, 6, 0, 0, 8, 5, 0, 0, 0],
+                    [0, 0, 0, 2, 0, 0, 1, 0, 0],
+                ]
+            ],
+        },
+        {
+            difficulty: "Impossible",
+            boards: [
+                [
+                    [0, 6, 5, 1, 0, 4, 0, 2, 0],
+                    [3, 0, 0, 0, 5, 0, 0, 0, 0],
+                    [8, 0, 0, 0, 0, 0, 0, 0, 6],
+                    [5, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 9, 1, 0, 4, 0, 0, 0, 3],
+                    [0, 0, 0, 0, 0, 2, 7, 0, 0],
+                    [0, 8, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 9, 0, 0, 0, 3, 0],
+                    [0, 4, 6, 0, 1, 0, 0, 0, 9]
+                ],
+                [
+                    [0, 7, 0, 0, 8, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 0, 3, 0],
+                    [0, 0, 6, 7, 0, 9, 4, 0, 0],
+                    [0, 0, 8, 0, 4, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 5, 0, 2, 0, 0],
+                    [0, 6, 0, 8, 0, 2, 0, 0, 1],
+                    [0, 0, 7, 2, 0, 6, 9, 0, 0],
+                    [0, 0, 0, 0, 0, 5, 0, 0, 0],
+                    [9, 0, 0, 0, 0, 0, 0, 0, 4]
+                ],
+                [
+                    [8, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 3, 6, 0, 0, 0, 0, 0],
+                    [0, 7, 0, 0, 9, 0, 2, 0, 0],
+                    [0, 5, 0, 0, 0, 7, 0, 0, 0],
+                    [0, 0, 0, 0, 4, 5, 7, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0, 3, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 6, 8],
+                    [0, 0, 8, 5, 0, 0, 0, 1, 0],
+                    [0, 9, 0, 0, 0, 0, 4, 0, 0]
+                ]
+            ]
+        }
+    ];
+
+
 
     const sudokuPuzzles = [
         {   name: "Empty",
@@ -486,18 +611,33 @@
             },
 
             generateEasyPuzzle() {
-                console.log("Generating Easy Puzzle");
-                const puzzle = sudokuPuzzles.find(p => p.name === "Easy1");
-                if (!puzzle) {
-                    return;
-                }
+                this.generateRandomizedPuzzle("Easy");
+            },
+
+            generateMediumPuzzle() {
+                this.generateRandomizedPuzzle("Medium");
+            },
+
+            generateHardPuzzle() {
+                this.generateRandomizedPuzzle("Hard");
+            },
+
+            generateImpossiblePuzzle() {
+                this.generateRandomizedPuzzle("Impossible");
+            },
+
+            generateRandomizedPuzzle(difficulty) {
+                // Select a random board from sudokuSeeds by the difficulty prop passing in the difficulty argument
+                let seedGroup = sudokuSeeds.filter(seed => seed.difficulty === difficulty)[0];
+                // Select a random board from the seedGroup
+                let puzzle = seedGroup.boards[Math.floor(Math.random() * seedGroup.boards.length)];
                 // Initialize the board.  Then loop through the puzzle and set the values
                 this.initializeBoard();
                 let board = Mixins.copy(this.solutionObj.board);
-                for (let row = 0; row < puzzle.board.length; row++) {
-                    for (let col = 0; col < puzzle.board[row].length; col++) {
+                for (let row = 0; row < puzzle.length; row++) {
+                    for (let col = 0; col < puzzle[row].length; col++) {
                         // if this is a value between 1 and 9, set the value, otherwise, set it to null
-                        const value = puzzle.board[row][col];
+                        const value = puzzle[row][col];
                         if (value >= 1 && value <= 9) {
                             board[row][col].value = value;
                             board[row][col].possibleValues = []
@@ -508,9 +648,7 @@
                     }
                 }
                 // Randomize the board values
-                console.log("***BEFORE RANDOMIZATION***");
                 let randomizedBoard = this.randomizeBoard(Mixins.copy(board));
-                console.log("****AFTER RANDOMIZATION***", randomizedBoard);
 
                 let prunedBoard = this.initialPruning(Mixins.copy(randomizedBoard));
                 this.solutionObj.board = Mixins.copy(prunedBoard);
@@ -1368,7 +1506,7 @@
             background-color: #ddd;
         }
 
-        #hardButton {
+        #impossibleButton {
             margin-bottom: 100px;
         }
     }
