@@ -458,7 +458,8 @@
                 // console.log("Initialized board: ", this.solutionObj.board);
 
             // generate an easy puzzle
-            this.generatePuzzle("WorldsHardest");
+            // this.generatePuzzle("WorldsHardest");
+            this.generateRandomizedPuzzle("Impossible");
 
             this.renderBoard();
         },
@@ -607,7 +608,9 @@
                         };
                     }
                 }
+                console.log(board);
                 this.solutionObj.board = Mixins.copy(board);
+                this.displayBoard = this.solutionObj.board;
             },
 
             generateEasyPuzzle() {
@@ -731,36 +734,38 @@
                 return board;
             },
 
-            generatePuzzle(puzzleName) {
-                const puzzle = sudokuPuzzles.find(p => p.name === puzzleName);
-                if (!puzzle) {
-                    return;
-                }
-                // Initialize the board.  Then loop through the puzzle and set the values
-                this.initializeBoard();
-                let board = Mixins.copy(this.solutionObj.board);
-                for (let row = 0; row < puzzle.board.length; row++) {
-                    for (let col = 0; col < puzzle.board[row].length; col++) {
-                        // if this is a value between 1 and 9, set the value, otherwise, set it to null
-                        const value = puzzle.board[row][col];
-                        if (value >= 1 && value <= 9) {
-                            board[row][col].value = value;
-                            board[row][col].possibleValues = []
-                        } else {
-                            board[row][col].value = null;
-                            board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-                        }
-                    }
-                }
-                let prunedBoard = this.initialPruning(board);
-                this.solutionObj.board = Mixins.copy(prunedBoard);
-                this.displayBoard = this.solutionObj.board;
-            },
+            // generatePuzzle(puzzleName) {
+            //     const puzzle = sudokuPuzzles.find(p => p.name === puzzleName);
+            //     if (!puzzle) {
+            //         return;
+            //     }
+            //     // Initialize the board.  Then loop through the puzzle and set the values
+            //     this.initializeBoard();
+            //     let board = Mixins.copy(this.solutionObj.board);
+            //     for (let row = 0; row < puzzle.board.length; row++) {
+            //         for (let col = 0; col < puzzle.board[row].length; col++) {
+            //             // if this is a value between 1 and 9, set the value, otherwise, set it to null
+            //             const value = puzzle.board[row][col];
+            //             if (value >= 1 && value <= 9) {
+            //                 board[row][col].value = value;
+            //                 board[row][col].possibleValues = []
+            //             } else {
+            //                 board[row][col].value = null;
+            //                 board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            //             }
+            //         }
+            //     }
+            //     let prunedBoard = this.initialPruning(board);
+            //     this.solutionObj.board = Mixins.copy(prunedBoard);
+            //     this.displayBoard = this.solutionObj.board;
+            // },
 
 
             clearBoard() {
                 // clear the board
+                console.log("Clearing board");
                 this.initializeBoard();
+                this.renderBoard();
             },
 
             solvePuzzle(solutionObj) {
