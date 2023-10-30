@@ -6,12 +6,12 @@
 
     <div id="rightSide">
         <div id="buttons">
-            <button class="btn" id="easyButton" @click="generateEasyPuzzle">Easy</button>
-            <button class="btn" id="mediumButton" @click="generateMediumPuzzle">Medium</button>
-            <button class="btn" id="hardButton" @click="generateHardPuzzle">Hard</button>
-            <button class="btn" id="impossibleButton" @click="generateImpossiblePuzzle">Impossible</button>
-            <button class="btn" id="clearButton" @click="clearBoard">Clear</button>
-            <button class="btn" id="solveButton" @click="solveBoard">Solve</button>
+            <button class="btn" v-bind:disabled="isSolving()" id="easyButton" @click="generateEasyPuzzle">Easy</button>
+            <button class="btn" v-bind:disabled="isSolving()" id="mediumButton" @click="generateMediumPuzzle">Medium</button>
+            <button class="btn" v-bind:disabled="isSolving()" id="hardButton" @click="generateHardPuzzle">Hard</button>
+            <button class="btn" v-bind:disabled="isSolving()" id="impossibleButton" @click="generateImpossiblePuzzle">Impossible</button>
+            <button class="btn" v-bind:disabled="isSolving()" id="clearButton" @click="clearBoard">Clear</button>
+            <button class="btn" v-bind:disabled="isSolving()" id="solveButton" @click="solveBoard">Solve</button>
         </div>
         <!-- <div id="instructions">
             <p>Instructions:</p>
@@ -439,28 +439,26 @@
 
             // Initialize the board
             const rows = 8;
-                const cols = 8;
+            const cols = 8;
 
-                // Initialize the board with empty tiles
-                let board = []
-                for (let row = 0; row <= rows; row++) {
-                    board[row] = [];
-                    for (let col = 0; col <= cols; col++) {
-                        board[row][col] = {
-                            row,
-                            col,
-                            value: null,
-                            mode: 'normal',
-                            possibleValues: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-                        };
-                    }
+            // Initialize the board with empty tiles
+            let board = []
+            for (let row = 0; row <= rows; row++) {
+                board[row] = [];
+                for (let col = 0; col <= cols; col++) {
+                    board[row][col] = {
+                        row,
+                        col,
+                        value: null,
+                        mode: 'normal',
+                        possibleValues: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    };
                 }
-                this.solutionObj.board = Mixins.copy(board);
-                this.displayBoard = this.solutionObj.board;
-                // console.log("Initialized board: ", this.solutionObj.board);
+            }
+            this.solutionObj.board = Mixins.copy(board);
+            this.displayBoard = this.solutionObj.board;
 
             // generate an easy puzzle
-            // this.generatePuzzle("WorldsHardest");
             this.generateRandomizedPuzzle("Impossible");
 
             this.renderBoard();
@@ -485,13 +483,6 @@
             handleKeyDown(event) {
                 if (event.code === 'KeyE') {
                     this.generatePuzzle("Easy1");
-                } else if (event.code === "KeyM") {
-                    this.generatePuzzle("Medium1")
-                } else if (event.code === "KeyS") {
-                    let newSolutionObj = this.solvePuzzle(this.solutionObj);
-                    if (newSolutionObj !== null) {
-                        this.solutionObj = Mixins.copy(newSolutionObj);
-                    }
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
                 } else if (event.code === "KeyV") {
@@ -500,23 +491,6 @@
                     // console.log(this.boardIsCorrect(this.solutionObj.board));
                 } else if (event.code === "KeyF") {
                     this.boardIsFull(this.solutionObj.board);
-                } else if (event.code === "KeyL") {
-                    this.splitSolutionObject(this.solutionObj);
-                } else if (event.code === "KeyP") {
-                    let board = Mixins.copy(this.solutionObj.board);
-                    let newBoard = this.prunePossibleValues(board);
-                    this.solutionObj.board = Mixins.copy(newBoard);
-                    this.displayBoard = this.solutionObj.board;
-                } else if (event.code === "KeyU") {
-                    let board = Mixins.copy(this.solutionObj.board);
-                    let newBoard = this.findUniqueValues(board);
-                    this.solutionObj.board = Mixins.copy(newBoard);
-                    this.displayBoard = this.solutionObj.board;
-                } else if (event.code === "KeyG") {
-                    let board = Mixins.copy(this.solutionObj.board);
-                    let newBoard = this.removeNakedSingles(board);
-                    this.solutionObj.board = Mixins.copy(newBoard);
-                    this.displayBoard = this.solutionObj.board;
 
                 // produce if statements for 0-9 keys
                 } else if (event.code === "Digit1") {
@@ -593,6 +567,19 @@
                 }
             },
 
+            isSolving() {
+                return this.solveCallCount > 0;
+            },
+
+
+
+
+            /****************************************
+             * 
+             *          Board Creation
+             * 
+             ****************************************/
+
             initializeBoard() {
                 const rows = 8;
                 const cols = 8;
@@ -653,16 +640,14 @@
                         }
                     }
                 }
-                // Randomize the board values
-                let randomizedBoard = this.randomizeBoard(Mixins.copy(board));
 
-                let prunedBoard = this.initialPruning(Mixins.copy(randomizedBoard));
-                this.solutionObj.board = Mixins.copy(prunedBoard);
-                this.displayBoard = this.solutionObj.board;
-                this.renderBoard();
-            },
+                /***********************************
+                 * 
+                 *        Randomize the board
+                 * 
+                 ***********************************/
 
-            randomizeBoard(board) {
+
                 // create a random permutation of numbers 1-9
                 let randomPermutation = [1, 2, 3, 4, 5, 6, 7, 8, 9];
                 for (let i = 0; i < randomPermutation.length; i++) {
@@ -734,81 +719,12 @@
                     board = newBoard;
                 }
 
-                return board;
-            },
-
-            clearBoard() {
-                // clear the board
-                console.log("Clearing board");
-                this.message = null;
-                this.initializeBoard();
-                this.renderBoard();
-            },
-
-            solveBoard() {
-                this.message = "Solving puzzle..."
-                let res = this.renderBoard();
-                // Call this.solvePuzzle(this.solutionObj) after a 100ms delay
-                // This way it is sure to render the message
-                setTimeout(() => {
-                    this.solveCallCount = 0;
-                    let result = this.solvePuzzle(this.solutionObj);
-                    if (result !== null) {
-                        this.solutionObj = Mixins.copy(result);
-                        this.displayBoard = this.solutionObj.board;
-                        this.message = "Puzzle solved!"
-                    } else {
-                        this.message = "Puzzle could not be solved."
-                    }
-                    this.renderBoard();
-                }, 100);
-            },
-
-            solvePuzzle(solutionObj) {
-                this.displayBoard = solutionObj.board;
-                this.renderBoard();
-
-                this.solveCallCount++;
-                if (this.solveTerminateFlag || this.solveCallCount > solveCallCountMax) {
-                    return null;
-                }
-
-                if (!this.boardIsValid(solutionObj.board, solutionObj.id)) {
-                    return null;
-                }
-
-                if (this.boardIsCorrect(solutionObj.board)) {
-                    return solutionObj;
-                }
-
-                let oldBoard = Mixins.copy(solutionObj.board);
-                let prunedBoard = this.prunePossibleValues(Mixins.copy(solutionObj.board));
-                prunedBoard = this.removeNakedSingles(Mixins.copy(prunedBoard));
-                prunedBoard = this.prunePossibleValues(Mixins.copy(prunedBoard));
-                prunedBoard = this.findUniqueValues(Mixins.copy(prunedBoard));                
-
-
-                if (!this.boardsAreEqual(oldBoard, prunedBoard)) {
-                    solutionObj.board = Mixins.copy(prunedBoard);
-                    return this.solvePuzzle(solutionObj);
-                } else {
-                    let splitSolutionObject = this.splitSolutionObject(solutionObj);
-                    for (let i = 0; i < splitSolutionObject.children.length; i++) {
-                        const res = this.solvePuzzle(splitSolutionObject.children[i]);
-                        if (res !== null) {
-                            return this.solvePuzzle(res);
-                        } else {
-                            continue;
-                        }
-                    }
-                    return null;
-                }
-            }, 
-
-
-
-            initialPruning(board) {
-                const prunePossibleRowValuesForTile = (row, col) => {
+                /***********************************
+                 * 
+                 *        Prune the board
+                 * 
+                 ***********************************/
+                 const prunePossibleRowValuesForTile = (row, col) => {
                     // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
                     let tile = board[row][col];
                     for (let c = 0; c < board[row].length; c++) {
@@ -858,17 +774,125 @@
                         }
                     }
                 }
-                // console.log("Priuned:", board);
 
-                return board;
+                // let prunedBoard = this.initialPruning(Mixins.copy(board));
+                this.solutionObj.board = Mixins.copy(board);
+                this.displayBoard = this.solutionObj.board;
+                this.renderBoard();
+            },
+
+            clearBoard() {
+                // clear the board
+                this.message = null;
+                this.solveCallCount = 0;
+                this.initializeBoard();
+                this.renderBoard();
+            },
+
+            solveBoard() {
+                this.message = "Solving puzzle..."
+                this.solveCallCount = 1; // This is to trigger the isSolving() method
+                let res = this.renderBoard();
+                // Call this.solvePuzzle(this.solutionObj) after a 100ms delay
+                // This way it is sure to render the message before solving the puzzle
+                setTimeout(() => {
+
+                    let result = this.solvePuzzle(this.solutionObj);
+                    if (result !== null) {
+                        this.solutionObj = Mixins.copy(result);
+                        this.displayBoard = this.solutionObj.board;
+                        this.message = "Puzzle solved!"
+                    } else {
+                        this.message = "Puzzle could not be solved."
+                    }
+                    this.solveCallCount = 0;
+                    this.renderBoard();
+                }, 100);
+            },
+
+            solvePuzzle(solutionObj) {
+                this.displayBoard = solutionObj.board;
+                this.renderBoard();
+
+                this.solveCallCount++;
+                if (this.solveTerminateFlag || this.solveCallCount > solveCallCountMax) {
+                    return null;
+                }
+
+                if (!this.boardIsValid(solutionObj.board, solutionObj.id)) {
+                    return null;
+                }
+
+                if (this.boardIsCorrect(solutionObj.board)) {
+                    return solutionObj;
+                }
+
+                let oldBoard = Mixins.copy(solutionObj.board);
+                let prunedBoard = this.prunePossibleValues(Mixins.copy(solutionObj.board));
+                prunedBoard = this.removeNakedSingles(Mixins.copy(prunedBoard));
+                prunedBoard = this.prunePossibleValues(Mixins.copy(prunedBoard));
+                prunedBoard = this.findUniqueValues(Mixins.copy(prunedBoard));                
+
+
+                if (!this.boardsAreEqual(oldBoard, prunedBoard)) {
+                    solutionObj.board = Mixins.copy(prunedBoard);
+                    return this.solvePuzzle(solutionObj);
+                } else {
+                    let splitSolutionObject = this.splitSolutionObject(solutionObj);
+                    for (let i = 0; i < splitSolutionObject.children.length; i++) {
+                        const res = this.solvePuzzle(splitSolutionObject.children[i]);
+                        if (res !== null) {
+                            return this.solvePuzzle(res);
+                        } else {
+                            continue;
+                        }
+                    }
+                    return null;
+                }
+            }, 
+
+            splitSolutionObject(solutionObj) {
+                let board = Mixins.copy(solutionObj.board);
+                let minPossibleValues = 10;
+                let minPossibleValuesTile = null;
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        let tile = board[row][col];
+                        if (tile.value === null && tile.possibleValues.length < minPossibleValues) {
+                            minPossibleValues = tile.possibleValues.length;
+                            minPossibleValuesTile = tile;
+                        }
+                    }
+                }
+                for (let i = 0; i < minPossibleValuesTile.possibleValues.length; i++) {
+                    const value = minPossibleValuesTile.possibleValues[i];
+                    this.globalBoardId++;
+                    let newSolutionObj = {
+                        id: this.globalBoardId,
+                        depth: solutionObj.depth + 1,
+                        board: null,
+                        children: []
+                    };
+                    let newBoard = this.promoteValueAndPrune(Mixins.copy(board), minPossibleValuesTile.row, minPossibleValuesTile.col, value);
+                    newSolutionObj.board = newBoard;
+                    solutionObj.children.push(newSolutionObj);
+                }
+                if (solutionObj.depth + 1 > this.maxDepth) {
+                    this.maxDepth = solutionObj.depth + 1;
+                }
+            
+                return solutionObj;
             },
 
 
-
+            /*****************************************
+             * 
+             *          Solving Techniques 
+             * 
+             *****************************************/
 
 
             prunePossibleValues(board) {
-
                 let abort = false;
                 /*****************************************
                  * 
@@ -936,7 +960,6 @@
                         }
                         // If there are two tiles in the block that have only two possible values, and those values are the same, remove those two possible values from all other tiles in the block
                         if (possiblePairs.length === 2 && Mixins.arraysAreEqual(possiblePairs[0].possibleValues, possiblePairs[1].possibleValues)) {
-                            // console.log("Found possible pairs at: ", blockRow, blockCol, possiblePairs);
                             const value1 = possiblePairs[0].possibleValues[0];
                             const value2 = possiblePairs[0].possibleValues[1];
                             for (let row = blockRow * 3; !abort && row < blockRow * 3 + 3; row++) {
@@ -965,7 +988,6 @@
                                     }
                                 }
                             }
-
                         }
                     }
                 } 
@@ -1038,7 +1060,6 @@
                         for (let i = 0; i < possibleValuesWithTwoTiles.length; i++) {
                             for (let j = i + 1; j < possibleValuesWithTwoTiles.length; j++) {
                                 if (Mixins.arraysAreEqual(possibleValuesWithTwoTiles[i][1], possibleValuesWithTwoTiles[j][1])) {
-                                    // console.log("Found a hidden pair: ", possibleValuesWithTwoTiles[i][0], possibleValuesWithTwoTiles[j][0], possibleValuesWithTwoTiles[i][1]);
                                     const value1 = possibleValuesWithTwoTiles[i][0];
                                     const value2 = possibleValuesWithTwoTiles[j][0];
                                     const tile1 = possibleValuesWithTwoTiles[i][1][0];
@@ -1179,6 +1200,13 @@
                 }
                 return Mixins.copy(board);
             },
+
+
+            /****************************************
+             * 
+             *      Validation and Helper Methods
+             * 
+            ******************************************/
 
             boardsAreEqual(board1, board2) {
                 if (board1.length !== board2.length) {
@@ -1367,38 +1395,7 @@
                 return full;
             },
 
-            splitSolutionObject(solutionObj) {
-                let board = Mixins.copy(solutionObj.board);
-                let minPossibleValues = 10;
-                let minPossibleValuesTile = null;
-                for (let row = 0; row < board.length; row++) {
-                    for (let col = 0; col < board[row].length; col++) {
-                        let tile = board[row][col];
-                        if (tile.value === null && tile.possibleValues.length < minPossibleValues) {
-                            minPossibleValues = tile.possibleValues.length;
-                            minPossibleValuesTile = tile;
-                        }
-                    }
-                }
-                for (let i = 0; i < minPossibleValuesTile.possibleValues.length; i++) {
-                    const value = minPossibleValuesTile.possibleValues[i];
-                    this.globalBoardId++;
-                    let newSolutionObj = {
-                        id: this.globalBoardId,
-                        depth: solutionObj.depth + 1,
-                        board: null,
-                        children: []
-                    };
-                    let newBoard = this.promoteValueAndPrune(Mixins.copy(board), minPossibleValuesTile.row, minPossibleValuesTile.col, value);
-                    newSolutionObj.board = newBoard;
-                    solutionObj.children.push(newSolutionObj);
-                }
-                if (solutionObj.depth + 1 > this.maxDepth) {
-                    this.maxDepth = solutionObj.depth + 1;
-                }
-            
-                return solutionObj;
-            },
+
 
             renderBoard() {
                 // Draw black background to hidden context
