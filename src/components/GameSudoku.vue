@@ -40,6 +40,7 @@
     const buttonOffsetY = 100;
     const buttonFont = '20px Arial';
     const buttonTextColor = 'black';
+    const solveCallCountMax = 5000;
 
     const sudokuSeeds = [
         {
@@ -126,28 +127,28 @@
         {
             difficulty: "Impossible",
             boards: [
-                [
-                    [0, 6, 5, 1, 0, 4, 0, 2, 0],
-                    [3, 0, 0, 0, 5, 0, 0, 0, 0],
-                    [8, 0, 0, 0, 0, 0, 0, 0, 6],
-                    [5, 0, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 9, 1, 0, 4, 0, 0, 0, 3],
-                    [0, 0, 0, 0, 0, 2, 7, 0, 0],
-                    [0, 8, 0, 0, 0, 0, 0, 0, 0],
-                    [0, 0, 0, 9, 0, 0, 0, 3, 0],
-                    [0, 4, 6, 0, 1, 0, 0, 0, 9]
-                ],
-                [
-                    [0, 7, 0, 0, 8, 0, 0, 0, 0],
-                    [0, 1, 0, 0, 0, 0, 0, 3, 0],
-                    [0, 0, 6, 7, 0, 9, 4, 0, 0],
-                    [0, 0, 8, 0, 4, 0, 0, 0, 0],
-                    [0, 0, 0, 0, 5, 0, 2, 0, 0],
-                    [0, 6, 0, 8, 0, 2, 0, 0, 1],
-                    [0, 0, 7, 2, 0, 6, 9, 0, 0],
-                    [0, 0, 0, 0, 0, 5, 0, 0, 0],
-                    [9, 0, 0, 0, 0, 0, 0, 0, 4]
-                ],
+                // [
+                //     [0, 6, 5, 1, 0, 4, 0, 2, 0],
+                //     [3, 0, 0, 0, 5, 0, 0, 0, 0],
+                //     [8, 0, 0, 0, 0, 0, 0, 0, 6],
+                //     [5, 0, 0, 0, 0, 0, 0, 0, 0],
+                //     [0, 9, 1, 0, 4, 0, 0, 0, 3],
+                //     [0, 0, 0, 0, 0, 2, 7, 0, 0],
+                //     [0, 8, 0, 0, 0, 0, 0, 0, 0],
+                //     [0, 0, 0, 9, 0, 0, 0, 3, 0],
+                //     [0, 4, 6, 0, 1, 0, 0, 0, 9]
+                // ],
+                // [
+                //     [0, 7, 0, 0, 8, 0, 0, 0, 0],
+                //     [0, 1, 0, 0, 0, 0, 0, 3, 0],
+                //     [0, 0, 6, 7, 0, 9, 4, 0, 0],
+                //     [0, 0, 8, 0, 4, 0, 0, 0, 0],
+                //     [0, 0, 0, 0, 5, 0, 2, 0, 0],
+                //     [0, 6, 0, 8, 0, 2, 0, 0, 1],
+                //     [0, 0, 7, 2, 0, 6, 9, 0, 0],
+                //     [0, 0, 0, 0, 0, 5, 0, 0, 0],
+                //     [9, 0, 0, 0, 0, 0, 0, 0, 4]
+                // ],
                 [
                     [8, 0, 0, 0, 0, 0, 0, 0, 0],
                     [0, 0, 3, 6, 0, 0, 0, 0, 0],
@@ -416,6 +417,7 @@
                 solveTerminateFlag: false,
                 globalBoardId: 0,
                 maxDepth: 0,
+                message: null,
                 solutionObj: {
                     id: 0,
                     depth: 0,
@@ -630,6 +632,7 @@
             },
 
             generateRandomizedPuzzle(difficulty) {
+                this.message = null;
                 // Select a random board from sudokuSeeds by the difficulty prop passing in the difficulty argument
                 let seedGroup = sudokuSeeds.filter(seed => seed.difficulty === difficulty)[0];
                 // Select a random board from the seedGroup
@@ -734,38 +737,31 @@
                 return board;
             },
 
-            // generatePuzzle(puzzleName) {
-            //     const puzzle = sudokuPuzzles.find(p => p.name === puzzleName);
-            //     if (!puzzle) {
-            //         return;
-            //     }
-            //     // Initialize the board.  Then loop through the puzzle and set the values
-            //     this.initializeBoard();
-            //     let board = Mixins.copy(this.solutionObj.board);
-            //     for (let row = 0; row < puzzle.board.length; row++) {
-            //         for (let col = 0; col < puzzle.board[row].length; col++) {
-            //             // if this is a value between 1 and 9, set the value, otherwise, set it to null
-            //             const value = puzzle.board[row][col];
-            //             if (value >= 1 && value <= 9) {
-            //                 board[row][col].value = value;
-            //                 board[row][col].possibleValues = []
-            //             } else {
-            //                 board[row][col].value = null;
-            //                 board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-            //             }
-            //         }
-            //     }
-            //     let prunedBoard = this.initialPruning(board);
-            //     this.solutionObj.board = Mixins.copy(prunedBoard);
-            //     this.displayBoard = this.solutionObj.board;
-            // },
-
-
             clearBoard() {
                 // clear the board
                 console.log("Clearing board");
+                this.message = null;
                 this.initializeBoard();
                 this.renderBoard();
+            },
+
+            solveBoard() {
+                this.message = "Solving puzzle..."
+                let res = this.renderBoard();
+                // Call this.solvePuzzle(this.solutionObj) after a 100ms delay
+                // This way it is sure to render the message
+                setTimeout(() => {
+                    this.solveCallCount = 0;
+                    let result = this.solvePuzzle(this.solutionObj);
+                    if (result !== null) {
+                        this.solutionObj = Mixins.copy(result);
+                        this.displayBoard = this.solutionObj.board;
+                        this.message = "Puzzle solved!"
+                    } else {
+                        this.message = "Puzzle could not be solved."
+                    }
+                    this.renderBoard();
+                }, 100);
             },
 
             solvePuzzle(solutionObj) {
@@ -773,7 +769,7 @@
                 this.renderBoard();
 
                 this.solveCallCount++;
-                if (this.solveTerminateFlag || this.solveCallCount > 5000) {
+                if (this.solveTerminateFlag || this.solveCallCount > solveCallCountMax) {
                     return null;
                 }
 
@@ -1409,6 +1405,14 @@
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
 
+                // Render the message
+                if (this.message !== null) {
+                    this.hiddenCtx.fillStyle = 'rgb(100, 100, 255)';
+                    this.hiddenCtx.font = '20px Arial';
+                    this.hiddenCtx.textAlign = 'center';
+                    this.hiddenCtx.fillText(this.message, 275, 60);
+                }
+
 
                 /***************************************
                  * 
@@ -1470,6 +1474,8 @@
                 // Draw to main canvas
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
                 this.ctx.drawImage(this.hiddenCanvas, 0, 0);
+
+                return true;
             },
 
         } // methods
