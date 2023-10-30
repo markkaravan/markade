@@ -1,18 +1,18 @@
 <template>
     <div id="leftSide">
-        <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="600" :height="dataGameHeight"></canvas>
-        <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
+        <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="550" :height="dataGameHeight"></canvas>
+        <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="550" :height="dataGameHeight"></canvas>
     </div>
 
-    <!-- <div id="rightSide">
+    <div id="rightSide">
         <div id="buttons">
-            <button id="easyButton" @click="generateEasyPuzzle">Generate Easy Puzzle</button>
-            <button id="mediumButton" @click="generateMediumPuzzle">Generate Medium Puzzle</button>
-            <button id="hardButton" @click="generateHardPuzzle">Generate Hard Puzzle</button>
-            <button id="clearButton" @click="clearBoard">Clear</button>
-            <button id="solveButton" @click="solveBoard">Solve</button>
+            <button class="btn" id="easyButton" @click="generateEasyPuzzle">Easy</button>
+            <button class="btn" id="mediumButton" @click="generateMediumPuzzle">Medium</button>
+            <button class="btn" id="hardButton" @click="generateHardPuzzle">Hard</button>
+            <button class="btn" id="clearButton" @click="clearBoard">Clear</button>
+            <button class="btn" id="solveButton" @click="solveBoard">Solve</button>
         </div>
-        <div id="instructions">
+        <!-- <div id="instructions">
             <p>Instructions:</p>
             <p>Click on a tile to select it. Use the arrow keys to move the selection around the board.</p>
             <p>Press a number key to enter a value into the selected tile.</p>
@@ -20,8 +20,8 @@
             <p>Press the "Generate Easy Puzzle" button to generate a new puzzle.</p>
             <p>Press the "Clear" button to clear the board.</p>
             <p>Press the "Solve" button to solve the puzzle.</p>
-        </div>
-    </div> -->
+        </div> -->
+    </div>
 </template>
 
 <script>
@@ -330,7 +330,7 @@
                 }
                 this.solutionObj.board = Mixins.copy(board);
                 this.displayBoard = this.solutionObj.board;
-                console.log("Initialized board: ", this.solutionObj.board);
+                // console.log("Initialized board: ", this.solutionObj.board);
 
             // generate an easy puzzle
             this.generatePuzzle("WorldsHardest");
@@ -367,9 +367,9 @@
                 } else if (event.code === "KeyI") {
                     this.inspectMode = !this.inspectMode;
                 } else if (event.code === "KeyV") {
-                    console.log(this.boardIsValid(this.solutionObj.board));
+                    // console.log(this.boardIsValid(this.solutionObj.board));
                 } else if (event.code === "KeyC") {
-                    console.log(this.boardIsCorrect(this.solutionObj.board));
+                    // console.log(this.boardIsCorrect(this.solutionObj.board));
                 } else if (event.code === "KeyF") {
                     this.boardIsFull(this.solutionObj.board);
                 } else if (event.code === "KeyL") {
@@ -438,8 +438,6 @@
                         }
                     }
                 }
-                console.log("Clicked: ", board[row][col]);
-                console.log(board);
                 this.renderBoard();
             },
 
@@ -457,7 +455,6 @@
             },
 
             changeNumber(number) {
-                console.log("Changing number...");
                 let activeTile = this.findActiveTile();
                 if (activeTile !== null && number >= 1 && number <= 9) {
                     activeTile.value = number;
@@ -486,13 +483,119 @@
                     }
                 }
                 this.solutionObj.board = Mixins.copy(board);
-                console.log("Initialized board: ", this.solutionObj.board);
+            },
+
+            generateEasyPuzzle() {
+                console.log("Generating Easy Puzzle");
+                const puzzle = sudokuPuzzles.find(p => p.name === "Easy1");
+                if (!puzzle) {
+                    return;
+                }
+                // Initialize the board.  Then loop through the puzzle and set the values
+                this.initializeBoard();
+                let board = Mixins.copy(this.solutionObj.board);
+                for (let row = 0; row < puzzle.board.length; row++) {
+                    for (let col = 0; col < puzzle.board[row].length; col++) {
+                        // if this is a value between 1 and 9, set the value, otherwise, set it to null
+                        const value = puzzle.board[row][col];
+                        if (value >= 1 && value <= 9) {
+                            board[row][col].value = value;
+                            board[row][col].possibleValues = []
+                        } else {
+                            board[row][col].value = null;
+                            board[row][col].possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        }
+                    }
+                }
+                // Randomize the board values
+                console.log("***BEFORE RANDOMIZATION***");
+                let randomizedBoard = this.randomizeBoard(Mixins.copy(board));
+                console.log("****AFTER RANDOMIZATION***", randomizedBoard);
+
+                let prunedBoard = this.initialPruning(Mixins.copy(randomizedBoard));
+                this.solutionObj.board = Mixins.copy(prunedBoard);
+                this.displayBoard = this.solutionObj.board;
+                this.renderBoard();
+            },
+
+            randomizeBoard(board) {
+                // create a random permutation of numbers 1-9
+                let randomPermutation = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                for (let i = 0; i < randomPermutation.length; i++) {
+                    const randomIndex = Math.floor(Math.random() * randomPermutation.length);
+                    const temp = randomPermutation[i];
+                    randomPermutation[i] = randomPermutation[randomIndex];
+                    randomPermutation[randomIndex] = temp;
+                }
+                // Go through the board and replace the values with the random permutation
+                for (let row = 0; row < board.length; row++) {
+                    for (let col = 0; col < board[row].length; col++) {
+                        if (board[row][col].value !== null) {
+                            board[row][col].value = randomPermutation[board[row][col].value - 1];
+                        }
+                    }
+                }
+                
+                // There is a 50/50 chance of flipping the board horizontally
+                if (Math.random() < 0.5) {
+                    let newBoard = Mixins.copy(board);
+                    for (let row = 0; row < newBoard.length; row++) {
+                        for (let col = 0; col < newBoard[row].length; col++) {
+                            newBoard[row][col] = {
+                                row,
+                                col,
+                                value: board[row][8 - col].value,
+                                mode: 'normal',
+                                possibleValues: board[row][8 - col].possibleValues,
+                            };
+                        }
+                    }
+                    board = newBoard;
+                }
+
+                // There is a 50/50 chance of flipping the board vertically
+                if (Math.random() < 0.5) {
+                    let newBoard = Mixins.copy(board);
+                    for (let row = 0; row < newBoard.length; row++) {
+                        for (let col = 0; col < newBoard[row].length; col++) {
+                            // newBoard[row][col] = board[8 - row][col];
+                            newBoard[row][col] = {
+                                row,
+                                col,
+                                value: board[8 - row][col].value,
+                                mode: 'normal',
+                                possibleValues: board[8 - row][col].possibleValues,
+                            };
+                        }
+                    }
+                    board = newBoard;
+                }
+
+                // Select a number between 0 and 3 and rotate the board that many times
+                const numRotations = Math.floor(Math.random() * 4);
+                for (let i = 0; i < numRotations; i++) {
+                    let newBoard = Mixins.copy(board);
+                    for (let row = 0; row < newBoard.length; row++) {
+                        for (let col = 0; col < newBoard[row].length; col++) {
+                            // newBoard[row][col] = board[8 - row][col];
+                            newBoard[row][col] = {
+                                row,
+                                col,
+                                value: board[col][8 - row].value,
+                                mode: 'normal',
+                                possibleValues: board[col][8 - row].possibleValues,
+                            };
+                        }
+                    }
+                    board = newBoard;
+                }
+
+                return board;
             },
 
             generatePuzzle(puzzleName) {
                 const puzzle = sudokuPuzzles.find(p => p.name === puzzleName);
                 if (!puzzle) {
-                    console.log("Puzzle not found: ", puzzleName);
                     return;
                 }
                 // Initialize the board.  Then loop through the puzzle and set the values
@@ -526,7 +629,6 @@
                 this.displayBoard = solutionObj.board;
                 this.renderBoard();
 
-                console.log("Solving puzzle with depth: ", solutionObj.depth, "/", this.maxDepth , ", a board id: ", solutionObj.id, solutionObj);
                 this.solveCallCount++;
                 if (this.solveTerminateFlag || this.solveCallCount > 5000) {
                     return null;
@@ -552,7 +654,6 @@
                     return this.solvePuzzle(solutionObj);
                 } else {
                     let splitSolutionObject = this.splitSolutionObject(solutionObj);
-                    console.log(">>>> splitSolutionObject: ", splitSolutionObject, ", depth: ", splitSolutionObject.depth, ", children: ", splitSolutionObject.children.length);
                     for (let i = 0; i < splitSolutionObject.children.length; i++) {
                         const res = this.solvePuzzle(splitSolutionObject.children[i]);
                         if (res !== null) {
@@ -568,10 +669,8 @@
 
 
             initialPruning(board) {
-                console.log("INITIAL PRUNIGN");
                 const prunePossibleRowValuesForTile = (row, col) => {
                     // Find all tiles in the same row that have a value, and remove that value from the possible values of the tile
-                    // console.log("ROW VALS: ", row, col, board[row][col].possibleValues);
                     let tile = board[row][col];
                     for (let c = 0; c < board[row].length; c++) {
                         if (c !== col && board[row][c].value !== null) {
@@ -1022,20 +1121,20 @@
                 // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsValid(row)) {
-                        console.log("(X) Row fail: ", row, " id: ", id, board);
+                        // console.log("(X) Row fail: ", row, " id: ", id, board);
                         return false;
                     }
                 }
                 for (let col = 0; col < board[0].length; col++) {
                     if (!colIsValid(col)) {
-                        console.log("(X) Col fail: ", col, board);
+                        // console.log("(X) Col fail: ", col, board);
                         return false;
                     }
                 }
                 for (let row = 0; row < board.length; row += 3) {
                     for (let col = 0; col < board[0].length; col += 3) {
                         if (!blockIsValid(row, col)) {
-                            console.log("(X) block fail: ", row, col, board);
+                            // console.log("(X) block fail: ", row, col, board);
                             return false;
                         }
                     }
@@ -1098,25 +1197,21 @@
                 // loop through board and check if each row, col, and block is valid
                 for (let row = 0; row < board.length; row++) {
                     if (!rowIsCorrect(row)) {
-                        // console.log("(x) Row fail: ", row, board);
                         return false;
                     }
                 }
                 for (let col = 0; col < board[0].length; col++) {
                     if (!colIsCorrect(col)) {
-                        // console.log("(x) Col fail: ", col, board);
                         return false;
                     }
                 }
                 for (let row = 0; row < board.length; row += 3) {
                     for (let col = 0; col < board[0].length; col += 3) {
                         if (!blockIsCorrect(row, col)) {
-                            // console.log("(x) Block fail: ", row, col, board);
                             return false;
                         }
                     }
                 }
-                // console.log("Survival of the fittest!");
                 return true;
             },
 
@@ -1170,11 +1265,6 @@
                 // Draw black background to hidden context
                 this.hiddenCtx.fillStyle = 'white';
                 this.hiddenCtx.fillRect(0, 0, this.dataGameWidth, this.dataGameHeight);
-
-                // A black text that says "Sudoku"
-                this.hiddenCtx.font = '40px Arial';
-                this.hiddenCtx.fillStyle = 'black';
-                this.hiddenCtx.fillText('Sudoku', 20, 50);
 
 
                 /***************************************
@@ -1233,12 +1323,6 @@
                     }
                 }
 
-                /***************************************
-                 * 
-                 *      Render the buttons
-                 * 
-                 ***************************************/
-
 
                 // Draw to main canvas
                 this.ctx.clearRect(0, 0, this.dataGameWidth, this.dataGameHeight);
@@ -1259,13 +1343,36 @@
     }
     #leftSide {
         float: left;
+        width: 550px;
     }
     #rightSide {
-        float: right;
+        background-color: #fff;
+        float: left;
+        width: 229px;
+        height: 570px;
+        border: 1px solid black;
+        border-left: none;
+        padding-top: 30px;
+        
+        /* #buttons {
+            margin-top: 100px;
+        } */
+        .btn {
+            margin: 10px;
+            width: 170px;
+            height: 50px;
+            font-size: 20px;
+            background-color: #ccc;
+        }
+        .btn:hover {
+            background-color: #ddd;
+        }
+
+        #hardButton {
+            margin-bottom: 100px;
+        }
     }
-    #buttons {
-        margin-top: 100px;
-    }
+
     #instructions {
         margin-top: 100px;
     }

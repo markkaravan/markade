@@ -57,8 +57,6 @@
 
             window.addEventListener('keydown', this.handleKeyDown);
 
-            console.log("Mixins: ", Mixins.mixinTest());
-
             this.renderBoard();
         },
 
@@ -93,7 +91,6 @@
                     ];
                     let player = 'X';
                     const result = this.minimax(player, Mixins.copy(board));
-                    console.log("*** RESULT: ", result);
                 }
 
             },
@@ -131,7 +128,6 @@
                         // See if this ends the game
                         let res = this.checkForEnd(this.board);
                         if (res !== null) {
-                            console.log("**** TIME TO CONCLUDE GAME");
                             this.concludeGame();
                             return;
                         } else {
@@ -334,7 +330,6 @@
                 let winStreak = null;
                 let winner = 0;
                 this.setCompletionState();
-                console.log("**** CONCLUSION STATE: ", this.completionState);
                 this.renderBoard();
             },
 
@@ -384,7 +379,6 @@
                         }
                     }
                 }
-                console.log("*** COMPLETION STATE: ", this.completionState);    
 
                 // If the winStreak array is not null, draw a thick line through the three winning tiles
                 if (this.completionState && (this.completionState.winner === 'X' || this.completionState.winner === 'O')) {
@@ -432,7 +426,6 @@
                     this.hiddenCtx.fillText("Press spacebar to play again", 300, 250);
 
                 } else if (this.completionState && this.completionState.winner === 0) {
-                    console.log("Tie game!", this.completionState);
                     // Draw a rectangle with a white interior and a black border in the middle of the screen
                     this.hiddenCtx.fillStyle = 'white';
                     this.hiddenCtx.fillRect(150, 170, 300, 100);
