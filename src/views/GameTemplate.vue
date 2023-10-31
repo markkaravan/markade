@@ -212,7 +212,7 @@ export default {
 }
 
 .instructions-description-container {
-  width: 800px;
+  width: 70%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -221,7 +221,8 @@ export default {
 
 .instructions-window, .description-window {
   font-family: 'Orbitron', arial;
-  width: 53%;
+  /* width: 53%; */
+  width: 100%;
   min-height: 300px;
   background-color: #333333;
   background-image: linear-gradient(to bottom, #333333, #444444);
