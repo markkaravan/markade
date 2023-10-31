@@ -53,7 +53,7 @@ export default {
       }
     },
   },
-  
+
 }
 </script>
 
@@ -61,27 +61,32 @@ export default {
 .home {
   text-align: center;
   background-color: black;
-  background-image: url('@/assets/istockphoto-1174967858-1024x1024.jpg');
+  background-image: url('@/assets/images/cyberpunk_brick_wall_002.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-color: black;
-  height: 100%;
+  height: 120%;
   width: 100%;
 }
 
 h1 {
   font-size: 48px;
   margin-top: 0px;
-  font-family: 'Bebas Neue', cursive;
+  font-family: 'Orbitron', arial;
   color: white;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1); /* Add this line */
+
+  /* font-weight: bold; */
 }
 
 .thumbnails {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  margin: auto;
   margin-top: 50px;
+  width: 90%;
 }
 
 @media (max-width: 900px) {

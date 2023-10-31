@@ -109,7 +109,7 @@ export default {
         event.preventDefault();
       }
     },
-    
+
     goBack() {
       this.$router.push('/')
     },
@@ -119,11 +119,15 @@ export default {
 
 <style>
 .game-page-template {
-  height: 100vh;
-  width: 100vw;
-  background-image: url('@/assets/istockphoto-1174967858-1024x1024.jpg');
-  background-size: cover;
-  display: flex;
+  width: 100%;
+  height: 150%;
+    /* height: 100vh; */
+  background-image: url('@/assets/images/cyberpunk_brick_wall_002.png');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  /* display: flex; */
   flex-direction: column;
 }
 
@@ -136,10 +140,53 @@ export default {
   color: white;
   text-align: center;
 }
-
-.back-link {
+/* Make .back-link look like a button */
+.header .back-link {
+  font-family: 'Orbitron', arial;
   cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #333333;
+  background-image: linear-gradient(to bottom, #333333, #444444);
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 20px #00ffff;
+  transition: all 0.2s ease-in-out;
+  position: absolute;
 }
+/* .back-link glows when you hover over it and changes color when you click it*/
+.header .back-link:hover {
+  background-color: #444444;
+  background-image: linear-gradient(to bottom, #444444, #555555);
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+}
+.header .back-link:active {
+  background-color: #555555;
+  background-image: linear-gradient(to bottom, #555555, #666666);
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px #00ff00;
+}
+
+.header h1 {
+    font-size: 48px;
+    margin: auto;
+    margin-top: 20px;
+    font-family: 'Orbitron', arial;
+    /* color: rgb(200, 177, 208); */
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1); /* Add this line */
+
+
+    border-radius: 0.5rem;
+    background-color: #333333;
+    background-image: linear-gradient(to bottom, #333333, #444444);
+    border: 2px solid #ffffff;
+    /* box-shadow: 0 0 20px #00ffff; */
+    padding: 10px;
+  }
+
+
 
 .body {
   display: flex;
@@ -173,6 +220,7 @@ export default {
 }
 
 .instructions-window, .description-window {
+  font-family: 'Orbitron', arial;
   width: 53%;
   min-height: 300px;
   background-color: #333333;
@@ -199,13 +247,11 @@ export default {
   margin: 0rem;
   margin-bottom: 1rem;
   padding: 0rem;
-  font-family: 'Digital-7';
   font-size: 2rem;
 
 }
 
 .instructions-window .window-text, .description-window .window-text {
-  font-family: 'Digital-7';
   font-size: 1.5rem;
   color: #00ff00;
 }
