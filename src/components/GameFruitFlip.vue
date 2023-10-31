@@ -20,7 +20,7 @@
     const rows = 10;
     const columns = 10;
     const tileWidth = 50;
-    const levelSeconds = 600;
+    const levelSeconds = 60;
     const scorePositionX = 50;
     const scorePositionY = 50;
     const fruitTypes = [
@@ -207,8 +207,9 @@
 
                 // Draw white header text saying the title of the game
                 this.hiddenCtx.fillStyle = 'white';
+                this.hiddenCtx.textAlign = 'center';
                 this.hiddenCtx.font = '100px Helvetica';
-                this.hiddenCtx.fillText('Fruit Flip', this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 50);
+                this.hiddenCtx.fillText('Fruit Flip', this.dataGameWidth / 2, this.dataGameHeight / 2 );
 
                 // If it has been > 1 second since the last blink, toggle the showText boolean
                 if (Date.now() - this.gs.blinkTimer > 1000) {
@@ -220,7 +221,8 @@
                 if (this.gs.showText) {
                     this.hiddenCtx.fillStyle = 'white';
                     this.hiddenCtx.font = '24px Helvetica';
-                    this.hiddenCtx.fillText('Press spacebar to start game', this.dataGameWidth / 2 - 150, this.dataGameHeight - 50);
+                    this.hiddenCtx.textAlign = 'center';
+                    this.hiddenCtx.fillText('Press spacebar to start game', this.dataGameWidth / 2, this.dataGameHeight - 50);
                 }
 
                 // Draw to main canvas
@@ -236,10 +238,11 @@
                 // Render white text in the middle that says "Great job!" ont he first line
                 // and "your score was {this.gs.score} points"
                 this.hiddenCtx.fillStyle = 'white';
+                this.hiddenCtx.textAlign = 'center';
                 this.hiddenCtx.font = '100px Helvetica';
-                this.hiddenCtx.fillText('Great job!', this.dataGameWidth / 2 - 220, this.dataGameHeight / 2 + 50);
+                this.hiddenCtx.fillText('Great job!', this.dataGameWidth / 2, this.dataGameHeight / 2 + 50);
                 this.hiddenCtx.font = '24px Helvetica';
-                this.hiddenCtx.fillText(`Your score was ${this.gs.score} points`, this.dataGameWidth / 2 - 150, this.dataGameHeight / 2 + 100);
+                this.hiddenCtx.fillText(`Your score was ${this.gs.score} points`, this.dataGameWidth / 2, this.dataGameHeight / 2 + 100);
                 
                 // If it has been > 1 second since the last blink, toggle the showText boolean
                 if (Date.now() - this.gs.blinkTimer > 1000) {
@@ -250,8 +253,9 @@
                 // Draw blinking white subtext that says "press spacebar to start game"
                 if (this.gs.showText) {
                     this.hiddenCtx.fillStyle = 'white';
+                    this.hiddenCtx.textAlign = 'center';
                     this.hiddenCtx.font = '24px Helvetica';
-                    this.hiddenCtx.fillText('Press spacebar to play again', this.dataGameWidth / 2 - 150, this.dataGameHeight - 50);
+                    this.hiddenCtx.fillText('Press spacebar to play again', this.dataGameWidth / 2, this.dataGameHeight - 50);
                 }
 
                 // Draw to main canvas

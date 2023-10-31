@@ -60,187 +60,232 @@ const player = {
 
 const screens = [
     { name: "Opening", n: null},
+     /*****************************************
+     * 
+     *          Level 1
+     * 
+     *****************************************/
     { name: 'Level',
         n: 1,
         gravity: { x: 0, y: gravitySpeed },
         spawnPoint: { x: 400, y: 500 },
-        player: JSON.parse(JSON.stringify(player)),
+        player: Mixins.copy(player),
         obstacles: [
             {
                 id: "A",
-                pos: { x: 700, y: 250 },
-                width: 50,
+                pos: { x: 0, y: 0 },
+                width: 400,
                 height: 50
             },
             {
                 id: "B",
-                pos: { x: 500, y: 350 },
-                width: 50,
+                pos: { x: 500, y: 0 },
+                width: 400,
                 height: 50
             },
             {
                 id: "C",
-                pos: { x: 300, y: 500 },
-                width: 50,
-                height: 50
-            },
-            // There are two additional obstacles which cover the ground of the level.
-            // Between them is a pit.
-            // {
-            //     x: 0,
-            //     y: 600,
-            //     width: 1200 / 2,
-            //     height: 50
-            // },
-            {
-                id: "D",
                 pos: { x: 0, y: 550 },
                 width: 900,
-                height: 50
+                height: 50 
             },
-            {
-                id: "E",
-                pos: { x: 0, y: 0 },
-                width: 900,
-                height: 50
-            },
-            {
-                id: "F",
-                pos: { x: 0, y: 0 },
-                width: 50,
-                height: 600
-            },
-            {
-                id: "G",
-                pos: { x: 1000, y: 0 },
-                width: 50,
-                height: 600
-            },
-            // {
-            //     x: 1200 / 2 + 50,
-            //     y: 0,
-            //     width: 900,
-            //     height: 50
-            // },
+
         ],
 
         portals: [
             {
-            id: "1-2",
-            x: 700,
-            y: 300,
-            destination: 2,
-            color: "green",
-        }
-    ],
+                id: "1-2",
+                pos: { x: 100, y: 50 },
+                width: portalWidth,
+                height: portalHeight,
+                destination: 2,
+                color: "green",
+                works: true,
+            }
+        ],
 
         items: [
-        //     {
-        //     type: "gravity-left", 
-        //     x: 700, 
-        //     y: 550
-        // }
-    ],
+            {
+                type: "gravity-up", 
+                x: 700, 
+                y: 500
+            }
+        ],
     },
+
+
+
+    /*****************************************
+     * 
+     *          Level 2
+     * 
+     *****************************************/
     { name: 'Level',
         n: 2,
         gravity: { x: 0, y: gravitySpeed },
-        spawnPoint: { x: 400, y: 400 },
-        player: JSON.parse(JSON.stringify(player)),
+        spawnPoint: { x: 200, y: 400 },
+        player: Mixins.copy(player), 
         obstacles: [
             {
-                pos: { x: 300, y: 250 },
-                width: 50,
+                id: "A",
+                pos: { x: 0, y: 0 },
+                width: 300,
                 height: 50
             },
             {
-                pos: { x: 400, y: 350 },
+                id: "B",
+                pos: { x: 0, y: 0 },
                 width: 50,
-                height: 50
+                height: 600
             },
             {
-                pos: { x: 500, y: 450 },
-                width: 50,
-                height: 50
-            },
-            // There are two additional obstacles which cover the ground of the level.
-            // Between them is a pit.
-            {
+                id: "C",
                 pos: { x: 0, y: 550 },
-                width: 800,
-                height: 50
+                width: 300,
+                height: 50 
+            },
+
+
+            {
+                id: "D",
+                pos: { x: 500, y: 50 },
+                width: 50,
+                height: 150 
             },
             {
-                pos: { x: 1200 / 2 + 50, y: 600 },
-                width: 900,
-                height: 50
+                id: "E",
+                pos: { x: 700, y: 200 },
+                width: 50,
+                height: 150 
             },
+            {
+                id: "F",
+                pos: { x: 900, y: 350 },
+                width: 50,
+                height: 150 
+            },
+
         ],
 
-        portals: [{
-            id: "1-2",
-            x: 300,
-            y: 300,
-            destination: 1,
-            color: "green",
-        },
-        {
-            id: "2-3",
-            x: 700,
-            y: 450,
-            destination: 3,
-            color: "purple",
-        }
-        ]
+        portals: [
+            {
+                id: "1-2",
+                pos: {x: 250, y: 450},
+                width: portalWidth,
+                height: portalHeight,
+                destination: 1,
+                color: "green",
+                works: false,
+            },
+            {
+                id: "2-3",
+                pos: {x: 800, y: 450},
+                width: portalHeight,
+                height: portalWidth,
+                destination: 3,
+                color: "purple",
+                works: true,
+            }
+        ],
+
+        items: [
+            {
+                type: "gravity-left",
+                x: 100,
+                y: 500
+            },
+            {
+                type: "gravity-right",
+                x: 50,
+                y: 50
+            }
+        ],
     },
+
+
+
+    /*****************************************
+     * 
+     *          Level 3
+     * 
+     *****************************************/
     { name: 'Level',
         n: 3,
         gravity: { x: 0, y: gravitySpeed },
         spawnPoint: { x: 400, y: 400 },
-        player: JSON.parse(JSON.stringify(player)),
+        player: Mixins.copy(player),
         obstacles: [
             {
-                pos: { x: 300, y: 250 },
-                width: 1200 / 2,
+                pos: { x: 300, y: 550 },
+                width: 400,
                 height: 50
             },
             {
-                pos: { x: 1200 / 2 + 50, y: 250 },
-                width: 900,
-                height: 50
-            },
-            {
-                pos: { x: 300, y: 350 },
+                pos: { x: 500, y: 200 },
                 width: 50,
-                height: 50
+                height: 350
             },
             {
-                pos: { x: 400, y: 450 },
+                pos: { x: 0, y: 0 },
                 width: 50,
-                height: 50
+                height: 350
             },
             {
-                pos: { x: 500, y: 550 },
+                pos: { x: 950, y: 0 },
                 width: 50,
-                height: 50
+                height: 350
             },
         ],
 
-        portals: [{
-            id: "2-3",
-            x: 300,
-            y: 300,
-            destination: 2,
-            color: "purple",
-        },
-        {
-            id: "3-win",
-            x: 700,
-            y: 550,
-            destination: "Win",
-            color: "blue",
-        }
-    ]
+        portals: [
+            {
+                id: "2-3",
+                pos: {x: 450, y: 450},
+                destination: 2,
+                width: portalWidth,
+                height: portalHeight,
+                color: "purple",
+                works: false,
+            },
+            {
+                id: "3-win",
+                pos: {x: 550, y: 450},
+                destination: "Win",
+                width: portalWidth,
+                height: portalHeight,
+                color: "blue",
+                works: true,
+            }
+        ],
+
+        items: [
+            {
+                type: "gravity-right", 
+                x: 300, 
+                y: 500
+            },
+            {
+                type: "gravity-left", 
+                x: 450, 
+                y: 200
+            },
+            {
+                type: "gravity-right", 
+                x: 50, 
+                y: 50
+            },
+            {
+                type: "gravity-left", 
+                x: 900, 
+                y: 300
+            },
+            {
+                type: "gravity-down", 
+                x: 550, 
+                y: 300
+            },
+
+        ],
 
     },
     { name: 'Win', n: null },
@@ -265,7 +310,7 @@ export default {
         return {
             dataGameWidth: gameWidthDefault,
             dataGameHeight: gameHeightDefault,
-            gs: screens.find(screen => screen.name === 'Opening' && screen.n === null),
+            gs: Mixins.copy(screens.find(screen => screen.name === 'Opening' && screen.n === null)),
         }
     },
     mounted() {
@@ -335,9 +380,12 @@ export default {
         loadScreen(screenName, levelNumber=null, portalId=null) {
             if (screenName === "Opening") {
                 let currentScreen = screens.find(screen => screen.name === "Opening");
+                const csCopy = Mixins.copy(currentScreen);
+                console.log("******** CURRENT SCREEN: ", csCopy);
+                console.log("******** SCREENS: ", screens);
                 // iterate through all properties of currentScreen and add them to this.gs
-                for (let prop in currentScreen) {
-                    this.gs[prop] = currentScreen[prop];
+                for (let prop in csCopy) {
+                    this.gs[prop] = csCopy[prop];
                 }
                 this.gs.name = "Opening";
                 this.gs.lives = 3;
@@ -346,8 +394,12 @@ export default {
             } else if (screenName === "Level") {
                 let currentScreen = screens.find(screen => screen.name === screenName && screen.n === levelNumber);
                 // iterate through all properties of currentScreen and add them to this.gs
-                for (let prop in currentScreen) {
-                    this.gs[prop] = currentScreen[prop];
+                const csCopy = Mixins.copy(currentScreen);
+                console.log("******** CURRENT SCREEN: ", csCopy);
+                console.log("******** SCREENS: ", screens);
+                for (let prop in csCopy) {
+                    console.log("Prop: ", prop, "  Value: ", csCopy[prop]);
+                    this.gs[prop] = csCopy[prop];
                 }
                 this.gs.isPaused = false;
                 this.gs.player = Mixins.copy(player);
@@ -356,8 +408,9 @@ export default {
                 this.gs.player.image = this.$refs.playerUpForwardA;
                 if (portalId) {
                     let portal = this.gs.portals.find(portal => portal.id === portalId);
+                    console.log(">>>>>>>>> Portal Id: ", portalId, portal);
                     this.gs.player.justSpawnedInPortal = portalId;
-                    this.gs.spawnPoint = { x: portal.x, y: portal.y };
+                    this.gs.spawnPoint = { x: portal.pos.x, y: portal.pos.y };
                 }
                 this.gs.player.pos = { x: this.gs.spawnPoint.x, y: this.gs.spawnPoint.y };
             } else if (screenName === "Win") {
@@ -608,6 +661,17 @@ export default {
             }
         },
 
+
+
+
+
+
+        /*************************************************
+         * 
+         *          Collision Detection Helpers
+         * 
+         ************************************************/
+
         detectEncapsulation(inner, outer) {
             const threshold = .5;
             const intersectionX = Math.max(inner.pos.x, outer.pos.x);
@@ -649,6 +713,20 @@ export default {
             return (horizontalIntersection && verticalIntersection);
 
         },
+
+
+
+
+
+
+
+
+
+        /**************************************
+         * 
+         *       Update Game State
+         * 
+         * *************************************/
 
         updateGameState() {
 
@@ -764,15 +842,27 @@ export default {
                     if (item.type === "gravity-up") {
                         this.gs.player.touchingGround = false;
                         this.gs.gravity = { x: 0, y: -gravitySpeed };
+                        this.gs.player.height = playerHeight;
+                        this.gs.player.width = playerWidth;
+                        this.changePlayerImage();
                     } else if (item.type === "gravity-down") {
                         this.gs.player.touchingCeiling = false;
                         this.gs.gravity = { x: 0, y: gravitySpeed };
+                        this.gs.player.height = playerHeight;
+                        this.gs.player.width = playerWidth;
+                        this.changePlayerImage();
                     } else if (item.type === "gravity-left") {
                         this.gs.player.touchingRightWall = false;
                         this.gs.gravity = { x: -gravitySpeed, y: 0 };
+                        this.gs.player.height = playerWidth;
+                        this.gs.player.width = playerHeight;
+                        this.changePlayerImage();
                     } else if (item.type === "gravity-right") {
                         this.gs.player.touchingLeftWall = false;
                         this.gs.gravity = { x: gravitySpeed, y: 0 };
+                        this.gs.player.height = playerWidth;
+                        this.gs.player.width = playerHeight;
+                        this.changePlayerImage();
                     }
                     this.gs.items = this.gs.items.filter(i => i !== item);
                 }
@@ -817,16 +907,12 @@ export default {
                 // If a player reaches the portal, he is transported to the next level
                 this.gs.portals.forEach(portal => {
                     if (
-                        // portal must fully encapsulate the player
-                        player.pos.x - player.width / 2 > portal.x - portalWidth / 2 &&
-                        player.pos.x + player.width / 2 < portal.x + portalWidth / 2 &&
-                        player.pos.y - player.height / 2 > portal.y - portalHeight / 2 &&
-                        player.pos.y + player.height / 2 < portal.y + portalHeight / 2
+                        portal.works && this.detectCompleteEncapsulation(player, portal)
                     ) {
                         if (portal.destination === 'Win') {
                             this.loadScreen('Win', null);
                         } else if (typeof portal.destination === 'number') {
-                            this.gs.player.justSpawnedInPortal = "none";
+                            this.gs.player.justSpawnedInPortal = portal.id;
                             this.loadScreen('Level', portal.destination, portal.id);
                         }
                     }
@@ -838,10 +924,7 @@ export default {
                 let portal = this.gs.portals.find(portal => portal.id === this.gs.player.justSpawnedInPortal);
                 let player = this.gs.player;
                 if (
-                    player.pos.x - player.width / 2 > portal.x - portalWidth / 2 &&
-                    player.pos.x + player.width / 2 < portal.x + portalWidth / 2 &&
-                    player.pos.y - player.height / 2 > portal.y - portalHeight / 2 &&
-                    player.pos.y + player.height / 2 < portal.y + portalHeight / 2
+                    this.detectCompleteEncapsulation(player, portal)
                 ) {
                     // Do nothing
                 } else {
@@ -978,10 +1061,10 @@ export default {
             this.gs.portals.forEach(portal => {
                 this.hiddenCtx.fillStyle = portal.color;
                 this.hiddenCtx.fillRect(
-                    portal.x,
-                    portal.y,
-                    portalWidth,
-                    portalHeight
+                    portal.pos.x,
+                    portal.pos.y,
+                    portal.width,
+                    portal.height
                 );
             });
 
@@ -1015,7 +1098,8 @@ export default {
                 } else if (item.type === "gravity-right") {
                     text = "R";
                 }
-                this.hiddenCtx.fillText(text, item.x - 10, item.y + 10);
+                this.hiddenCanvas.textAlign = "center";
+                this.hiddenCtx.fillText(text, item.x + 20, item.y + 30);
             });
 
 
