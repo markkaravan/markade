@@ -26,9 +26,7 @@ export default {
 
     }
   },
-  methods: {
 
-  },
   created: function () {
     this.gameShim = GameJson
     // sort by date created, descending order
@@ -43,9 +41,19 @@ export default {
       }
     });
   },
-  mounted: function () {
 
-  }
+  mounted: function () {
+    window.addEventListener('keydown', this.onKeyDown);
+  },
+
+  methods: {
+    onKeyDown(event) {
+      if (event.code === 'Space') {
+        event.preventDefault();
+      }
+    },
+  },
+  
 }
 </script>
 

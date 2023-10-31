@@ -88,11 +88,7 @@ export default {
       gameHeight: 0,
     }
   },
-  methods: {
-    goBack() {
-      this.$router.push('/')
-    },
-  },
+
   mounted() {
     const gamePath = this.$route.name
     const game = games.find(g => g.pathName === gamePath)
@@ -104,7 +100,20 @@ export default {
       this.gameWidth = game.gameWidth? game.gameWidth : gameWidthDefault
       this.gameHeight = game.gameHeight? game.gameHeight : gameHeightDefault
     }
-  }
+    window.addEventListener('keydown', this.onKeyDown);
+  },
+
+  methods: {
+    onKeyDown(event) {
+      if (event.code === 'Space') {
+        event.preventDefault();
+      }
+    },
+    
+    goBack() {
+      this.$router.push('/')
+    },
+  },
 }
 </script>
 

@@ -381,8 +381,6 @@ export default {
             if (screenName === "Opening") {
                 let currentScreen = screens.find(screen => screen.name === "Opening");
                 const csCopy = Mixins.copy(currentScreen);
-                console.log("******** CURRENT SCREEN: ", csCopy);
-                console.log("******** SCREENS: ", screens);
                 // iterate through all properties of currentScreen and add them to this.gs
                 for (let prop in csCopy) {
                     this.gs[prop] = csCopy[prop];
@@ -395,10 +393,7 @@ export default {
                 let currentScreen = screens.find(screen => screen.name === screenName && screen.n === levelNumber);
                 // iterate through all properties of currentScreen and add them to this.gs
                 const csCopy = Mixins.copy(currentScreen);
-                console.log("******** CURRENT SCREEN: ", csCopy);
-                console.log("******** SCREENS: ", screens);
                 for (let prop in csCopy) {
-                    console.log("Prop: ", prop, "  Value: ", csCopy[prop]);
                     this.gs[prop] = csCopy[prop];
                 }
                 this.gs.isPaused = false;
@@ -408,7 +403,6 @@ export default {
                 this.gs.player.image = this.$refs.playerUpForwardA;
                 if (portalId) {
                     let portal = this.gs.portals.find(portal => portal.id === portalId);
-                    console.log(">>>>>>>>> Portal Id: ", portalId, portal);
                     this.gs.player.justSpawnedInPortal = portalId;
                     this.gs.spawnPoint = { x: portal.pos.x, y: portal.pos.y };
                 }
@@ -564,11 +558,9 @@ export default {
                             this.changePlayerImage();
                         }
                         break;
-                    
-                    // H is jump
-                    case 'KeyH':
+
+                    case 'Space':
                         // This allows the player to jump if he is touching the ground
-                        console.log("TOUCHING LEFT: ", this.gs.player.touchingLeftWall);
                         if (this.gs.gravity.y > 0 && this.gs.player.touchingGround) {
                             this.gs.player.jumping = true;
                         }
@@ -647,7 +639,7 @@ export default {
                     break;
 
                 // H is jump
-                case 'KeyH':
+                case 'Space':
                     this.gs.player.jumping = false; 
                     break;
 
@@ -685,10 +677,10 @@ export default {
         },
 
         detectCompleteEncapsulation(inner, outer) {
-            return outer.pos.x <= inner.pos.x && inner.pos.x < outer.pos.x + outer.width &&
-                outer.pos.x < inner.pos.x + inner.width && inner.pos.x + inner.width <= outer.pos.x + outer.width &&
-                outer.pos.y <= inner.pos.y && inner.pos.y < outer.pos.y + outer.height &&
-                outer.pos.y < inner.pos.y + inner.height && inner.pos.y + inner.height <= outer.pos.y + outer.height;
+            return outer.pos.x - 2 <= inner.pos.x && inner.pos.x < outer.pos.x + outer.width + 2 &&
+                outer.pos.x - 2 < inner.pos.x + inner.width && inner.pos.x + inner.width <= outer.pos.x + outer.width + 2 &&
+                outer.pos.y - 2 <= inner.pos.y && inner.pos.y < outer.pos.y + outer.height + 2 &&
+                outer.pos.y - 2 < inner.pos.y + inner.height && inner.pos.y + inner.height <= outer.pos.y + outer.height + 2;
         },
 
         detectCollision(obj1, obj2) {
@@ -713,13 +705,6 @@ export default {
             return (horizontalIntersection && verticalIntersection);
 
         },
-
-
-
-
-
-
-
 
 
         /**************************************
@@ -777,7 +762,7 @@ export default {
                 if (this.detectCollision(player, obstacle)) 
                 {
                     // If the player's top edge is fully encapsulated within the obstacle, he is touching the top.  Set the edge color to dark red.
-                    if ( this.detectEncapsulation(player.edges[0], obstacle)) {
+                    if ( this.detectCompleteEncapsulation(player.edges[0], obstacle)) {
                         player.touchingCeiling = true;
                         player.edges[0].color = 'darkred';
                         if (gravity.x === 0 && gravity.y < 0) {
@@ -791,7 +776,7 @@ export default {
                     } 
 
                     // If the player's left edge is fully encapsulated within the obstacle, he is touching the left.  Set the edge color to dark red.
-                    if (this.detectEncapsulation(player.edges[1], obstacle)) {
+                    if (this.detectCompleteEncapsulation(player.edges[1], obstacle)) {
                         player.touchingLeftWall = true;
                         player.edges[1].color = 'darkred';
                         if (gravity.x < 0 && gravity.y === 0) {
@@ -804,7 +789,7 @@ export default {
                     } 
 
                     // If the player's right edge is fully encapsulated within the obstacle, he is touching the right.  Set the edge color to dark red.
-                    if (this.detectEncapsulation(player.edges[2], obstacle)) {
+                    if (this.detectCompleteEncapsulation(player.edges[2], obstacle)) {
                         player.touchingRightWall = true;
                         player.edges[2].color = 'darkred';
                         if (gravity.x > 0 && gravity.y === 0) {
@@ -817,7 +802,7 @@ export default {
                     } 
 
                     // If the player's bottom edge is fully encapsulated within the obstacle, he is touching the bottom.  Set the edge color to dark red.
-                    if (this.detectEncapsulation(player.edges[3], obstacle)) {
+                    if (this.detectCompleteEncapsulation(player.edges[3], obstacle)) {
                         player.touchingGround = true;
                         player.edges[3].color = 'darkred';
                         if (gravity.x === 0 && gravity.y > 0) {
