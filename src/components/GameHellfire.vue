@@ -138,7 +138,7 @@ const screens = [
     itemDropProbability: .2,
     items: ['heart', 'dual-blast', 'missile'],
     levelData: {
-      backgroundImage: 'hellfire_background_level_1.png',
+      backgroundImage: 'hellfire_background_city.png',
       enemyData: [
         {name: 'blue', spawnProbability: 0.2}, 
         {name: 'yellow', spawnProbability: 0.2}, 
@@ -155,7 +155,7 @@ const screens = [
     itemDropProbability: .2,
     items: ['heart', 'dual-blast', 'missile'],
     levelData: {
-      backgroundImage: 'hellfire_background_level_1.png',
+      backgroundImage: 'hellfire_background_badlands.png',
       enemyData: [
         {name: 'blue', spawnProbability: 0.3},
         {name: 'green', spawnProbability: 0.3},
@@ -173,7 +173,7 @@ const screens = [
     itemDropProbability: .2,
     items: ['heart', 'dual-blast', 'missile'],
     levelData: {
-      backgroundImage: 'hellfire_background_level_1.png',
+      backgroundImage: 'hellfire_background_hell.png',
       enemyData: [
         {name: 'blue', spawnProbability: 0.4},
         {name: 'red', spawnProbability: 0.4}, 
@@ -738,7 +738,7 @@ export default {
     .game-background {
       position: relative;
       height: 100%;
-      background-image: url('@/assets/images/hellfire_background_level_1.png');
+      background-image: url('@/assets/images/hellfire_background_city.png');
       background-size: cover;
       background-position-x: -50px;
     }

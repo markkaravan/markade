@@ -19,5 +19,5 @@ export const Mixins = {
         }
 
         return true;
-    }
+    },
 };

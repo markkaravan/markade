@@ -1,24 +1,21 @@
 <template>
-    <img ref="playerUpForwardA" :src="'/src/assets/images/gravity_player_up_forward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerUpForwardB" :src="'/src/assets/images/gravity_player_up_forward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerUpBackwardA" :src="'/src/assets/images/gravity_player_up_backward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerUpBackwardB" :src="'/src/assets/images/gravity_player_up_backward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerDownForwardA" :src="'/src/assets/images/gravity_player_down_forward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerDownForwardB" :src="'/src/assets/images/gravity_player_down_forward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerDownBackwardA" :src="'/src/assets/images/gravity_player_down_backward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerDownBackwardB" :src="'/src/assets/images/gravity_player_down_backward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerLeftForwardA" :src="'/src/assets/images/gravity_player_left_forward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerLeftForwardB" :src="'/src/assets/images/gravity_player_left_forward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerLeftBackwardA" :src="'/src/assets/images/gravity_player_left_backward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerLeftBackwardB" :src="'/src/assets/images/gravity_player_left_backward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerRightForwardA" :src="'/src/assets/images/gravity_player_right_forward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerRightForwardB" :src="'/src/assets/images/gravity_player_right_forward_B.png'" :style="{ display: 'none' }">
-    <img ref="playerRightBackwardA" :src="'/src/assets/images/gravity_player_right_backward_A.png'" :style="{ display: 'none' }">
-    <img ref="playerRightBackwardB" :src="'/src/assets/images/gravity_player_right_backward_B.png'" :style="{ display: 'none' }">
-    <img ref="doorUp" :src="'/src/assets/images/gravity_portal_up.png'" :style="{ display: 'none' }">
-    <img ref="doorDown" :src="'/src/assets/images/gravity_portal_down.png'" :style="{ display: 'none' }">
-    <img ref="doorLeft" :src="'/src/assets/images/gravity_portal_left.png'" :style="{ display: 'none' }">
-    <img ref="doorRight" :src="'/src/assets/images/gravity_portal_right.png'" :style="{ display: 'none' }">
+
+    <img ref="playerUpForwardA" class="imageAsset" :src="getImageUrl('gravity_player_up_forward_A')" >
+    <img ref="playerUpForwardB" class="imageAsset" :src="getImageUrl('gravity_player_up_forward_B')" >
+    <img ref="playerUpBackwardA" class="imageAsset" :src="getImageUrl('gravity_player_up_backward_A')" >
+    <img ref="playerUpBackwardB" class="imageAsset" :src="getImageUrl('gravity_player_up_backward_B')" >
+    <img ref="playerDownForwardA" class="imageAsset" :src="getImageUrl('gravity_player_down_forward_A')" >
+    <img ref="playerDownForwardB" class="imageAsset" :src="getImageUrl('gravity_player_down_forward_B')" >
+    <img ref="playerDownBackwardA" class="imageAsset" :src="getImageUrl('gravity_player_down_backward_A')" >
+    <img ref="playerDownBackwardB" class="imageAsset" :src="getImageUrl('gravity_player_down_backward_B')" >
+    <img ref="playerLeftForwardA" class="imageAsset" :src="getImageUrl('gravity_player_left_forward_A')" >
+    <img ref="playerLeftForwardB" class="imageAsset" :src="getImageUrl('gravity_player_left_forward_B')" >
+    <img ref="playerLeftBackwardA" class="imageAsset" :src="getImageUrl('gravity_player_left_backward_A')" >
+    <img ref="playerLeftBackwardB" class="imageAsset" :src="getImageUrl('gravity_player_left_backward_B')" >
+    <img ref="playerRightForwardA" class="imageAsset" :src="getImageUrl('gravity_player_right_forward_A')" >
+    <img ref="playerRightForwardB" class="imageAsset" :src="getImageUrl('gravity_player_right_forward_B')" >
+    <img ref="playerRightBackwardA" class="imageAsset" :src="getImageUrl('gravity_player_right_backward_A')" >
+    <img ref="playerRightBackwardB" class="imageAsset" :src="getImageUrl('gravity_player_right_backward_B')" >
 
     <canvas id="mainCanvas" ref="canvas" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
@@ -325,6 +322,9 @@ export default {
         window.addEventListener('keydown', this.handleKeyDown);
         window.addEventListener('keyup', this.handleKeyUp);
 
+
+
+        
         this.loadScreen('Opening', null);
         this.gameLoop();
     },
@@ -345,6 +345,12 @@ export default {
     },
 
     methods: {
+
+        // TODO make this a mixin somehow
+        getImageUrl(name) {
+            return new URL(`../assets/images/${name}.png`, import.meta.url).href
+        },
+
         changePlayerImage() {
             let player = this.gs.player;
             // Gravity goes down
@@ -1141,3 +1147,9 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+    img.imageAsset {
+        display: none;
+    }
+</style>

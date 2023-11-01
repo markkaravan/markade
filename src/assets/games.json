@@ -2,25 +2,21 @@
     {
       "title": "Pong",
       "pathName": "pong",
-      "image": "pong.jpg",
       "dateCreated": "2023-10-7  12:00:00"
     },
     {
       "title": "Asteroids",
       "pathName": "asteroids",
-      "image": "asteroids.jpg",
       "dateCreated": "2023-10-8  12:00:00"
     },
     {
       "title": "Shooter",
       "pathName": "shooter",
-      "image": "shooter.jpg",
       "dateCreated": "2023-10-9  12:00:00"
     },
     {
       "title": "Level Quest",
       "pathName": "level-quest",
-      "image": "https://via.placeholder.com/250x250?text=Level-Quest",
       "instructions": "Here are the instructions for Level Quest",
       "description": "The simplest possible game that utilizes a coherent framework with levels and win/lose screens.  Just testing the AI.  Totally lame.",
       "dateCreated": "2023-10-10  12:00:00"
@@ -28,7 +24,6 @@
     {
       "title": "Galaga",
       "pathName": "galaga",
-      "image": "images/galaga.jpg",
       "instructions": "Here are the instructions for Galaga",
       "description": "The classic arcade game.",
       "dateCreated": "2023-10-11  12:00:00"
@@ -36,7 +31,6 @@
     {
       "title": "Hellfire",
       "pathName": "hellfire",
-      "image": "images/hellfire.jpg",
       "instructions": "q is up, a is down, space is fire",
       "description": "Defeat demons as the archangel michael.",
       "gameWidth": 1200,
@@ -46,7 +40,6 @@
     {
       "title": "Gravity",
       "pathName": "gravity",
-      "image": "images/thumbnail-gravity.jpg",
       "instructions": "",
       "description": "",
       "gameWidth": 1000,
@@ -56,7 +49,6 @@
     {
       "title": "FruitFlip",
       "pathName": "fruitflip",
-      "image": "images/thumbnail-fruitflip.png",
       "instructions": "",
       "description": "",
       "gameWidth": 900,
@@ -67,7 +59,6 @@
     {
       "title": "Sudoku",
       "pathName": "sudoku",
-      "image": "images/thumbnail_sudoku.png",
       "instructions": "",
       "description": "",
       "gameWidth": 800,
@@ -78,7 +69,6 @@
     {
       "title": "TicTacToe",
       "pathName": "tictactoe",
-      "image": "images/thumbnail_tictactoe.png",
       "instructions": "",
       "description": "",
       "gameWidth": 600,

@@ -1,10 +1,10 @@
 <template>
-    <img ref="fruitCherry" :src="'/src/assets/images/fruit_cherry.png'" :style="{ display: 'none' }">
-    <img ref="fruitGrapes" :src="'/src/assets/images/fruit_grapes.png'" :style="{ display: 'none' }">
-    <img ref="fruitGreenApple" :src="'/src/assets/images/fruit_kiwi.png'" :style="{ display: 'none' }">
-    <img ref="fruitBlueberry" :src="'/src/assets/images/fruit_blueberry.png'" :style="{ display: 'none' }">
-    <img ref="fruitYellow" :src="'/src/assets/images/fruit_banana.png'" :style="{ display: 'none' }">
-    <img ref="fruitOrange" :src="'/src/assets/images/fruit_orange_full.png'" :style="{ display: 'none' }">
+    <img ref="fruitCherry" class="imageAsset" :src="getImageUrl('fruit_cherry')" >
+    <img ref="fruitGrapes" class="imageAsset" :src="getImageUrl('fruit_grapes')" >
+    <img ref="fruitGreenApple" class="imageAsset" :src="getImageUrl('fruit_kiwi')" >
+    <img ref="fruitBlueberry" class="imageAsset" :src="getImageUrl('fruit_blueberry')" >
+    <img ref="fruitYellow" class="imageAsset" :src="getImageUrl('fruit_banana')" >
+    <img ref="fruitOrange" class="imageAsset" :src="getImageUrl('fruit_orange_full')">
 
     <canvas id="mainCanvas" ref="canvas" @click="handleClick" :width="dataGameWidth" :height="dataGameHeight"></canvas>
     <canvas id="hiddenCanvas" ref="hiddenCanvas" :style="{display: 'none'}" :width="dataGameWidth" :height="dataGameHeight"></canvas>
@@ -113,6 +113,12 @@
         },
 
         methods: {
+
+            // TODO make this a mixin somehow
+            getImageUrl(name) {
+                return new URL(`../assets/images/${name}.png`, import.meta.url).href
+            },
+
             loadScreen(screenName) {
                 if (screenName === "Opening") {
                     this.gs.name = "Opening";
@@ -680,3 +686,9 @@
     }; // export default
 
 </script>
+
+<style scoped>
+    img.imageAsset {
+        display: none;
+    }
+</style>

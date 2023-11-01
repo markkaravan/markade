@@ -1,7 +1,7 @@
 <template>
     <router-link to="about"></router-link>
     <router-link :to="{path: `/games/${pathName}`}">
-      <div class="game-tile" :style="{ backgroundImage: 'url(' + image + ')' }" @mouseover="isHovered = true" @mouseleave="isHovered = false">
+      <div :class="'game-tile ' + pathName" @mouseover="isHovered = true" @mouseleave="isHovered = false">
         <div class="neon-border" :class="{ 'neon-border-hover': isHovered }"></div>
         <div class="overlay"></div>
         <h2 class="title">{{ title }}</h2>
@@ -127,5 +127,41 @@
     right: 0;
     height: 15%;
     background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .game-tile.tictactoe {
+    background-image: url('@/assets/images/thumbnail_tictactoe.png');
+  }
+
+  .game-tile.sudoku {
+    background-image: url('@/assets/images/thumbnail_sudoku.png');
+  }
+
+  .game-tile.fruitflip {
+    background-image: url('@/assets/images/thumbnail_fruitflip.png');
+  }
+
+  .game-tile.gravity {
+    background-image: url('@/assets/images/thumbnail_gravity.jpg');
+  }
+
+  .game-tile.hellfire {
+    background-image: url('@/assets/images/thumbnail_hellfire.jpg');
+  }
+
+  .game-tile.galaga {
+    background-image: url('@/assets/images/thumbnail_galaga.jpg');
+  }
+
+  .game-tile.shooter {
+    background-image: url('@/assets/images/thumbnail_shooter.jpg');
+  }
+
+  .game-tile.asteroids {
+    background-image: url('@/assets/images/thumbnail_asteroids.jpg');
+  }
+
+  .game-tile.pong {
+    background-image: url('@/assets/images/thumbnail_pong.jpg');
   }
 </style>

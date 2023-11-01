@@ -37,7 +37,9 @@ export default {
       return {
         title: game.title,
         pathName: game.pathName,
-        image: new URL('/src/assets/' + game.image, import.meta.url).href
+        // image: new URL('/src/assets/' + game.image, import.meta.url).href
+        // image: '/src/assets/' + game.image,
+        // image: `url(${require('@/assets/images/thumbnail_tictactoe.png')})`,
       }
     });
   },
