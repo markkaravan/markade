@@ -1,38 +1,14 @@
 [
-    {
-      "title": "Pong",
-      "pathName": "pong",
-      "dateCreated": "2023-10-7  12:00:00"
-    },
-    {
-      "title": "Asteroids",
-      "pathName": "asteroids",
-      "dateCreated": "2023-10-8  12:00:00"
-    },
-    {
-      "title": "Shooter",
-      "pathName": "shooter",
-      "dateCreated": "2023-10-9  12:00:00"
-    },
-    {
-      "title": "Level Quest",
-      "pathName": "level-quest",
-      "instructions": "Here are the instructions for Level Quest",
-      "description": "The simplest possible game that utilizes a coherent framework with levels and win/lose screens.  Just testing the AI.  Totally lame.",
-      "dateCreated": "2023-10-10  12:00:00"
-    },
-    {
-      "title": "Galaga",
-      "pathName": "galaga",
-      "instructions": "Here are the instructions for Galaga",
-      "description": "The classic arcade game.",
-      "dateCreated": "2023-10-11  12:00:00"
-    },
+
     {
       "title": "Hellfire",
       "pathName": "hellfire",
-      "instructions": "q is up, a is down, space is fire",
-      "description": "Defeat demons as the archangel michael.",
+      "instructions": [
+          "Q - up",
+          "A - down",
+          "Space - fire"
+        ],
+      "description": "Blast demons as Archangel Michael.",
       "gameWidth": 1200,
       "gameHeight": 400,
       "dateCreated": "2023-10-12  12:00:00"
@@ -40,8 +16,14 @@
     {
       "title": "Gravity",
       "pathName": "gravity",
-      "instructions": "",
-      "description": "",
+      "instructions": [
+        "A - left",
+        "D - right",
+        "Space - jump",
+        "W - up (when vertical)",
+        "S - down (when vertical)"
+      ],
+      "description": "Reach the door to advance to the next level.  Gravity boxes change the direction of gravity.",
       "gameWidth": 1000,
       "gameHeight": 600,
       "dateCreated": "2023-10-17  12:00:00"
@@ -49,8 +31,10 @@
     {
       "title": "FruitFlip",
       "pathName": "fruitflip",
-      "instructions": "",
-      "description": "",
+      "instructions": [
+        "Click on a fruit to flip it."
+      ],
+      "description": "Try to crush...er...flip all the fruit in the time allowed.",
       "gameWidth": 900,
       "gameHeight": 600,
       "dateCreated": "2023-10-21  12:00:00"
@@ -59,8 +43,11 @@
     {
       "title": "Sudoku",
       "pathName": "sudoku",
-      "instructions": "",
-      "description": "",
+      "instructions": [
+        "Click the tile to select it and enter 1-9.",
+        "Generate and solve puzzles with the buttons on the right."
+      ],
+      "description": "A sandbox for generating and solving sudoku puzzles.",
       "gameWidth": 800,
       "gameHeight": 600,
       "dateCreated": "2023-10-23  12:00:00"
@@ -69,8 +56,8 @@
     {
       "title": "TicTacToe",
       "pathName": "tictactoe",
-      "instructions": "",
-      "description": "",
+      "instructions": ["Click to place a piece as 'X'"],
+      "description": "A simple tic-tac-toe game.",
       "gameWidth": 600,
       "gameHeight": 600,
       "dateCreated": "2023-10-27  12:00:00"

@@ -142,11 +142,11 @@
   }
 
   .game-tile.gravity {
-    background-image: url('@/assets/images/thumbnail_gravity.jpg');
+    background-image: url('@/assets/images/thumbnail_gravity.png');
   }
 
   .game-tile.hellfire {
-    background-image: url('@/assets/images/thumbnail_hellfire.jpg');
+    background-image: url('@/assets/images/thumbnail_hellfire.png');
   }
 
   .game-tile.galaga {

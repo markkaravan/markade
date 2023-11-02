@@ -13,10 +13,11 @@
       </div>
       <div class="instructions-description-container">
         <div class="instructions-window">
-          <h2 class="window-title">Instructions</h2>
-          <p class="window-text">{{ instructions }}</p>
-          <!-- <h2>Instructions</h2>
-          <p>{{ instructions }}</p> -->
+          <h2 class="window-title">Controls</h2>
+          <!-- <p class="window-text">{{ instructions }}</p> -->
+          <ul>
+            <li v-for="instruction in instructions" :key="instruction">{{ instruction }}</li>
+          </ul>
         </div>
         <div class="description-window">
           <h2 class="window-title">Description</h2>
@@ -222,7 +223,7 @@ export default {
 .instructions-window, .description-window {
   font-family: 'Orbitron', arial;
   /* width: 53%; */
-  width: 100%;
+  width: 90%;
   min-height: 300px;
   background-color: #333333;
   background-image: linear-gradient(to bottom, #333333, #444444);
@@ -234,6 +235,8 @@ export default {
   align-items: center;
   border: 10px solid;
   border-radius: 20px;
+  text-align: left;
+  padding-left: 10px;
 }
 
 .instructions-window {
@@ -268,6 +271,8 @@ export default {
 .instructions-window {
   border-color: #00ffff;
   box-shadow-color: #00ffff;
+  color: #00ffff;
+  text-align: left;
 }
 
 .description-window {
